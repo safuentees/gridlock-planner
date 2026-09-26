@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Use `setup/team-workflow` for the initial upload and conventional task prefixes; add the documented post-push repository-owner checklist.
+
 - Add the four-person collaboration guide, pull-request template and app/data CI checks.
 
 ## 0.1.0 — 2026-09-26

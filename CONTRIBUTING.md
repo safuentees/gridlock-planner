@@ -6,7 +6,7 @@ Use one stable branch and one short-lived branch per task. Everyone works in the
 
 The shared repository is **[yeagarjack/FIUSHELLHACKSSquadRepo](https://github.com/yeagarjack/FIUSHELLHACKSSquadRepo)** and its default branch is **`main`**. Use `main` as the base for every team pull request.
 
-At setup time the remote contains only its existing placeholder file; the GridLock demo is local. The prepared `codex/team-workflow` branch joins the two histories without removing that file. After the team publishes and merges this initial branch, everyone can clone the complete application. For this initial import, use a merge commit to retain the application's creation history; use squash merges for later task pull requests. A local commit or remote URL alone does not upload files.
+At setup time the remote contains only its existing placeholder file; the GridLock demo is local. The prepared `setup/team-workflow` branch joins the two histories without removing that file. After the team publishes and merges this initial branch, everyone can clone the complete application. For this initial import, use a merge commit to retain the application's creation history; use squash merges for later task pull requests. A local commit or remote URL alone does not upload files.
 
 The GitHub Actions workflow and pull-request template are prepared. Hosted checks, invitations and branch protection still need their first hosted run and repository-owner configuration. The current authenticated account has write access, not administrator access.
 
@@ -14,12 +14,12 @@ The GitHub Actions workflow and pull-request template are prepared. Hosted check
 
 These branch names are examples for the next task in each area, not four permanently open branches. Claim a small task in the team chat before starting and name one reviewer.
 
-| Owner                      | Main area                                            | Example task branch         | Coordination                                                              |
-| -------------------------- | ---------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------- |
-| 1 — Map and interface      | `src/components/ProjectMap.tsx`, styles and controls | `codex/map-interactions`    | Coordinate changes to `src/App.tsx`; it is the shared integration file.   |
-| 2 — Data and evidence      | Importers, source annotations and evidence cards     | `codex/source-provenance`   | Preserve supplied originals; regenerate derived data with scripts.        |
-| 3 — Logic and checks       | `src/lib/comparisons.ts`, scenarios and tests        | `codex/scenario-validation` | Agree changes to `src/types.ts` with owners 1 and 2 before coding.        |
-| 4 — Demo and documentation | Demo story, README and submission materials          | `codex/demo-docs`           | Verify every claim against the working app; coordinate final demo freeze. |
+| Owner                      | Main area                                            | Example task branch        | Coordination                                                              |
+| -------------------------- | ---------------------------------------------------- | -------------------------- | ------------------------------------------------------------------------- |
+| 1 — Map and interface      | `src/components/ProjectMap.tsx`, styles and controls | `feature/map-interactions` | Coordinate changes to `src/App.tsx`; it is the shared integration file.   |
+| 2 — Data and evidence      | Importers, source annotations and evidence cards     | `data/source-provenance`   | Preserve supplied originals; regenerate derived data with scripts.        |
+| 3 — Logic and checks       | `src/lib/comparisons.ts`, scenarios and tests        | `test/scenario-validation` | Agree changes to `src/types.ts` with owners 1 and 2 before coding.        |
+| 4 — Demo and documentation | Demo story, README and submission materials          | `docs/demo-notes`          | Verify every claim against the working app; coordinate final demo freeze. |
 
 One teammate acts as merge coordinator at a time. This person can also own a lane. They merge approved pull requests in dependency order and check the combined app. Another teammate reviews their own pull requests. Package/dependency changes and `package-lock.json` should have one owner at a time.
 
@@ -39,7 +39,7 @@ Use the Node version in `.nvmrc`. Before a new task, make sure the current worki
 # Start a fresh task from the current shared version.
 git switch main
 git pull --ff-only origin main
-git switch -c codex/map-interactions
+git switch -c feature/map-interactions
 ```
 
 Implement one reviewable change. Commit explicitly selected files; replace the example paths and message below with your actual change:
@@ -80,16 +80,11 @@ The prepared GitHub workflow runs two checks on pull requests and pushes to the 
 
 For UI work, also open the app and check the changed flow on desktop and a narrow screen. For data or scenario work, verify original dates/coordinates stay intact and hypothetical assumptions remain labeled. Automated checks do not replace these specific manual checks. Keep keys in ignored environment files and commit neither dependencies nor build output.
 
-## GitHub configuration when the remote is ready
+## Repository owner setup
 
-The repository owner should invite all four teammates with write access and set the default branch to `main`. After the first successful workflow run, configure protection for that branch:
+After the initial branch is pushed and its pull request is opened, the owner should follow [the exact owner checklist](docs/REPOSITORY_OWNER_SETUP.md). It covers teammate invitations, Actions permissions, the first successful checks, protection of `main`, approval and the initial merge commit, then the everyday squash policy.
 
-- Require a pull request and one approving review; dismiss stale approvals after substantive new commits.
-- Require **GridLock app checks** and **GridLock data checks** and require the branch to be up to date before merging.
-- Require review conversations to be resolved, prevent force pushes/deletion, and apply the rule to the maintainer too where available.
-- Enable squash merging for a clear sequence of completed tasks.
-
-[GitHub branch protection](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches) availability depends on the repository's visibility and account plan. If the chosen private plan lacks enforcement, follow the same review process manually and do not claim protection is enabled. The prepared files do not themselves activate these settings. Check the first hosted workflow before making its check names mandatory.
+The owner must apply these GitHub settings; committing the workflow or this guide does not activate branch protection. Our shared repository is public, and GitHub's documented rulesets support public repositories on GitHub Free.
 
 If people or coding agents work simultaneously on one machine, give each a separate Git worktree. Switching branches in a folder another person is editing also switches the files underneath them.
 

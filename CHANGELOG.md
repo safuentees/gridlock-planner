@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add project agent instructions preserving corrected challenge rules, source-data contracts, verification and team workflow.
 - Use `setup/team-workflow` for the initial upload and conventional task prefixes; add the documented post-push repository-owner checklist.
 - Explain how to merge the initial demo in plain language, with team access and protection for later changes afterward.
 

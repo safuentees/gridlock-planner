@@ -1,0 +1,8 @@
+{
+  "title": "Supplied planning examples",
+  "count": 10,
+  "workbookSha256": "fe01df4ed0691d55fd565784a7510ddfe4682316ff63fb70b963b934c5974f24",
+  "datePolicy": "Original supplied values, normalized for parsing; research annotations do not overwrite them.",
+  "geometryPolicy": "Arithmetic midpoint of available named endpoints, or single endpoint fallback. Approximate representative points, not construction routes.",
+  "sourceWorkbook": "/sources/Projects_Overlaps.xlsx"
+}

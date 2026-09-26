@@ -9,3 +9,5 @@ output/
 .DS_Store
 *.log
 __pycache__/
+*.tsbuildinfo
+.venv/

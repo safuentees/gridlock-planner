@@ -1,0 +1,254 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-09-26",
+  "purpose": "Minimal review annotations for supplied GridLock examples. These notes never replace workbook dates or coordinates.",
+  "projects": [
+    {
+      "id": "DESC_1",
+      "coordinate_assessment": {
+        "verdict": "Stevens Creek point is near the mapped dam substation, not its current OSM bounding-box center. Hooks missing. Single endpoint only; no verified route."
+      },
+      "scope_schedule_evidence": {
+        "original_page": 14,
+        "identity_caution": "Do not merge with 6809 G: original page 15 is a separate 6.5-mile project. Current plan page 20 calls 6809 G Hooks–Modoc and schedules it for 2027-12-31.",
+        "geometry": {
+          "location_detail": "Named Stevens Creek–Hooks and Little River/Plum Branch corridor; original spells Plumb. Includes 115kV and 46kV lines."
+        },
+        "latest_evidence": {
+          "status": "Completed and in service",
+          "actual_in_service_month": "2024-08",
+          "reported_in": "DESC_IRP_2025",
+          "pdf_page": 49,
+          "evidence_date": "2025-03-31"
+        }
+      }
+    },
+    {
+      "id": "DESC_2",
+      "coordinate_assessment": {
+        "verdict": "Thurmond matches the named 115 kV station to rounding. Hooks missing; single endpoint is not the line center."
+      },
+      "scope_schedule_evidence": {
+        "original_page": 31,
+        "geometry": {
+          "location_detail": "Between Hooks and Thurmond on existing right-of-way; rebuild with steel poles."
+        },
+        "latest_evidence": {
+          "status": "Completed and in service",
+          "actual_in_service_month": "2024-11",
+          "reported_in": "DESC_IRP_2025",
+          "pdf_page": 49,
+          "evidence_date": "2025-03-31"
+        }
+      }
+    },
+    {
+      "id": "DESC_3",
+      "coordinate_assessment": {
+        "verdict": "Jasper sample is near the mapped station but differs from its center. Okatie sample aligns with an unnamed 230 kV switching feature and the official route-map area; name and operator are absent from that OSM feature. Use station-area proxies at medium confidence."
+      },
+      "scope_schedule_evidence": {
+        "original_page": 23,
+        "scope_caution": "June 2032 in PSC Order 2026-482 page 5 is the later corridor reconductoring project, not the original #2 line-construction COD.",
+        "geometry": {
+          "location_detail": "Jasper substation in Hardeeville to Okatie substation in Okatie, South Carolina; public order page 2."
+        },
+        "latest_evidence": {
+          "status": "Under construction",
+          "latest_exact_planned_in_service": "2026-12-01",
+          "schedule_source": "DESC_PLAN_2026",
+          "reported_in": "PSC_2026_482",
+          "schedule_pdf_page": 12,
+          "pdf_page": 2,
+          "evidence_date": "2026-08-26",
+          "schedule_source_date": "PDF metadata 2026-04-28; publication date unspecified"
+        }
+      }
+    },
+    {
+      "id": "DESC_4",
+      "coordinate_assessment": {
+        "verdict": "Queensborough spelling alias matches the 115 kV map feature. Nearby Santee Cooper Queensborough Switching is distinct. Fort Johnson missing. Compound scope unresolved."
+      },
+      "scope_schedule_evidence": {
+        "original_page": 1,
+        "scope_caution": "IRP names Queensboro–Fort Johnson and omits the Bayfront/James Island parenthetical. Do not assert separately that every component in the compound original title is complete without a utility scope crosswalk.",
+        "geometry": {
+          "location_detail": "Title names Queensboro, Ft Johnson, Bayfront and the Queensboro–James Island section. Description specifically describes replacement of Queensboro–Ft Johnson line and structures."
+        },
+        "latest_evidence": {
+          "status": "Completed and in service for Queensboro–Fort Johnson named rebuild",
+          "actual_in_service_month": "2024-12",
+          "reported_in": "DESC_IRP_2025",
+          "pdf_page": 49,
+          "evidence_date": "2025-03-31"
+        }
+      }
+    },
+    {
+      "id": "DESC_5",
+      "coordinate_assessment": {
+        "verdict": "Bluffton matches the named 115 kV station. Okatie sample aligns with a 230 kV feature; precise 115 kV terminal not established. Retain only a station-area proxy."
+      },
+      "scope_schedule_evidence": {
+        "original_page": 10,
+        "geometry": {
+          "location_detail": "Named Okatie–Bluffton corridor; replacement of wooden H-frames with steel and conductor upgrade."
+        },
+        "latest_evidence": {
+          "status": "In service",
+          "actual_in_service_month": "2025-05",
+          "reported_in": "DESC_IRP_2026",
+          "pdf_page": 83,
+          "evidence_date": "2026-03-31"
+        }
+      }
+    },
+    {
+      "id": "GPC_1",
+      "coordinate_assessment": {
+        "verdict": "Evans and Thurmond match stations, but actual rebuild is Euchee Creek–Thurmond plus bus work. Reject full-line midpoint as work center. Euchee Creek missing."
+      },
+      "scope_schedule_evidence": {
+        "public_scope": "Rebuild approximately 5.45 miles of the Euchee Creek–Thurmond Dam section of the named line; replace the main bus at Thurmond Dam.",
+        "irp_pdf_page": 410,
+        "latest_confirmed_plan": {
+          "value": "2033-06-01",
+          "precision": "day",
+          "meaning": "need_date",
+          "source": "irp2025",
+          "source_snapshot": "2024-12",
+          "status": "planned_in_snapshot; current execution status unconfirmed"
+        },
+        "later_search_result": "No matching replacement schedule or completion record located in the checked 2025 final and 2026 public materials. Absence does not prove completion, cancellation, or continued unchanged scope."
+      }
+    },
+    {
+      "id": "GPC_2",
+      "coordinate_assessment": {
+        "verdict": "McIntosh matches named Georgia Power 230 kV substation. Valid station proxy; exact reactor and two 0.1-mile line footprints unknown. Purrysburg is not required to locate the reactor equipment."
+      },
+      "scope_schedule_evidence": {
+        "public_scope": "Install reactors at McIntosh on the Black and White McIntosh–Purrysburg tie lines, plus rebuild 0.1 miles of the GPC portion of each line.",
+        "irp_pdf_page": 227,
+        "latest_confirmed_plan": {
+          "value": "2026-06-01",
+          "precision": "day",
+          "meaning": "need_date",
+          "source": "irp2025",
+          "source_snapshot": "2024-12",
+          "status": "planned_in_snapshot; actual completion unconfirmed"
+        },
+        "later_search_result": "No newer sample-specific public schedule or completion confirmation found. A passed June 2026 need date is not evidence of completion."
+      }
+    },
+    {
+      "id": "GPC_3",
+      "coordinate_assessment": {
+        "verdict": "Goshen matches named 115 kV station. McIntosh longitude differs by 0.408 mile between workbook rows and is not the actual rebuilt segment endpoint. Reject it for work geometry; Georgia Pacific endpoint missing. Use Goshen-only fallback with low geometry confidence."
+      },
+      "scope_schedule_evidence": {
+        "public_scope": "Approximately 6.7 miles of the Goshen (Savannah)–Georgia Pacific (Rincon) section of the broader Goshen–McIntosh line.",
+        "irp_pdf_page": 314,
+        "latest_confirmed_plan": {
+          "value": "2028",
+          "precision": "year",
+          "meaning": "planned_in_service_year",
+          "source": "sertp2026prelim",
+          "report_date": "2026-06-12",
+          "pdf_page": 53,
+          "status": "planned; preliminary regional plan; completion unconfirmed"
+        },
+        "schedule_change": "The 2025 final and 2026 preliminary SERTP both show 2028. Supersede the workbook's 2027 need date for latest-plan screening, while retaining the old value and provenance. Do not invent a month/day such as June 1, 2028.",
+        "coordinate_caution": "GPC_3 calls longitude -81.182105 at latitude 32.352116 McIntosh, approximately 0.41 mile west of GPC_2's same-named coordinate. OSM has a distinct West McIntosh 500 kV station nearby. Do not collapse these labels or repair the coordinate without endpoint evidence. The project actually terminates its rebuilt section at Georgia Pacific."
+      }
+    },
+    {
+      "id": "GPC_4",
+      "coordinate_assessment": {
+        "verdict": "Mitchell matches 230 kV station. North Tifton sample maps to a 500 kV yard, while project specifies 230 kV. Exact terminal and line route unresolved; do not silently substitute nearby 115 kV yard."
+      },
+      "scope_schedule_evidence": {
+        "public_scope": "Rebuild approximately 35.21 miles of the Mitchell–North Tifton 230 kV line.",
+        "irp_pdf_page": 233,
+        "latest_confirmed_plan": {
+          "value": "2025-05-01",
+          "precision": "day",
+          "meaning": "need_date",
+          "source": "irp2025",
+          "source_snapshot": "2024-12",
+          "status": "planned_in_snapshot; actual completion unconfirmed"
+        },
+        "later_search_result": "No newer matching public schedule or actual completion confirmation located. Past planned date does not establish completed status."
+      }
+    },
+    {
+      "id": "GPC_5",
+      "coordinate_assessment": {
+        "verdict": "Jesup and Ludowici match named 115 kV stations, but work is Jesup–North Jesup–Rayonier. Reject full-line midpoint as work center; missing segment endpoints."
+      },
+      "scope_schedule_evidence": {
+        "public_scope": "Rebuild approximately 7.5 miles of the Jesup–North Jesup–Rayonier section of the broader Jesup–Ludowici Primary line.",
+        "irp_pdf_page": 240,
+        "latest_confirmed_plan": {
+          "value": "2025-06-01",
+          "precision": "day",
+          "meaning": "need_date",
+          "source": "irp2025",
+          "source_snapshot": "2024-12",
+          "status": "planned_in_snapshot; actual completion unconfirmed"
+        },
+        "later_search_result": "No later matching official public schedule or completion record located. Current Jesup–Offerman work is a different named project and was not treated as this sample."
+      }
+    }
+  ],
+  "utility_research": {
+    "dominion": {
+      "sources": [
+        {
+          "id": "DESC_IRP_2025",
+          "title": "DESC 2025 Integrated Resource Plan Update",
+          "url": "https://dms.psc.sc.gov/Attachments/Matter/8f3cca6c-1724-4a97-b7d4-4194c09cd77c",
+          "document_date": "2025-03-31"
+        },
+        {
+          "id": "DESC_IRP_2026",
+          "title": "2026 DESC Integrated Resource Plan",
+          "url": "https://cdn-dominionenergy-prd-001.azureedge.net/-/media/content/about/our-company/irp/pdfs/integrated-resource-plan-desc.pdf?rev=6d54ce9381204687b19e43fe861cb4aa",
+          "document_date": "2026-03-31"
+        },
+        {
+          "id": "DESC_PLAN_2026",
+          "title": "DESC planned transmission projects $2M and above, 2026–2030 budget",
+          "url": "https://www.scrtp.com/assets/pdfs/home/2026-2030-2million-and-above-project-descriptions.pdf",
+          "document_date": null,
+          "date_note": "Publication date unspecified. PDF creation metadata is 2026-04-28; it is not a confirmed publication date.",
+          "pdf_created": "2026-04-28T10:04:18-04:00"
+        },
+        {
+          "id": "PSC_2026_482",
+          "title": "PSC Order 2026-482, Docket 2026-175-E",
+          "url": "https://dms.psc.sc.gov/Attachments/Order/263ec907-a4ee-42a3-88a2-e4be043bc817",
+          "document_date": "2026-08-26"
+        }
+      ]
+    },
+    "georgia_power": {
+      "sources": [
+        {
+          "id": "irp2025",
+          "title": "Georgia Power 2025 IRP Technical Appendix Volume 3, Transmission Plan, PUBLIC DISCLOSURE",
+          "date": "2025 publication; foreword states snapshot as of December 2024",
+          "snapshot_as_of": "2024-12",
+          "url": "/sources/Georgia_Power_2025_IRP_Volume_3_PUBLIC_DISCLOSURE.pdf"
+        },
+        {
+          "id": "sertp2026prelim",
+          "title": "2026 SERTP Preliminary Expansion Plan Report (Non-CEII)",
+          "url": "https://www.southeasternrtp.com/docs/general/2026/2026_SERTP_Preliminary_Expansion_Plan_Report_%28Non-CEII%29.pdf",
+          "report_date": "2026-06-12"
+        }
+      ]
+    }
+  }
+}

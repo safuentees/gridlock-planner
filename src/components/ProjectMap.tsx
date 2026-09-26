@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
+import { createRoot, type Root } from "react-dom/client";
+import { UtilityPole, Zap } from "lucide-react";
 import "leaflet/dist/leaflet.css";
 import type { Comparison, Project } from "../types";
 import { centerPoint } from "../lib/comparisons";
+import { displayProjectName } from "../lib/projectLabels";
 
 interface Props {
   projects: Project[];
@@ -93,6 +96,7 @@ export function ProjectMap({
     const group = layers.current;
     if (!view || !group) return;
     group.clearLayers();
+    const markerRoots: Root[] = [];
     if (heat.current) {
       heat.current.remove();
       heat.current = null;
@@ -113,10 +117,10 @@ export function ProjectMap({
           minOpacity: 0.28,
           max: 3,
           gradient: {
-            0.1: "#d1fae5",
-            0.4: "#6ee7b7",
-            0.7: "#10b981",
-            1: "#065f46",
+            0.15: "#22c55e",
+            0.4: "#eab308",
+            0.7: "#f97316",
+            1: "#dc2626",
           },
         },
       ).addTo(view);
@@ -126,20 +130,31 @@ export function ProjectMap({
         selected?.a.id === p.id ||
         selected?.b.id === p.id ||
         selectedProjectId === p.id;
+      const iconElement = document.createElement("span");
+      iconElement.className = `project-pin ${p.company === "GPC" ? "pin-square" : "pin-circle"} ${active ? "pin-selected" : ""}`;
+      const root = createRoot(iconElement);
+      markerRoots.push(root);
+      root.render(
+        p.company === "GPC" ? (
+          <Zap size={17} strokeWidth={2.2} aria-hidden="true" />
+        ) : (
+          <UtilityPole size={17} strokeWidth={2.2} aria-hidden="true" />
+        ),
+      );
       const icon = L.divIcon({
         className: "gridlock-marker",
-        html: `<span class="project-pin ${p.company === "GPC" ? "pin-square" : "pin-circle"} ${active ? "pin-selected" : ""}"><span></span></span>`,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12],
+        html: iconElement,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
       });
       const marker = L.marker(center, {
         icon,
         keyboard: true,
-        title: `${p.shortName}, ${p.company}, approximate location`,
+        title: `${displayProjectName(p)}, ${p.company}, approximate location`,
         opacity: mode === "heat" && !active ? 0.7 : 1,
       });
       const label = document.createElement("span");
-      label.textContent = `${p.shortName} · ${p.company}`;
+      label.textContent = `${displayProjectName(p)} · ${p.company}`;
       marker.bindTooltip(label, { direction: "top", offset: [0, -10] });
       marker.on("click", () => callback.current(p.id));
       marker.addTo(group);
@@ -151,13 +166,19 @@ export function ProjectMap({
       projects.some((p) => p.id === selected.b.id)
     ) {
       L.polyline([selected.aCenter, selected.bCenter], {
-        color: "#047857",
+        color: "#2563eb",
         weight: 2,
         opacity: 0.75,
         dashArray: "5 7",
         interactive: false,
       }).addTo(group);
     }
+    return () => {
+      // React roots own only the icon contents; Leaflet owns marker positioning.
+      queueMicrotask(() => {
+        for (const root of markerRoots) root.unmount();
+      });
+    };
   }, [projects, selected, selectedProjectId, mode, heatReady]);
 
   useEffect(() => {
@@ -193,7 +214,7 @@ export function ProjectMap({
       {tileError && (
         <p
           role="status"
-          className="absolute top-3 left-3 z-20 max-w-xs rounded-md border border-stone-200 bg-white p-3 text-xs text-stone-600 shadow-sm"
+          className="absolute top-16 left-3 z-20 max-w-xs rounded-md border border-stone-200 bg-white p-3 text-xs text-stone-600 shadow-sm"
         >
           Basemap unavailable. Project points, comparisons and controls still
           work.
@@ -202,21 +223,21 @@ export function ProjectMap({
       {mode === "heat" && heatError && (
         <p
           role="status"
-          className="absolute top-3 left-3 z-20 rounded-md bg-white p-3 text-xs"
+          className="absolute top-16 left-3 z-20 rounded-md bg-white p-3 text-xs"
         >
           Heat layer unavailable. Project points are still shown.
         </p>
       )}
       {mode === "heat" && heatReady && (
         <div className="absolute bottom-12 left-3 z-20 max-w-[calc(100%-4rem)] rounded-lg border border-stone-200 bg-white/95 px-3 py-2 text-xs shadow-sm">
-          <div className="mb-1 flex items-center gap-2">
+          <div className="mb-1 flex flex-wrap items-center gap-2">
             <span className="font-medium">Planning density</span>
             <span className="flex gap-0.5" aria-hidden="true">
               {[
-                "bg-emerald-100",
-                "bg-emerald-300",
-                "bg-emerald-500",
-                "bg-emerald-800",
+                "bg-green-500",
+                "bg-yellow-500",
+                "bg-orange-500",
+                "bg-red-600",
               ].map((x) => (
                 <span key={x} className={`h-2 w-5 ${x}`} />
               ))}

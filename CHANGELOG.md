@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Reorganize Explore around an expandable map with collapsible filter and comparison panels, in-panel evidence, and consolidated focus/reset controls.
+- Add a green-to-red planning-density toggle, distinct Lucide company markers, and explicit line-number labels while preserving original source names and comparison rules.
+
 - Use `setup/team-workflow` for the initial upload and conventional task prefixes; add the documented post-push repository-owner checklist.
 - Explain how to merge the initial demo in plain language, with team access and protection for later changes afterward.
 

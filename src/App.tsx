@@ -9,22 +9,18 @@ import {
   ArrowRight,
   ArrowUpRight,
   Check,
-  ChevronRight,
   CircleHelp,
   Compass,
   ExternalLink,
   FileText,
   FlaskConical,
-  Layers,
-  MapPin,
   Network,
-  RotateCcw,
-  SlidersHorizontal,
   Target,
 } from "lucide-react";
 import projectData from "./data/projects.json";
 import type { Company, Comparison, Project, Scenario } from "./types";
 import {
+  centerPoint,
   compareProjects,
   filterProjects,
   isNearby,
@@ -34,6 +30,8 @@ import {
 } from "./lib/comparisons";
 import { cn } from "./lib/cn";
 import { ProjectMap } from "./components/ProjectMap";
+import { ExploreWorkspace } from "./components/ExploreWorkspace";
+import { displayProjectName } from "./lib/projectLabels";
 import { EvidencePanel, formatDate } from "./components/EvidencePanel";
 import { DataReadiness } from "./components/DataReadiness";
 
@@ -278,11 +276,11 @@ function PairList({
   onShowAll: (b: boolean) => void;
 }) {
   return (
-    <div className="flex min-h-96 flex-col overflow-hidden rounded-xl border border-stone-200 bg-white lg:max-h-[38rem]">
+    <div className="flex min-h-0 flex-col bg-white">
       <div className="border-b border-stone-100 p-4">
         <h2 className="text-base font-semibold">Cross-company comparisons</h2>
         <p className="mt-1 text-xs text-stone-500">
-          Ranked by distance, nearest first
+          Sorted by distance · nearest first
         </p>
         <Tabs.Root
           value={showAll ? "all" : "nearby"}
@@ -313,34 +311,23 @@ function PairList({
             </Button>
           </div>
         ) : (
-          pairs.map((pair, index) => (
+          pairs.map((pair) => (
             <Button
               key={pair.id}
               onClick={() => onSelect(pair)}
               aria-pressed={selected?.id === pair.id}
               className={cn(
                 "flex w-full items-start gap-3 border-b border-stone-100 p-4 text-left last:border-b-0 hover:bg-stone-50",
-                selected?.id === pair.id &&
-                  "bg-emerald-50/70 hover:bg-emerald-50",
+                selected?.id === pair.id && "bg-blue-50 hover:bg-blue-50",
               )}
             >
-              <span
-                className={cn(
-                  "mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md text-xs font-semibold tabular-nums",
-                  selected?.id === pair.id
-                    ? "bg-emerald-700 text-white"
-                    : "bg-stone-100 text-stone-500",
-                )}
-              >
-                {index + 1}
-              </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-xs font-semibold text-stone-800">
-                  {pair.a.shortName}
+                  {displayProjectName(pair.a)}
                 </span>
                 <span className="my-1 block text-xs text-stone-400">with</span>
                 <span className="block text-xs font-semibold text-stone-800">
-                  {pair.b.shortName}
+                  {displayProjectName(pair.b)}
                 </span>
                 <span className="mt-2 block text-xs text-stone-500">
                   {pair.gapDays === null
@@ -389,6 +376,10 @@ export default function App() {
   const [includeUndated, setIncludeUndated] = useState(true);
   const [mapMode, setMapMode] = useState<"points" | "heat">("points");
   const [showAll, setShowAll] = useState(false);
+  const [explorePanel, setExplorePanel] = useState<
+    "filters" | "comparisons" | null
+  >(null);
+  const [showEvidence, setShowEvidence] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [fitRequest, setFitRequest] = useState(0);
@@ -450,16 +441,21 @@ export default function App() {
     setShowAll(false);
     setSelectedId(null);
     setProjectId(null);
+    setShowEvidence(false);
     focusMap(true);
   }
   function pickPair(p: Comparison) {
     setSelectedId(p.id);
     setProjectId(null);
+    setShowEvidence(true);
+    setExplorePanel("comparisons");
   }
   function inspectScenario(pair: Comparison) {
     reset();
     setShowAll(true);
     setSelectedId(pair.id);
+    setExplorePanel("comparisons");
+    setShowEvidence(true);
     focusMap();
     setPage("explore");
   }
@@ -470,7 +466,7 @@ export default function App() {
         [p.a.id, p.b.id].includes("DESC_3") &&
         [p.a.id, p.b.id].includes("GPC_3"),
     );
-    if (pair) setSelectedId(pair.id);
+    if (pair) pickPair(pair);
     focusMap();
     setPage("explore");
   }
@@ -485,7 +481,7 @@ export default function App() {
       </a>
       <header className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 bg-white px-5 py-4 lg:px-8">
         <div className="flex items-center gap-3">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-emerald-800 text-white">
+          <div className="flex size-9 items-center justify-center rounded-xl bg-blue-700 text-white">
             <Network size={21} strokeWidth={1.8} />
           </div>
           <span className="text-xl font-semibold">GridLock</span>
@@ -508,7 +504,7 @@ export default function App() {
               className={cn(
                 "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium",
                 page === item.id
-                  ? "bg-emerald-50 text-emerald-800"
+                  ? "bg-blue-50 text-blue-800"
                   : "text-stone-500 hover:bg-stone-50",
               )}
             >
@@ -524,265 +520,189 @@ export default function App() {
       </header>
 
       {page === "explore" && (
-        <div className="flex flex-col lg:flex-row">
-          <aside
-            aria-label="Explore filters"
-            className="shrink-0 border-b border-stone-200 bg-white p-5 lg:w-72 lg:border-r lg:border-b-0 lg:p-6"
-          >
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-sm font-semibold">
-                <SlidersHorizontal size={16} />
-                Explore filters
-              </h2>
-              <Button
-                onClick={reset}
-                aria-label="Reset filters"
-                className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-700"
-              >
-                <RotateCcw size={15} />
-              </Button>
-            </div>
-            <ThresholdControl
-              miles={threshold}
-              unit={unit}
-              onMiles={setThreshold}
-              onUnit={setUnit}
-            />
-            <fieldset className="mt-7 border-t border-stone-100 pt-5">
-              <legend className="float-left mb-4 w-full text-xs font-semibold text-stone-600">
-                Companies
-              </legend>
-              <div className="clear-both space-y-3">
-                {companies.map((c) => (
-                  <label
-                    key={c.id}
-                    className="flex cursor-pointer items-center gap-2.5 text-sm"
-                  >
-                    <Checkbox.Root
-                      checked={selectedCompanies.includes(c.id)}
-                      onCheckedChange={(checked) =>
-                        setSelectedCompanies((x) =>
-                          checked
-                            ? [...new Set([...x, c.id])]
-                            : x.filter((v) => v !== c.id),
-                        )
-                      }
-                      className="flex size-4 items-center justify-center rounded border border-stone-300 bg-white data-[checked]:border-emerald-700 data-[checked]:bg-emerald-700"
+        <ExploreWorkspace
+          panel={explorePanel}
+          onPanelChange={setExplorePanel}
+          showEvidence={showEvidence && Boolean(selected || selectedProject)}
+          selectedKey={selectedProject?.id ?? selected?.id ?? null}
+          onBack={() => {
+            setShowEvidence(false);
+            setProjectId(null);
+          }}
+          mapMode={mapMode}
+          onMapModeChange={setMapMode}
+          recordCount={filtered.length}
+          pairCount={pairs.length}
+          nearbyCount={nearby.length}
+          thresholdLabel={`${Number(milesToUnit(threshold, unit).toFixed(1))} ${unit}`}
+          onReset={reset}
+          onFocus={() => focusMap()}
+          canFocus={
+            Boolean(selected?.aCenter && selected?.bCenter) ||
+            Boolean(selectedProject && centerPoint(selectedProject))
+          }
+          onShowAll={() => focusMap(true)}
+          exportControl={
+            <DownloadComparisons pairs={pairs} threshold={threshold} />
+          }
+          filters={
+            <>
+              <ThresholdControl
+                miles={threshold}
+                unit={unit}
+                onMiles={setThreshold}
+                onUnit={setUnit}
+              />
+              <fieldset className="mt-7 border-t border-stone-100 pt-5">
+                <legend className="float-left mb-4 w-full text-xs font-semibold text-stone-600">
+                  Companies
+                </legend>
+                <div className="clear-both space-y-3">
+                  {companies.map((c) => (
+                    <label
+                      key={c.id}
+                      className="flex cursor-pointer items-center gap-2.5 text-sm"
                     >
-                      <Checkbox.Indicator>
-                        <Check size={12} className="text-white" />
-                      </Checkbox.Indicator>
-                    </Checkbox.Root>
-                    <span>{c.label}</span>
-                    <span
-                      className={cn(
-                        "ml-auto size-2.5",
-                        c.id === "DESC"
-                          ? "rounded-full bg-emerald-700"
-                          : "rounded-sm bg-stone-600",
-                      )}
-                    />
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-            <div className="mt-7 border-t border-stone-100 pt-5">
-              <h3 className="mb-3 text-xs font-semibold text-stone-600">
-                Original milestone dates
-              </h3>
-              <label
-                className="mb-1 block text-xs text-stone-500"
-                htmlFor="date-from"
-              >
-                From
-              </label>
-              <Input
-                id="date-from"
-                type="date"
-                value={from}
-                onValueChange={setFrom}
-                className={cn(numberInput, "date-input mb-3")}
-              />
-              <label
-                className="mb-1 block text-xs text-stone-500"
-                htmlFor="date-to"
-              >
-                Through
-              </label>
-              <Input
-                id="date-to"
-                type="date"
-                value={to}
-                onValueChange={setTo}
-                className={cn(numberInput, "date-input")}
-              />
-              {invalidRange && (
-                <p role="alert" className="mt-2 text-xs text-red-700">
-                  The start date must be on or before the end date.
-                </p>
-              )}
-              <label className="mt-3 flex cursor-pointer items-center gap-2 text-xs text-stone-500">
-                <Checkbox.Root
-                  checked={includeUndated}
-                  onCheckedChange={setIncludeUndated}
-                  className="flex size-4 items-center justify-center rounded border border-stone-300 data-[checked]:border-emerald-700 data-[checked]:bg-emerald-700"
-                >
-                  <Checkbox.Indicator>
-                    <Check size={12} className="text-white" />
-                  </Checkbox.Indicator>
-                </Checkbox.Root>
-                Include records without a date
-              </label>
-              <p className="mt-3 text-xs leading-relaxed text-stone-400">
-                Planned in-service or need dates. These are not verified
-                construction windows.
-              </p>
-            </div>
-            <div className="mt-7 border-t border-stone-100 pt-5">
-              <p className="mb-2 text-xs font-semibold text-stone-600">
-                Start with a case
-              </p>
-              <Button
-                onClick={openCase}
-                aria-label="Inspect Jasper–Okatie and Goshen–Georgia Pacific case"
-                className="flex w-full items-start justify-between gap-2 text-left text-sm font-medium text-emerald-800"
-              >
-                <span>
-                  Jasper–Okatie
-                  <br />
-                  <span className="text-xs font-normal text-stone-500">
-                    with Goshen–McIntosh
-                  </span>
-                </span>
-                <ArrowRight size={16} className="mt-1 shrink-0" />
-              </Button>
-              <p className="mt-3 text-xs leading-relaxed text-stone-400">
-                The reviewed Goshen work section ends at Georgia Pacific.
-                Inspect the scope notes.
-              </p>
-            </div>
-          </aside>
-          <main id="main-content" className="min-w-0 flex-1">
-            <div className="p-5 lg:p-6">
-              <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
-                <div>
-                  <p className="mb-2 text-xs font-semibold text-emerald-800">
-                    GEORGIA & SOUTH CAROLINA
-                  </p>
-                  <h1 className="text-3xl font-semibold">
-                    Explore nearby grid work
-                  </h1>
-                  <p className="mt-2 text-sm text-stone-500">
-                    Find proximity candidates, then inspect what the sources
-                    actually say.
-                  </p>
+                      <Checkbox.Root
+                        checked={selectedCompanies.includes(c.id)}
+                        onCheckedChange={(checked) =>
+                          setSelectedCompanies((x) =>
+                            checked
+                              ? [...new Set([...x, c.id])]
+                              : x.filter((v) => v !== c.id),
+                          )
+                        }
+                        className="flex size-4 items-center justify-center rounded border border-stone-300 bg-white data-[checked]:border-emerald-700 data-[checked]:bg-emerald-700"
+                      >
+                        <Checkbox.Indicator>
+                          <Check size={12} className="text-white" />
+                        </Checkbox.Indicator>
+                      </Checkbox.Root>
+                      <span>{c.label}</span>
+                      <span
+                        className={cn(
+                          "ml-auto size-2.5",
+                          c.id === "DESC"
+                            ? "rounded-full bg-blue-600"
+                            : "rounded-sm bg-violet-600",
+                        )}
+                      />
+                    </label>
+                  ))}
                 </div>
-                <DownloadComparisons pairs={pairs} threshold={threshold} />
-              </div>
-              <div className="mb-5 flex flex-wrap items-center gap-7 border-y border-stone-200 py-4 sm:gap-12">
-                <Metric
-                  value={filtered.length}
-                  label="Planning records shown"
+              </fieldset>
+              <div className="mt-7 border-t border-stone-100 pt-5">
+                <h3 className="mb-3 text-xs font-semibold text-stone-600">
+                  Original milestone dates
+                </h3>
+                <label
+                  className="mb-1 block text-xs text-stone-500"
+                  htmlFor="date-from"
+                >
+                  From
+                </label>
+                <Input
+                  id="date-from"
+                  type="date"
+                  value={from}
+                  onValueChange={setFrom}
+                  className={cn(numberInput, "date-input mb-3")}
                 />
-                <Metric
-                  value={pairs.length}
-                  label="Cross-company comparisons"
+                <label
+                  className="mb-1 block text-xs text-stone-500"
+                  htmlFor="date-to"
+                >
+                  Through
+                </label>
+                <Input
+                  id="date-to"
+                  type="date"
+                  value={to}
+                  onValueChange={setTo}
+                  className={cn(numberInput, "date-input")}
                 />
-                <Metric
-                  value={nearby.length}
-                  label={`Within ${Number(milesToUnit(threshold, unit).toFixed(1))} ${unit}`}
-                />
-                <p className="max-w-xs text-xs leading-relaxed text-stone-500">
-                  Supplied historical planning records.
-                  <br />
-                  Original values preserved; research notes available on
-                  inspection.
+                {invalidRange && (
+                  <p role="alert" className="mt-2 text-xs text-red-700">
+                    The start date must be on or before the end date.
+                  </p>
+                )}
+                <label className="mt-3 flex cursor-pointer items-center gap-2 text-xs text-stone-500">
+                  <Checkbox.Root
+                    checked={includeUndated}
+                    onCheckedChange={setIncludeUndated}
+                    className="flex size-4 items-center justify-center rounded border border-stone-300 data-[checked]:border-emerald-700 data-[checked]:bg-emerald-700"
+                  >
+                    <Checkbox.Indicator>
+                      <Check size={12} className="text-white" />
+                    </Checkbox.Indicator>
+                  </Checkbox.Root>
+                  Include records without a date
+                </label>
+                <p className="mt-3 text-xs leading-relaxed text-stone-400">
+                  Planned in-service or need dates. These are not verified
+                  construction windows.
                 </p>
               </div>
-              <div className="grid gap-4 xl:grid-cols-3">
-                <section className="min-w-0 overflow-hidden rounded-xl border border-stone-200 bg-white xl:col-span-2">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-100 px-4 py-3">
-                    <div className="flex rounded-lg bg-stone-100 p-1">
-                      {(["points", "heat"] as const).map((mode) => (
-                        <Button
-                          key={mode}
-                          aria-pressed={mapMode === mode}
-                          onClick={() => setMapMode(mode)}
-                          className={cn(
-                            "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium",
-                            mapMode === mode
-                              ? "bg-white text-stone-900 shadow-sm"
-                              : "text-stone-500",
-                          )}
-                        >
-                          {mode === "points" ? (
-                            <MapPin size={13} />
-                          ) : (
-                            <Layers size={13} />
-                          )}
-                          {mode === "points" ? "Project points" : "Heat map"}
-                        </Button>
-                      ))}
-                    </div>
-                    <Button
-                      onClick={() => focusMap()}
-                      className="flex items-center gap-1.5 rounded px-2 py-1 text-xs text-stone-500 hover:bg-stone-50"
-                    >
-                      <Target size={13} />
-                      Focus selection
-                    </Button>
-                    <Button
-                      onClick={() => focusMap(true)}
-                      className="rounded px-2 py-1 text-xs text-stone-500 hover:bg-stone-50"
-                    >
-                      Show all locations
-                    </Button>
-                  </div>
-                  <div className="h-96 sm:h-[30rem]">
-                    <ProjectMap
-                      projects={filtered}
-                      selected={selected}
-                      selectedProjectId={projectId}
-                      fitAll={fitAll}
-                      mode={mapMode}
-                      fitRequest={fitRequest}
-                      onProjectSelect={setProjectId}
-                    />
-                  </div>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-stone-100 px-4 py-3 text-xs text-stone-500">
-                    <span className="flex items-center gap-1.5">
-                      <i className="size-2 rounded-full bg-emerald-700" />
-                      Dominion
+              <div className="mt-7 border-t border-stone-100 pt-5">
+                <p className="mb-2 text-xs font-semibold text-stone-600">
+                  Start with a case
+                </p>
+                <Button
+                  onClick={openCase}
+                  aria-label="Inspect Jasper–Okatie and Goshen–Georgia Pacific case"
+                  className="flex w-full items-start justify-between gap-2 text-left text-sm font-medium text-emerald-800"
+                >
+                  <span>
+                    Jasper–Okatie
+                    <br />
+                    <span className="text-xs font-normal text-stone-500">
+                      with Goshen–McIntosh
                     </span>
-                    <span className="flex items-center gap-1.5">
-                      <i className="size-2 rounded-sm bg-stone-600" />
-                      Georgia Power
-                    </span>
-                    <span className="ml-auto">
-                      Dashed line = measured separation, not a route
-                    </span>
-                  </div>
-                </section>
-                <PairList
-                  pairs={shownPairs}
-                  selected={selected}
-                  onSelect={pickPair}
-                  unit={unit}
-                  threshold={threshold}
-                  allCount={pairs.length}
-                  reset={reset}
-                  showAll={showAll}
-                  onShowAll={setShowAll}
-                />
+                  </span>
+                  <ArrowRight size={16} className="mt-1 shrink-0" />
+                </Button>
+                <p className="mt-3 text-xs leading-relaxed text-stone-400">
+                  The reviewed Goshen work section ends at Georgia Pacific.
+                  Inspect the scope notes.
+                </p>
               </div>
-            </div>
+            </>
+          }
+          comparisons={
+            <PairList
+              pairs={shownPairs}
+              selected={selected}
+              onSelect={pickPair}
+              unit={unit}
+              threshold={threshold}
+              allCount={pairs.length}
+              reset={reset}
+              showAll={showAll}
+              onShowAll={setShowAll}
+            />
+          }
+          evidence={
             <EvidencePanel
               comparison={selected}
               project={selectedProject}
-              onFocus={() => focusMap()}
+              unit={unit}
             />
-          </main>
-        </div>
+          }
+        >
+          <ProjectMap
+            projects={filtered}
+            selected={selected}
+            selectedProjectId={projectId}
+            fitAll={fitAll}
+            mode={mapMode}
+            fitRequest={fitRequest}
+            onProjectSelect={(id) => {
+              setProjectId(id);
+              setShowEvidence(true);
+              setExplorePanel("comparisons");
+            }}
+          />
+        </ExploreWorkspace>
       )}
 
       {page === "scenarios" && (
@@ -921,6 +841,8 @@ export default function App() {
                     onProjectSelect={(id) => {
                       reset();
                       setProjectId(id);
+                      setShowEvidence(true);
+                      setExplorePanel("comparisons");
                       focusMap();
                       setPage("explore");
                     }}
@@ -945,7 +867,8 @@ export default function App() {
                       >
                         <div>
                           <p className="font-medium">
-                            {pair.a.shortName} + {pair.b.shortName}
+                            {displayProjectName(pair.a)} +{" "}
+                            {displayProjectName(pair.b)}
                           </p>
                           <p className="mt-1 text-xs tabular-nums text-stone-500">
                             {formatDate(pair.a.originalDate)} →{" "}

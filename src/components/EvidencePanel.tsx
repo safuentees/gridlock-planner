@@ -5,9 +5,8 @@ import {
   Info,
   BookOpen,
 } from "lucide-react";
-import { Button } from "@base-ui/react/button";
 import type { Comparison, Project } from "../types";
-import { centerPoint } from "../lib/comparisons";
+import { centerPoint, milesToUnit } from "../lib/comparisons";
 
 export const formatDate = (date: string | null) =>
   date
@@ -182,11 +181,11 @@ function ProjectRecord({ project }: { project: Project }) {
 export function EvidencePanel({
   comparison,
   project,
-  onFocus,
+  unit = "mi",
 }: {
   comparison: Comparison | null;
   project: Project | null;
-  onFocus: () => void;
+  unit?: "mi" | "km";
 }) {
   if (!comparison && !project)
     return (
@@ -219,16 +218,19 @@ export function EvidencePanel({
               : "Inside this planning record"}
           </h2>
         </div>
-        <Button
-          onClick={onFocus}
-          className="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs font-medium hover:bg-stone-100"
-        >
-          <MapPin size={14} />
-          Focus on map
-        </Button>
       </div>
       {comparison && (
         <div className="mb-4 flex flex-wrap gap-x-7 gap-y-3 rounded-lg border border-stone-200 bg-white p-4 text-sm">
+          <div>
+            <span className="block text-xs text-stone-500">
+              Point separation
+            </span>
+            <strong className="tabular-nums">
+              {comparison.distanceMiles === null
+                ? "Unknown"
+                : `${milesToUnit(comparison.distanceMiles, unit).toFixed(2)} ${unit}`}
+            </strong>
+          </div>
           <div>
             <span className="block text-xs text-stone-500">
               Original milestone gap
@@ -253,9 +255,7 @@ export function EvidencePanel({
           </div>
         </div>
       )}
-      <div
-        className={`grid gap-4 ${records.length === 2 ? "xl:grid-cols-2" : ""}`}
-      >
+      <div className="grid gap-4">
         {records.map((p) => (
           <ProjectRecord key={p.id} project={p} />
         ))}

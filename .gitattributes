@@ -1,0 +1,3 @@
+# Preserve supplied document bytes and avoid treating their internal streams as text.
+*.pdf binary
+*.xlsx binary

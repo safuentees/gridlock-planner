@@ -1,0 +1,341 @@
+{
+  "schema_version": 1,
+  "review_date": "2026-09-26",
+  "sources": {
+    "desc_supplied": {
+      "file": "public/sources/Dominion_2024-2028_Project_Descriptions.pdf",
+      "url": "/sources/Dominion_2024-2028_Project_Descriptions.pdf",
+      "sha256": "890876d0faefd40576a0b5e598a804b54b4d8d2d56dd96fb7e40d5a406db0f46",
+      "pdf_pages": 44,
+      "plan_horizon": "2024–2028 budget",
+      "snapshot_count": 1,
+      "publication_date": null,
+      "pdf_created": "2024-03-05",
+      "date_note": "PDF creation metadata is not a verified publication or information-cutoff date."
+    },
+    "gpc_supplied": {
+      "file": "public/sources/Georgia_Power_2025_IRP_Volume_3_PUBLIC_DISCLOSURE.pdf",
+      "url": "/sources/Georgia_Power_2025_IRP_Volume_3_PUBLIC_DISCLOSURE.pdf",
+      "sha256": "0dae2fc3a38462f0930cc2eb0acedca35e329cd0924e4749c81422bdc8602a12",
+      "pdf_pages": 668,
+      "plan_horizon": "2025–2034 transmission plan; 2024–2028 distribution forecast",
+      "snapshot_count": 1,
+      "snapshot_as_of": "2024-12",
+      "snapshot_precision": "month",
+      "snapshot_evidence_pdf_page": 4,
+      "pdf_created": "2025-01-18",
+      "pdf_modified": "2025-01-28",
+      "date_note": "Foreword gives December 2024 snapshot. Metadata dates describe the file, not extra historical observations."
+    }
+  },
+  "headline": "More planning inventory is extractable, but these supplied snapshots do not support a validated probability forecast of future construction co-occurrence.",
+  "coverage": {
+    "desc": {
+      "pdf_pages": 44,
+      "source_project_records": 44,
+      "unique_full_project_ids": 44,
+      "status_counts": {
+        "In Progress": 27,
+        "Planned": 17
+      },
+      "planned_milestones": 45,
+      "multi_phase_project_count": 1,
+      "multi_phase_evidence": {
+        "project_id": "6859",
+        "pdf_page": 34,
+        "milestones": [
+          "2025-10-01",
+          "2026-10-01"
+        ]
+      },
+      "date_span": [
+        "2023-12-31",
+        "2029-12-31"
+      ],
+      "confirmed_actual_start_end_pairs": 0,
+      "snapshot_count": 1,
+      "selection_limit": "Only projects above the stated $2M budget threshold; not all construction jobs.",
+      "project_records_with_any_planned_milestone_before_review_date": 29
+    },
+    "georgia_its_active": {
+      "pdf_pages_in_report": 668,
+      "summary_pdf_pages": [
+        177,
+        190
+      ],
+      "detail_pdf_pages": [
+        214,
+        425
+      ],
+      "unique_teams_ids": 208,
+      "summary_appearances": 208,
+      "detail_appearances": 208,
+      "duplicate_display_appearances_removed": 208,
+      "sponsor_counts": {
+        "GPC": 122,
+        "SAV": 16,
+        "MEAG": 14,
+        "GTC": 54,
+        "DU": 2
+      },
+      "gpc_plus_sav_coded_count": 138,
+      "other_its_sponsor_count": 70,
+      "date_span": [
+        "2025-04-25",
+        "2034-12-31"
+      ],
+      "need_year_counts": {
+        "2025": 26,
+        "2026": 42,
+        "2027": 33,
+        "2028": 20,
+        "2029": 26,
+        "2030": 36,
+        "2031": 5,
+        "2032": 2,
+        "2033": 15,
+        "2034": 3
+      },
+      "confirmed_actual_start_end_pairs": 0,
+      "snapshot_count": 1,
+      "planned_need_dates_before_review_date": 60,
+      "past_date_caution": "Dates in the past relative to the review date remain planned milestones from one snapshot, not actual historical events."
+    },
+    "georgia_its_removed": {
+      "completed_status_count": 13,
+      "completed_pdf_page": 192,
+      "cancelled_or_removed_count": 10,
+      "cancelled_pdf_page": 191,
+      "unique_removed_ids": 23,
+      "exact_actual_completion_dates": 0,
+      "active_removed_id_conflicts": [
+        "20482"
+      ],
+      "unique_teams_ids_across_active_and_removed_lists": 230,
+      "date_field": "Last Year’s Need Date",
+      "independence_note": "These are a one-snapshot status list, not 13 observed completion times or a complete prior-year cohort. One removed ID12016 is linked by a current project note as a predecessor."
+    },
+    "gpc_distribution": {
+      "row_count": 77,
+      "pdf_pages": [
+        558,
+        563
+      ],
+      "rows_by_pdf_page": {
+        "558": 13,
+        "559": 14,
+        "560": 14,
+        "561": 14,
+        "562": 13,
+        "563": 9
+      },
+      "stable_project_ids": 0,
+      "exact_actual_completion_dates": 0,
+      "date_span": [
+        "2024-08-01",
+        "2028-12-31"
+      ],
+      "identity_note": "Keep separate; names/sites may relate to transmission projects or distinct work at the same location."
+    },
+    "canonical_transmission_inventory_records": 252,
+    "canonical_transmission_inventory_note": "44 DESC records plus 208 active Georgia ITS IDs. This count does not mean 252 independently sampled jobs or actual outcome observations.",
+    "extracted_catalog_coordinate_count": 0,
+    "mapped_initial_workbook_examples": 10,
+    "geography_note": "The additional catalog has names/zones/descriptions but no validated coordinates extracted here. Do not invent locations from names or map unmapped records to zero.",
+    "independent_longitudinal_training_series": 0,
+    "complete_two_utility_actual_construction_interval_pairs": 0
+  },
+  "date_semantics": [
+    {
+      "report": "DESC",
+      "field": "Planned In-Service Date",
+      "meaning": "planned readiness/operation milestone, sometimes phase-specific",
+      "actual": false,
+      "evidence_pdf_pages": [
+        1,
+        34
+      ]
+    },
+    {
+      "report": "Georgia ITS",
+      "field": "Need Date",
+      "meaning": "expected required in-service date",
+      "actual": false,
+      "evidence_pdf_page": 213
+    },
+    {
+      "report": "Georgia ITS",
+      "field": "Start Date",
+      "meaning": "planned implementation lead time needed to meet expected in-service date; not verified actual field construction",
+      "actual": false,
+      "evidence_pdf_page": 213
+    },
+    {
+      "report": "Georgia ITS completed list",
+      "field": "Last Year’s Need Date",
+      "meaning": "previous planned date associated with removed/completed-status record",
+      "actual": false,
+      "evidence_pdf_page": 192
+    }
+  ],
+  "quality_findings": {
+    "active_removed_id_conflicts": [
+      {
+        "teams_id": "20482",
+        "active_summary_pdf_page": 184,
+        "active_detail_pdf_page": 332,
+        "active_need_date": "2028-06-01",
+        "removed_table_pdf_page": 191,
+        "removed_last_year_need_date": "2031-06-01",
+        "resolution": "Unresolved source conflict; preserve both statements."
+      }
+    ],
+    "summary_detail_date_conflicts": [
+      {
+        "teams_id": "19523",
+        "name": "SAV: CC - HYUNDAI MOTORS SAVANNAH AKA. PROJECT EA",
+        "summary_pdf_page": 177,
+        "summary_need_date": "2025-01-01",
+        "detail_pdf_page": 231,
+        "detail_need_date": "2025-04-25"
+      },
+      {
+        "teams_id": "20684",
+        "name": "CAMDEN INDUSTRIAL PARK (GPC)",
+        "summary_pdf_page": 178,
+        "summary_need_date": "2025-06-01",
+        "detail_pdf_page": 248,
+        "detail_need_date": "2025-06-30"
+      },
+      {
+        "teams_id": "17900",
+        "name": "UNION CITY - YATES 230 KV WHITE LINE REBUILD",
+        "summary_pdf_page": 180,
+        "summary_need_date": "2026-04-01",
+        "detail_pdf_page": 279,
+        "detail_need_date": "2026-06-01"
+      }
+    ],
+    "planned_start_after_need": [
+      {
+        "teams_id": "20248",
+        "pdf_page": 366,
+        "need_date": "2029-12-31",
+        "planned_start": "2031-06-01"
+      }
+    ],
+    "description_extraction_missing_count": 0,
+    "retiming_notes_present": "Current pages include changes against previous plans, not independently frozen earlier snapshots. Do not treat these retrospective comments as information known at an earlier prediction origin.",
+    "known_previous_id_links": [
+      {
+        "current_teams_id": "18679",
+        "previous_teams_ids": [
+          "18851"
+        ],
+        "pdf_page": 260
+      },
+      {
+        "current_teams_id": "18573",
+        "previous_teams_ids": [
+          "12016"
+        ],
+        "pdf_page": 316
+      }
+    ],
+    "repeated_appendix_example": {
+      "teams_id": "20466",
+      "meaning": "SMART VALVE INSTALLATION",
+      "project_item_ids": [
+        "2046601",
+        "2046604",
+        "2046605",
+        "2046606",
+        "2046607"
+      ],
+      "note": "Budget/task/item pages revisit one active project. They are not independent jobs or repeated actual outcomes."
+    },
+    "redacted_problem_reports": {
+      "explanation_pdf_page": 652,
+      "redaction_pages": [
+        654,
+        656
+      ],
+      "note": "Do not infer extra training observations from restricted case-model versions or reconstruct redactions."
+    }
+  },
+  "prediction_assessment": {
+    "ideal_target": "At prediction cutoff t, estimate for each fixed geographic cell and future calendar quarter whether at least two distinct projects from different utilities will have actual field-construction intervals overlapping inside the declared distance radius.",
+    "needed_labels": [
+      "stable project and component identity",
+      "geometry known as of prediction cutoff",
+      "actual construction start/end dates or independently verified activity observations",
+      "dated frozen plan snapshots and their publication cutoffs",
+      "representative coverage including projects that did not overlap, delays, cancellations and new projects"
+    ],
+    "available_labels": "13 Georgia completed-status flags, zero exact actual completion times and zero validated cross-utility construction-overlap intervals; one supplied plan snapshot per reporting system.",
+    "credible_forecast_feasible": false,
+    "why": [
+      "A past planned need date is not an observed construction time.",
+      "Different planned years inside one plan are forecast horizons, not independently observed historical years.",
+      "One-snapshot completed status lists lack a full prior cohort and exact event dates.",
+      "Random splitting summary/detail rows or project phases would leak identity.",
+      "Using need-date years as a time split would leak the same late planning snapshot into alleged earlier training.",
+      "Selection differs by report: DESC has a $2M threshold; Georgia ITS covers multiple sponsors; distribution rows have no stable IDs.",
+      "Most additional records lack validated geographic coordinates."
+    ],
+    "possible_future_evaluation": "With genuine archived as-of snapshots and later outcomes, use rolling prediction cutoffs; train only on information available before each cutoff, group related project IDs/phases across splits, reserve later quarters as untouched evaluation, and compare to persistence/seasonal count baselines. Score count errors and rare-event calibration only when actual labels and coverage support them.",
+    "honest_alternative_target": "A deterministic count of currently supplied planning milestones that fall within a selected calendar window after explicit user-defined schedule shifts; this is a scenario, not a forecast.",
+    "model_training_performed": false,
+    "probabilities_or_accuracy_claims_permitted": false
+  },
+  "recommended_ui_panel": {
+    "title": "What the full reports support",
+    "metrics": [
+      "44 DESC project records",
+      "208 distinct active Georgia ITS IDs: 138 GPC/SAV-coded, 70 other sponsor codes",
+      "77 additional distribution rows without stable project IDs",
+      "13 completed-status records, 0 exact completion dates",
+      "1 supplied plan snapshot per report"
+    ],
+    "conclusion": "Scenario exploration is available. Validated future construction probabilities are not supported by these inputs."
+  },
+  "qa": {
+    "count_assertions_passed": true,
+    "summary_detail_id_join": "208 of 208 matched; zero unmatched",
+    "source_pages_visually_checked": [
+      {
+        "report": "DESC",
+        "page": 34
+      },
+      {
+        "report": "Georgia",
+        "page": 192
+      },
+      {
+        "report": "Georgia",
+        "page": 366
+      },
+      {
+        "report": "Georgia",
+        "page": 558
+      }
+    ],
+    "additional_original_sample_visual_checks": "Five Georgia sample description pages previously inspected in full; all remain referenced in prior review.",
+    "costs_excluded": true,
+    "original_sources_modified": false,
+    "native_pdf_date_fields_checked": 416,
+    "rebuild_command": "python scripts/extract_reports.py",
+    "check_command": "python scripts/extract_reports.py --check",
+    "manual_visual_review_date": "2026-09-26"
+  },
+  "scenario_implementation": {
+    "kind": "deterministic",
+    "schedule_shift_unit": "whole calendar years",
+    "shift_source": "explicit user assumptions by company",
+    "date_basis": "original supplied planned milestones",
+    "original_dates_preserved": true,
+    "probabilities": false,
+    "construction_overlap_inferred": false,
+    "geography": "Only the separately mapped ten workbook examples; full-report records remain unlocated."
+  }
+}

@@ -1,51 +1,45 @@
 # GridLock demo handoff
 
-Plan recorded **Saturday, September 26, 2026 at 4:07 a.m. EDT** (`America/New_York`, UTC−04:00). Submission and hacking end **Sunday, September 27 at 11:00 a.m. EDT**: approximately **30 hours 53 minutes remaining** at this checkpoint. These are remaining hours, not a new 36-hour hacking window. [Official schedule](https://shellhacks-2026.devpost.com/details/dates); evidence and remaining unknowns are in [event-rules.json](event-rules.json).
+Implementation handoff refreshed **Saturday, September 26, 2026 at 7:25 p.m. EDT**. The deadline remains **Sunday, September 27 at 11:00 a.m. EDT**: about **15 hours 35 minutes** at this checkpoint. This supersedes the earlier 4:07 a.m. work plan. The official schedule was rechecked; its hash and retrieval time are in [event-rules.json](event-rules.json). Recalculate time when using this handoff.
 
 ## Four responsibilities
 
-Assign one owner to each lane; review another owner's work before the demo.
+| Owner | Responsibility | Next concrete handoff |
+| --- | --- | --- |
+| 1 — Spatial and performance | Own radius indexing, exact-distance ranking, bounded counts, cancellation and benchmarks | Explain complete versus partial results; independently run the fixture and seeded benchmark. Do not add an unbounded dense export. |
+| 2 — Ingestion, provenance and ML | Own CSV/XLSX mapping, corrections, source hashes and extraction evaluation | Independently review extracted fields against original pages. Separate missing outcomes from negative labels; verify a teammate's upload and correction reset. |
+| 3 — Main workspace | Own timeline, map/heat, filters, ranked list and source inspection | Test the presentation laptop, keyboard flow and narrow screen. Keep Planned, What-if and unavailable Forecast visibly distinct. |
+| 4 — Integration and demonstration | Own fresh-install checks, team review, presentation, attribution and submission preparation | Prepare the Devpost draft, required identities/links, backup screenshots and timed rehearsal; verify submitted state when the team authorizes submission. |
 
-| Owner | Responsibility | Concrete handoff |
-|---|---|---|
-| 1 — Product and map | Filters, threshold and units, map/heat view, responsive and keyboard flows | Demonstrate all ten original records and 25 comparisons; keep representative points and density labels understandable. |
-| 2 — Data and evidence | Workbook preservation, report extraction, source links, Jasper–Okatie / Goshen–Georgia Pacific scope review | Reproduce original values and six nearby pairs at 25 miles; explain scope corrections and missing construction intervals without silently changing originals. |
-| 3 — Domain and verification | Distance/date logic, scenarios, automated tests, fresh-install and browser checks | Verify boundary and missing-data behavior, scenario purity, production build and report reproducibility; log actual failures. |
-| 4 — Demo and submission | Three-minute story, attribution, team details, Devpost draft and submission verification | Inspect required form fields early, collect artifacts, rehearse with another presenter, and own the submission buffer. |
-
-Keep API integrations optional. The core workflow needs no API keys or sponsor account: comparisons, evidence and scenarios run locally. The OpenStreetMap basemap needs internet; test the fallback with tiles unavailable and retain local source PDFs. Add a sponsor API only if it improves the story and is already reliable.
+The implemented vertical slice is local and browser-first: default source sample → map/timeline → nearby list → original evidence; upload → sheet/header → mapping → validation → acceptance; separate reversible corrections; separate what-if shifts; bounded CSV export. Offline Gemini extraction is evaluated and review-gated. No construction forecast was trained. The core demo requires no API credential or live model call. Basemap tiles need internet; source PDFs and calculations are local. Imports, corrections and extraction-review acknowledgments are session-only; export corrections before refreshing.
 
 ## Remaining-time plan
 
-All times below are EDT. Move work earlier when possible; preserve rest and the final buffer.
+All times below are EDT. Feature implementation is complete; prioritize verification and rest.
 
 | Window | Work |
-|---|---|
-| Sat 4:10–4:30 a.m. | Save the working state, assign owners, record known issues and opening instructions. No new feature scope. |
-| Sat 4:30–10:30 a.m. | Rest. Avoid requiring the whole team to stay awake for a running development server. |
-| Sat 10:30 a.m.–3:00 p.m. | Complete map, evidence and scenario interactions; inspect the authenticated submission form and resolve required fields early. Take a lunch break. |
-| Sat 3:00–6:00 p.m. | Run automated and browser checks, verify source links and the detailed case, and test on the presentation laptop. Fix material defects. |
-| Sat 6:00–7:00 p.m. | Dinner and a break. |
-| Sat 7:00–10:00 p.m. | Rehearse, finish attribution and submission text, capture backup screenshots/video if useful or required, and freeze feature scope. |
-| Sat 10:00 p.m.–Sun 6:00 a.m. | Rest; keep the tested version ready. |
-| Sun 6:00–8:30 a.m. | Final regression and a timed rehearsal. Confirm every teammate, category, repository link and required form field. Fix only submission/demo blockers. |
-| Sun 8:30–9:30 a.m. | Complete submission and verify its submitted state and links. Publishing a repository or site remains an explicit team action. |
-| Sun 9:30–11:00 a.m. | Reserved submission/recovery buffer. Finish all hacking before 11:00 a.m.; do not depend on the last minute. |
-| Sun after 11:00 a.m. | Break, check the announced judging location, and arrive by 1:00 p.m. with the presentation laptop ready. |
+| --- | --- |
+| Sat 7:25–8:30 p.m. | Peer-review the working slice and run it on the presentation laptop. Fix demonstrated blockers only; verify the authenticated submission requirements. |
+| Sat 8:30–9:15 p.m. | Dinner/break and a timed three-minute rehearsal with a second presenter. |
+| Sat 9:15–10:00 p.m. | Finish attribution, submission draft and backup artifacts. Freeze feature scope and keep the tested local revision. |
+| Sat 10:00 p.m.–Sun 6:00 a.m. | Rest. No overnight model/data collection dependency. |
+| Sun 6:00–8:30 a.m. | Final regression, source/evidence check and rehearsal. Confirm every teammate, repository link and required form field. |
+| Sun 8:30–9:30 a.m. | Team completes and verifies submission. Publishing/pushing/submitting remains an explicit team action; none was done by this implementation task. |
+| Sun 9:30–11:00 a.m. | Submission/recovery buffer. Finish all hacking before 11:00 a.m. |
+| Sun after 11:00 a.m. | Break, check the announced judging location and arrive by 1:00 p.m. |
 
 ## Verification and three-minute demonstration
 
-Run `npm test`, `npm run build`, and `python3 scripts/extract_reports.py --check` (Python dependencies are in `scripts/requirements.txt`). Check both display units, zero/exact distance boundaries, no companies selected, inclusive date bounds, an empty result, original values after scenario changes, CSV output, source links, keyboard operation, a narrow screen and unavailable basemap tiles. A successful build alone does not establish those UI behaviors.
+Run the [README checks](../README.md#verify-and-reproduce) and see [PERFORMANCE.md](PERFORMANCE.md), [EXTRACTION_EVALUATION.md](EXTRACTION_EVALUATION.md) and [IMPLEMENTATION_VERIFICATION.md](IMPLEMENTATION_VERIFICATION.md) for measured evidence and limitations.
 
-Use this timed story:
+1. **0:00–0:20 — Problem.** Nearby utility plans are hard to investigate across reports. Open the supplied historical sample and identify source dates and approximate geometry.
+2. **0:20–1:00 — Map and evidence.** Show six nearby pairs at 25 miles; inspect Jasper–Okatie/Goshen–McIntosh at 7.5481 miles. Explain the reviewed Goshen–Georgia Pacific scope and why proximity does not prove concurrent work.
+3. **1:00–1:30 — Time exploration.** Switch What-if in the same workspace, set explicit year shifts and adjust the range. Show original evidence below the separate assumptions. Return to Planned.
+4. **1:30–2:00 — New data.** Import the small CSV template, verify mapped columns and year/month precision, accept it, then restore the demo. Keep the template downloaded before judging.
+5. **2:00–2:40 — Useful ML.** Open one reviewed extraction page, source quote and missing fields. Explain Gemini's narrow 80/80-field result on ten selected pages, Codex-checked gold and the need for independent review. It extracts planning fields; it does not predict construction.
+6. **2:40–3:00 — Engineering and next step.** Explain bounded indexed search, source hashes and the visible partial-result labels. The next product improvement is resumable dense queries; credible forecasting separately needs linked, cutoff-safe activity outcomes. Attribute external libraries and AI assistance.
 
-1. **0:00–0:25 — Problem.** Public planning records make nearby work hard to investigate. Show ten supplied records, all 25 cross-company pairs and the original historical date basis.
-2. **0:25–1:05 — Explore.** Switch to the heat map, change the adjustable threshold, and show the ranked comparisons. Explain equal-weight planning density and approximate center-point distances.
-3. **1:05–1:50 — Inspect evidence.** Open Jasper–Okatie with the workbook's Goshen–McIntosh record. Explain that the reviewed rebuild concerns the Goshen–Georgia Pacific section, while the workbook geometry remains preserved. Show original dates, sources and uncertainty; proximity does not prove concurrent construction or savings.
-4. **1:50–2:35 — Scenarios.** Change a company schedule assumption and target year. Show original versus shifted counts. Both shifted milestones must fall in the target calendar year; the later milestone must be within the chosen number of calendar months after the earlier one, with month-end clamping. These are explicit assumptions, with no future probabilities.
-5. **2:35–3:00 — Evidence and contribution.** Explain the full-report assessment, why a validated construction forecast is unsupported, and the next data needed. Briefly identify team contributions and external code use. Keep more detail ready for questions.
-
-Prepare a second presenter and local backup artifacts. The supplied guide specifies a three-minute in-person live demo; a possible second round is three to five minutes.
+The supplied guide specifies a three-minute live demo, with a possible three-to-five-minute second round. Do not make a live API call part of the critical path. Keep the performance table and deeper source review ready for questions.
 
 ## Confirmed submission checklist
 

@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import type { Comparison, Project } from "../types";
-import { centerPoint } from "../lib/comparisons";
+import type { Comparison, Coordinate, Project } from "../types";
+import { mapPresentation } from "../lib/mapPresentation";
 
 interface Props {
   projects: Project[];
+  centers: ReadonlyMap<string, Coordinate | null>;
   selected: Comparison | null;
   selectedProjectId?: string | null;
   mode: "points" | "heat";
@@ -16,6 +17,7 @@ interface Props {
 
 export function ProjectMap({
   projects,
+  centers,
   selected,
   selectedProjectId,
   mode,
@@ -32,6 +34,17 @@ export function ProjectMap({
   const [tileError, setTileError] = useState(false);
   const callback = useRef(onProjectSelect);
   callback.current = onProjectSelect;
+  const presentation = useMemo(
+    () =>
+      mapPresentation(
+        projects,
+        centers,
+        [selected?.a.id, selected?.b.id, selectedProjectId].filter(
+          (id): id is string => !!id,
+        ),
+      ),
+    [projects, centers, selected, selectedProjectId],
+  );
 
   useEffect(() => {
     if (!element.current) return;
@@ -42,7 +55,7 @@ export function ProjectMap({
       markerZoomAnimation: false,
       inertia: false,
       scrollWheelZoom: false,
-      minZoom: 5,
+      minZoom: 2,
       maxZoom: 17,
     }).setView([32.55, -81.9], 7);
     map.current = view;
@@ -97,31 +110,22 @@ export function ProjectMap({
       heat.current.remove();
       heat.current = null;
     }
-    const located = projects.flatMap((p) => {
-      const center = centerPoint(p);
-      return center ? [{ p, center }] : [];
-    });
     if (mode === "heat" && heatReady) {
-      heat.current = L.heatLayer(
-        located.map(
-          ({ center }) => [center[0], center[1], 1] as [number, number, number],
-        ),
-        {
-          radius: 40,
-          blur: 25,
-          maxZoom: 9,
-          minOpacity: 0.28,
-          max: 3,
-          gradient: {
-            0.1: "#d1fae5",
-            0.4: "#6ee7b7",
-            0.7: "#10b981",
-            1: "#065f46",
-          },
+      heat.current = L.heatLayer(presentation.heat, {
+        radius: 40,
+        blur: 25,
+        maxZoom: 9,
+        minOpacity: 0.28,
+        max: Math.max(3, ...presentation.heat.map((p) => p[2])),
+        gradient: {
+          0.1: "#d1fae5",
+          0.4: "#6ee7b7",
+          0.7: "#10b981",
+          1: "#065f46",
         },
-      ).addTo(view);
+      }).addTo(view);
     }
-    for (const { p, center } of located) {
+    for (const { project: p, center } of presentation.markers) {
       const active =
         selected?.a.id === p.id ||
         selected?.b.id === p.id ||
@@ -158,22 +162,21 @@ export function ProjectMap({
         interactive: false,
       }).addTo(group);
     }
-  }, [projects, selected, selectedProjectId, mode, heatReady]);
+  }, [projects, presentation, selected, selectedProjectId, mode, heatReady]);
 
   useEffect(() => {
     if (!map.current || fitRequest === 0) return;
-    const single = projects.find((p) => p.id === selectedProjectId);
-    const center = single ? centerPoint(single) : null;
+    const center = selectedProjectId ? centers.get(selectedProjectId) : null;
     const points = fitAll
       ? projects
-          .map(centerPoint)
+          .map((p) => centers.get(p.id) ?? null)
           .filter((x): x is [number, number] => x !== null)
       : center
         ? [center]
         : selected?.aCenter && selected?.bCenter
           ? [selected.aCenter, selected.bCenter]
           : projects
-              .map(centerPoint)
+              .map((p) => centers.get(p.id) ?? null)
               .filter((x): x is [number, number] => x !== null);
     if (points.length)
       map.current.fitBounds(L.latLngBounds(points), {
@@ -190,6 +193,13 @@ export function ProjectMap({
         className="h-full min-h-96 w-full"
         aria-label="Interactive map of approximate project locations"
       />
+      {presentation.locatedCount > presentation.markers.length && (
+        <p className="absolute left-3 top-3 z-20 max-w-xs rounded-md border border-stone-200 bg-white p-2 text-xs text-stone-600">
+          Showing {presentation.markers.length.toLocaleString()} sampled markers
+          of {presentation.locatedCount.toLocaleString()} located records. Heat
+          includes every located record. Selected records stay visible.
+        </p>
+      )}
       {tileError && (
         <p
           role="status"
@@ -224,7 +234,10 @@ export function ProjectMap({
             <span>Low → high</span>
           </div>
           <p className="text-stone-500">
-            One equal-weight point per record; relative to this zoom.
+            Each record has equal weight; relative to this zoom.
+            {presentation.cellDegrees > 0
+              ? ` Aggregated in ${presentation.cellDegrees}° cells.`
+              : ""}
           </p>
         </div>
       )}

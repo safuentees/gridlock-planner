@@ -88,6 +88,8 @@ Preserve map/heat modes, adjustable distance, company/date filters, ranked compa
 
 Imports follow upload → sheet/header selection → mapping → validation/preview → explicit acceptance. Limits are 10 MiB and 25,000 selected data rows, with additional workbook expansion/cell bounds in `docs/IMPORTS.md`. Use the template, aliases and manual mapping; do not promise arbitrary spreadsheet understanding. Require explicit coordinate order, date format, precision and meaning. Reject formulas and invalid/duplicate records without silently accepting a subset. Worker parsing and request gates must survive cancellation and rapid file changes. Overrides need reasons and reversible reset; downloadable correction JSON is separate from the immutable source file.
 
+Utility/scenario controls show at most 100 searchable names at once. Keep membership tests and per-company date-limit preparation linear in record count; avoid scanning all records once per utility.
+
 Use accessible primitives and semantic controls, visible keyboard focus, clear labels, restrained styling and responsive layouts. Preserve OpenStreetMap attribution and third-party notices. Keep data uncertainty beside the affected claims without filling the product flow with implementation details. Do not add animation, accounts or infrastructure as incidental scope.
 
 ## Git and four-person collaboration
@@ -112,6 +114,7 @@ Do not push, publish, submit, merge a remote PR, rewrite history, delete branche
 For application changes, run:
 
 ```sh
+npm run notices:check
 npm run format:check
 npm test
 npm run build

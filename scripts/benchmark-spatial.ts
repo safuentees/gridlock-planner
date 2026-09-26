@@ -1,4 +1,6 @@
-import { writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { cpus, platform, release, totalmem } from "node:os";
 import type { Project } from "../src/types";
 import { compareProjects, isNearby } from "../src/lib/comparisons";
@@ -225,7 +227,6 @@ const output = {
     "Not measured by this Node benchmark; integration owner records real browser render and stale-worker checks separately.",
   runs,
 };
-writeFileSync(
-  new URL("../docs/benchmarks/spatial-2026-09-26.json", import.meta.url),
-  JSON.stringify(output, null, 2) + "\n",
-);
+const destination = process.argv[2] ?? fileURLToPath(new URL("../output/benchmarks/spatial.json", import.meta.url));
+mkdirSync(dirname(destination), { recursive: true });
+writeFileSync(destination, JSON.stringify(output, null, 2) + "\n");

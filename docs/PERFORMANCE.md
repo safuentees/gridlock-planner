@@ -60,7 +60,7 @@ Run from the repository with installed pinned dependencies:
 node --expose-gc --import tsx scripts/benchmark-spatial.ts
 ```
 
-Raw results: [spatial-2026-09-26.json](benchmarks/spatial-2026-09-26.json). The script records hardware/runtime, seed, limits, query/build times, inspected/returned candidates, retained/known counts, phase/progress memory samples, slider index reuse, cancellation and oracle agreement. This is one measured run per configuration, not a statistically stable p95 claim.
+New runs write ignored `output/benchmarks/spatial.json` by default (an optional output path may be passed); they preserve this recorded baseline. Raw results: [spatial-2026-09-26.json](benchmarks/spatial-2026-09-26.json). The script records hardware/runtime, seed, limits, query/build times, inspected/returned candidates, retained/known counts, phase/progress memory samples, slider index reuse, cancellation and oracle agreement. This is one measured run per configuration, not a statistically stable p95 claim.
 
 Hardware: **Apple M5, 10 logical CPUs, 32 GiB RAM, macOS Darwin 27.0.0, Node 26.3.1**. Two equally sized companies. Seed 20260926. Sparse points span latitude −80…80 and longitude −180…180; dense points occupy a 0.01° box near 32°N, 81°W. A third adversarial distribution puts all A records at [0,0] and all B records at [30,0], so there are no nearby cross-company matches despite dense individual clusters. All points are explicitly synthetic. Default 25-mile radius and interactive limits above.
 
@@ -88,6 +88,39 @@ Stress cancellation deliberately disables candidate/neighbor caps and uses a who
 
 Focused tests cover original **25 possible / six near / 7.5480907-mile** regression, sparse/dense oracle agreement, strict threshold and metric conversion, antipodes, dateline/polar single points, midpoint distinction, missing geometry, duplicate IDs, escaped IDs, stable ties, precision/UTC/leap dates, original-data immutability, index reuse and geometry/company edits, adversarial separated clusters, work/result limits, cancellation and stale responses.
 
-The practical next improvement is a resumable traversal that can continue a dense query across work budgets while retaining globally ranked results and exact progress. Current incomplete previews intentionally make no such promise. Main-app rendering/transfer, real-browser cancellation, larger-source ingestion memory and supported runtime checks remain integration responsibilities.
+The practical next improvement is a resumable traversal that can continue a dense query across work budgets while retaining globally ranked results and exact progress. Current incomplete previews intentionally make no such promise. The integrated browser measurements below cover rendering/transfer, cancellation and ingestion on this machine; they do not establish worst-case behavior across devices.
 
 Implementation references: [KDBush](https://github.com/mourner/kdbush), [geokdbush](https://github.com/mourner/geokdbush), and [geokdbush geographic distance implementation](https://github.com/mourner/geokdbush/blob/main/index.js). The installed pinned implementation was inspected to establish the 6,371 km radius and finite-radius behavior.
+
+A final reproduction on the supported **Node 24.14.1** runtime is preserved in [spatial-node24-2026-09-26.json](benchmarks/spatial-node24-2026-09-26.json). Its 100k sparse/dense/separated build times were 183.7 / 164.6 / 124.7 ms; queries were 52.6 / 23.7 / 25.7 ms with the same respective completion conditions. This run did not use `--expose-gc` and occurred during integrated verification. It verifies reproduction and safe output-path handling, not a controlled runtime comparison. Do not attribute differences solely to Node version.
+
+## Integrated browser measurements
+
+Measured on the same Apple M5 / 32 GiB machine in Chrome 152. These are single observations, not latency percentiles or hardware-independent guarantees. The UI uses a 200 ms soft query budget (the engine benchmark used its 150 ms default), retains at most 200 nearby pairs, and limits the all-pairs inspection to at most 20 records. Neither route paginates a precomputed giant pair array.
+
+Production CSV import and complete visible-workspace observations are in [browser-import-2026-09-26.json](benchmarks/browser-import-2026-09-26.json). These dense fixtures are deterministic grid positions. Each run includes automation overhead, worker transfer, React and two animation frames; basemap completion is excluded. The first run also includes cold importer/worker loading. Headless Chrome was used for this sequence.
+
+| Records | File-to-mapping ms | Validate-to-preview ms | Accept-to-map ms | Heat update ms | Markers / rows |
+| --- | ---: | ---: | ---: | ---: | --- |
+| 1,000 | 834 | 177 | 437 | 652 | 1,000 / 200 |
+| 10,000 | 120 | 330 | 404 | 163 | 1,112 / 200 |
+| 25,000 | 121 | 487 | 699 | 169 | 1,191 / 200 |
+
+The 25,000-record file passed the actual upload/mapping/validation/accept path. Its sampled main-page JS heap was about **149.5 MiB** after map rendering, including prior allocations. This is not an isolated peak and excludes separate worker heaps. Source and effective datasets are intentionally separate copies; their memory cost is real. The importer rejects files above 10 MiB or its documented row/cell/archive limits rather than claiming arbitrary scale. Testing found a trailing-newline capacity bug; regression cases now accept exactly 25,000 data records and reject 25,001 while retaining original physical row positions.
+
+[Browser map measurements](benchmarks/browser-map-2026-09-26.json) mount the actual `ProjectMap` component in a separate headed browser page, using development modules. They stress presentation beyond the 25,000-row import limit; they do **not** establish a complete 100,000-row upload workflow. Geometry is prepared before the timed render. The seeded sparse/dense generator matches the geographic distributions of the engine benchmark.
+
+| Distribution | Records | Map through paint ms | Heat through paint ms | Rendered markers |
+| --- | ---: | ---: | ---: | ---: |
+| Sparse | 1,000 | 85.7 | 68.3 | 1,000 |
+| Sparse | 10,000 | 60.1 | 114.9 | 1,112 |
+| Sparse | 100,000 | 181.1 | 148.6 | 1,191 |
+| Dense | 1,000 | 82.1 | 189.4 | 1,000 |
+| Dense | 10,000 | 89.2 | 80.8 | 1,112 |
+| Dense | 100,000 | 100.2 | 116.4 | 1,191 |
+
+At most 1,200 deterministic sampled markers are created; selected records are retained. The on-map label states the displayed/located counts. Every located record contributes equal heat weight; larger datasets aggregate into at most 5,000 geographic cells/points, with cell size disclosed. List rendering is bounded to 200 rows, so list virtualization would add complexity without removing an unbounded collection. Utility and scenario controls show up to 100 searchable utility names; membership and scenario-limit preparation avoid repeated per-company scans of all projects.
+
+A warm real browser Worker cancellation check sent cancellation **after 5,000 candidates had been processed**. The replacement empty query was ready in **12.8 ms**, with zero obsolete result messages. A separate initial-yield check took 0.4 ms. These are different cases, not worst-case cancellation guarantees; synchronous preparation/traversal and message delivery still matter.
+
+Optional reproduction (requires Playwright CLI; no browser-test framework added to the app): run `npm run dev -- --port 4174` and `npm run preview -- --port 4175` in separate terminals after a production build, then `node scripts/benchmark-browser.mjs import`, `map`, or `cancellation`. Set `PLAYWRIGHT_CLI` to a CLI executable/wrapper path if it is not on PATH. The runner uses a separate `gridlock-benchmark` browser session, writes synthetic CSVs and results under ignored `output/playwright/`, and never overwrites the recorded measurements above. The browser harnesses are committed under `scripts/benchmarks/`.

@@ -1,0 +1,96 @@
+{
+  "recordedAt": "2026-09-26T23:19:03.695Z",
+  "seed": 20260926,
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+  "hardwareConcurrency": 10,
+  "method": "Actual ProjectMap mounted in separate browser page using development modules, one measured run per case; 1200-marker sampling and <=5000 heat aggregation. Timings include effects and two animation frames, exclude source transport and tile completion. 100k is component stress, beyond25k upload cap; shared-page heap snapshots are not isolated peaks.",
+  "runs": [
+    {
+      "distribution": "sparse",
+      "records": 1000,
+      "syntheticPreparationMs": 0.6000000014901161,
+      "pointRenderThroughPaintMs": 85.70000000298023,
+      "heatUpdateThroughPaintMs": 68.29999999701977,
+      "markers": 1000,
+      "heap": {
+        "usedJSHeapSize": 27997166,
+        "totalJSHeapSize": 44678586
+      }
+    },
+    {
+      "distribution": "sparse",
+      "records": 10000,
+      "syntheticPreparationMs": 4,
+      "pointRenderThroughPaintMs": 60.100000001490116,
+      "heatUpdateThroughPaintMs": 114.89999999850988,
+      "markers": 1112,
+      "heap": {
+        "usedJSHeapSize": 36838149,
+        "totalJSHeapSize": 64041713
+      }
+    },
+    {
+      "distribution": "sparse",
+      "records": 100000,
+      "syntheticPreparationMs": 37.899999998509884,
+      "pointRenderThroughPaintMs": 181.10000000149012,
+      "heatUpdateThroughPaintMs": 148.60000000149012,
+      "markers": 1191,
+      "heap": {
+        "usedJSHeapSize": 63955325,
+        "totalJSHeapSize": 133950829
+      }
+    },
+    {
+      "distribution": "dense",
+      "records": 1000,
+      "syntheticPreparationMs": 0.5,
+      "pointRenderThroughPaintMs": 82.10000000149012,
+      "heatUpdateThroughPaintMs": 189.39999999850988,
+      "markers": 1000,
+      "heap": {
+        "usedJSHeapSize": 65891335,
+        "totalJSHeapSize": 135674283
+      }
+    },
+    {
+      "distribution": "dense",
+      "records": 10000,
+      "syntheticPreparationMs": 4.399999998509884,
+      "pointRenderThroughPaintMs": 89.19999999552965,
+      "heatUpdateThroughPaintMs": 80.80000000447035,
+      "markers": 1112,
+      "heap": {
+        "usedJSHeapSize": 80096803,
+        "totalJSHeapSize": 138167355
+      }
+    },
+    {
+      "distribution": "dense",
+      "records": 100000,
+      "syntheticPreparationMs": 34.70000000298023,
+      "pointRenderThroughPaintMs": 100.20000000298023,
+      "heatUpdateThroughPaintMs": 116.39999999850988,
+      "markers": 1191,
+      "heap": {
+        "usedJSHeapSize": 118860731,
+        "totalJSHeapSize": 175509195
+      }
+    }
+  ],
+  "cancellation": {
+    "records": 10000,
+    "cancelToReplacementReadyMs": 0.3999999985098839,
+    "obsoleteResults": 0,
+    "replacementMatches": 0
+  },
+  "midWorkCancellation": {
+    "records": 10000,
+    "candidatesAtCancel": 5000,
+    "cancelToReplacementReadyMs": 12.799999997019768,
+    "obsoleteResults": 0,
+    "replacementMatches": 0,
+    "recordedAt": "2026-09-26T23:23:08.213Z",
+    "method": "Cancel sent after a progress report with actual candidates processed; warm real browser Worker. Measures replacement empty-query completion, not a hard cancellation bound."
+  }
+}

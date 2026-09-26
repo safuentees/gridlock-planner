@@ -140,5 +140,12 @@
     "Treatment of any pre-event research/curated notes if included as authored submission material.",
     "Additional required fields shown only inside the authenticated submission form, including whether video/screenshots or a particular live URL are mandatory. Public requirements confirm GitHub but do not establish these extras."
   ],
-  "scope_limit": "Read-only verification only. No account/login, registration, external message, private-channel access or submission performed. Unknown authenticated fields do not justify blocking fresh project implementation; they need checking during submission preparation."
+  "scope_limit": "Read-only verification only. No account/login, registration, external message, private-channel access or submission performed. Unknown authenticated fields do not justify blocking fresh project implementation; they need checking during submission preparation.",
+  "latest_deadline_recheck": {
+    "retrieved_at_utc": "2026-09-26T22:32:31.676391+00:00",
+    "source": "https://shellhacks-2026.devpost.com/details/dates",
+    "sha256": "c468e7ae936c3ab7dc4dc6ab8e0c8883ca0342e66405eae426ae7d5591e7dc6f",
+    "submission_deadline": "2026-09-27T11:00:00-04:00",
+    "access": "Public HTML retrieved with curl; web reader unavailable. This recheck covers the deadline only; prior rule findings retain their original checked_at date."
+  }
 }

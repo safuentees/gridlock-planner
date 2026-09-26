@@ -10,14 +10,22 @@ import type { Comparison, Project } from "../types";
 import { centerPoint } from "../lib/comparisons";
 
 export const formatDate = (date: string | null) =>
-  date
-    ? new Date(`${date}T00:00:00Z`).toLocaleDateString("en-US", {
-        timeZone: "UTC",
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
-    : "Date not supplied";
+  date && /^\d{4}$/.test(date)
+    ? `${date} (year only)`
+    : date && /^\d{4}-\d{2}$/.test(date)
+      ? new Date(`${date}-01T00:00:00Z`).toLocaleDateString("en-US", {
+          timeZone: "UTC",
+          month: "long",
+          year: "numeric",
+        })
+      : date
+        ? new Date(`${date}T00:00:00Z`).toLocaleDateString("en-US", {
+            timeZone: "UTC",
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })
+        : "Date not supplied";
 export const sourceLink = (url: string, page: number) => `${url}#page=${page}`;
 
 function ProjectRecord({ project }: { project: Project }) {
@@ -27,7 +35,7 @@ function ProjectRecord({ project }: { project: Project }) {
     <article className="min-w-0 rounded-xl border border-stone-200 bg-white p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
         <span className="text-xs font-semibold text-stone-500">
-          {project.company} · {project.id}
+          {project.company} · {project.sourceProjectId || project.id}
         </span>
         <span className="rounded bg-stone-100 px-2 py-1 text-xs text-stone-600">
           {project.state}
@@ -40,15 +48,20 @@ function ProjectRecord({ project }: { project: Project }) {
         <div>
           <dt className="mb-1 flex items-center gap-1.5 text-xs text-stone-500">
             <CalendarDays size={13} />
-            {project.dateMeaning === "need_date"
-              ? "Original need date"
-              : "Original planned in-service date"}
+            {
+              {
+                need_date: "Source need date",
+                planned_in_service: "Source planned in-service date",
+                planned_start: "Source planned start",
+                unknown: "Source date · meaning unknown",
+              }[project.dateMeaning]
+            }
           </dt>
           <dd className="font-medium tabular-nums">
             {formatDate(project.originalDate)}
           </dd>
           <dd className="mt-0.5 text-xs text-stone-500">
-            Construction start / end: not supplied in this workbook
+            Actual field-construction interval: not established
           </dd>
         </div>
         <div>
@@ -88,21 +101,30 @@ function ProjectRecord({ project }: { project: Project }) {
           ))}
         </ul>
       </details>
-      <a
-        href={sourceLink(
-          project.originalSource.url,
-          project.originalSource.page,
-        )}
-        target="_blank"
-        rel="noreferrer"
-        className="mt-4 flex items-start gap-1.5 text-xs font-medium text-emerald-800 underline"
-      >
-        <BookOpen size={13} className="mt-0.5 shrink-0" />
-        <span>
-          {project.originalSource.title} · PDF p. {project.originalSource.page}
-        </span>
-        <ArrowUpRight size={13} className="shrink-0" />
-      </a>
+      {project.originalSource.url ? (
+        <a
+          href={sourceLink(
+            project.originalSource.url,
+            project.originalSource.page,
+          )}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-4 flex items-start gap-1.5 text-xs font-medium text-emerald-800 underline"
+        >
+          <BookOpen size={13} className="mt-0.5 shrink-0" />
+          <span>
+            {project.originalSource.title} · PDF p.{" "}
+            {project.originalSource.page}
+          </span>
+          <ArrowUpRight size={13} className="shrink-0" />
+        </a>
+      ) : (
+        <p className="mt-4 text-xs text-stone-600">
+          {project.originalSource.title}
+          {project.sourceSheet ? ` · ${project.sourceSheet}` : ""}
+          {project.sourceRow ? ` · row ${project.sourceRow}` : ""}
+        </p>
+      )}
       <p className="mt-2 text-xs text-stone-500">
         {project.originalSource.asOf}. {project.originalSource.dateNote}
       </p>

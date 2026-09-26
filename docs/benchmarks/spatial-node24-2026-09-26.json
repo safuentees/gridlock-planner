@@ -1,0 +1,573 @@
+{
+  "measuredAt": "2026-09-26T23:48:46.056Z",
+  "hardware": {
+    "cpu": "Apple M5",
+    "logicalCpus": 10,
+    "platform": "darwin",
+    "release": "27.0.0",
+    "memoryGiB": 32,
+    "node": "v24.14.1"
+  },
+  "seed": 20260926,
+  "configuration": {
+    "companies": [
+      "A",
+      "B"
+    ],
+    "from": "",
+    "to": "",
+    "includeUndated": true,
+    "thresholdMiles": 25,
+    "limit": 200,
+    "maxCandidates": 250000,
+    "maxNeighborsPerOrigin": 4096,
+    "timeBudgetMs": 150
+  },
+  "methodology": "Single measured run per distribution/size, shared Node process, no claim of statistically stable latency. Includes filtering and cooperative yields in query time; KDBush preparation separately. Oracle only 1k. Interactive completion is explicitly bounded.",
+  "browserRendering": "Not measured by this Node benchmark; integration owner records real browser render and stale-worker checks separately.",
+  "runs": [
+    {
+      "distribution": "sparse",
+      "count": 1000,
+      "buildMs": 4.802500000000009,
+      "queryMs": 9.52870900000002,
+      "complete": true,
+      "reason": "complete",
+      "possibleCount": 250000,
+      "matchedCount": 2,
+      "matchedCountIsLowerBound": false,
+      "retainedPairs": 2,
+      "processedOrigins": 500,
+      "totalOrigins": 500,
+      "candidateCount": 2,
+      "elapsedMs": 9.52870900000002,
+      "visitedPointCount": 37985,
+      "exactDistanceCount": 2,
+      "radiusPrunedGroups": 1,
+      "indexBytes": 18016,
+      "indexReused": false,
+      "memory": {
+        "before": {
+          "rssMiB": 80.125,
+          "heapUsedMiB": 7.0676727294921875
+        },
+        "afterDataset": {
+          "rssMiB": 80.703125,
+          "heapUsedMiB": 7.7654876708984375
+        },
+        "afterBuild": {
+          "rssMiB": 82.953125,
+          "heapUsedMiB": 9.506233215332031
+        },
+        "afterQuery": {
+          "rssMiB": 88.828125,
+          "heapUsedMiB": 8.371047973632812
+        },
+        "peakSampledRssMiB": 88.828125,
+        "peakSampledHeapMiB": 9.707565307617188,
+        "note": "RSS and V8 heap sampled at phase boundaries and query progress, not an instrumented absolute peak; source objects included; memory is process-wide."
+      },
+      "sliderQuery": {
+        "ms": 4.168167000000011,
+        "sameIndexObject": true,
+        "reason": "complete"
+      },
+      "cancellation": {
+        "requestedAfterMs": 5,
+        "requestDelivered": true,
+        "scheduledToDeliveryMs": 10.918332999999961,
+        "observedReason": "cancelled",
+        "elapsedMs": 11.039541999999983,
+        "deliveryToReturnMs": 0.29362500000002,
+        "note": "Stress cancellation deliberately disables candidate/neighbor caps and uses whole-globe radius. Cooperative Node event-loop cancellation: timer delivery can exceed 5ms during one synchronous geokdbush call. Browser worker/render measured separately."
+      },
+      "oracle": {
+        "ms": 612.914917,
+        "possibleCount": 250000,
+        "matchedCount": 2,
+        "indexedCompleteMs": 7.866667000000007,
+        "top200ExactAgreement": true
+      }
+    },
+    {
+      "distribution": "sparse",
+      "count": 10000,
+      "buildMs": 18.91700000000003,
+      "queryMs": 44.768583000000035,
+      "complete": false,
+      "reason": "candidate_budget",
+      "possibleCount": 25000000,
+      "matchedCount": 295,
+      "matchedCountIsLowerBound": true,
+      "retainedPairs": 200,
+      "processedOrigins": 4163,
+      "totalOrigins": 5000,
+      "candidateCount": 295,
+      "elapsedMs": 44.768583000000035,
+      "visitedPointCount": 250004,
+      "exactDistanceCount": 295,
+      "radiusPrunedGroups": 2,
+      "indexBytes": 180016,
+      "indexReused": false,
+      "memory": {
+        "before": {
+          "rssMiB": 262.015625,
+          "heapUsedMiB": 90.64839935302734
+        },
+        "afterDataset": {
+          "rssMiB": 262.015625,
+          "heapUsedMiB": 97.22164154052734
+        },
+        "afterBuild": {
+          "rssMiB": 263.765625,
+          "heapUsedMiB": 118.7813720703125
+        },
+        "afterQuery": {
+          "rssMiB": 285.609375,
+          "heapUsedMiB": 110.94457244873047
+        },
+        "peakSampledRssMiB": 285.65625,
+        "peakSampledHeapMiB": 147.4081802368164,
+        "note": "RSS and V8 heap sampled at phase boundaries and query progress, not an instrumented absolute peak; source objects included; memory is process-wide."
+      },
+      "sliderQuery": {
+        "ms": 29.103459000000043,
+        "sameIndexObject": true,
+        "reason": "complete"
+      },
+      "cancellation": {
+        "requestedAfterMs": 5,
+        "requestDelivered": true,
+        "scheduledToDeliveryMs": 15.515499999999975,
+        "observedReason": "cancelled",
+        "elapsedMs": 15.62991599999998,
+        "deliveryToReturnMs": 0.15812499999992724,
+        "note": "Stress cancellation deliberately disables candidate/neighbor caps and uses whole-globe radius. Cooperative Node event-loop cancellation: timer delivery can exceed 5ms during one synchronous geokdbush call. Browser worker/render measured separately."
+      },
+      "oracle": {
+        "skipped": "Brute force restricted to 1k records; no dense 10k/100k materialization."
+      }
+    },
+    {
+      "distribution": "sparse",
+      "count": 100000,
+      "buildMs": 183.65200000000004,
+      "queryMs": 52.5519589999999,
+      "complete": false,
+      "reason": "candidate_budget",
+      "possibleCount": 2500000000,
+      "matchedCount": 1953,
+      "matchedCountIsLowerBound": true,
+      "retainedPairs": 200,
+      "processedOrigins": 3150,
+      "totalOrigins": 50000,
+      "candidateCount": 1953,
+      "elapsedMs": 52.5519589999999,
+      "visitedPointCount": 250046,
+      "exactDistanceCount": 1953,
+      "radiusPrunedGroups": 0,
+      "indexBytes": 1800016,
+      "indexReused": false,
+      "memory": {
+        "before": {
+          "rssMiB": 297.5,
+          "heapUsedMiB": 98.64212036132812
+        },
+        "afterDataset": {
+          "rssMiB": 326.421875,
+          "heapUsedMiB": 146.78549194335938
+        },
+        "afterBuild": {
+          "rssMiB": 397.734375,
+          "heapUsedMiB": 227.58755493164062
+        },
+        "afterQuery": {
+          "rssMiB": 399.453125,
+          "heapUsedMiB": 208.36321258544922
+        },
+        "peakSampledRssMiB": 404.140625,
+        "peakSampledHeapMiB": 235.0266571044922,
+        "note": "RSS and V8 heap sampled at phase boundaries and query progress, not an instrumented absolute peak; source objects included; memory is process-wide."
+      },
+      "sliderQuery": {
+        "ms": 88.59275000000002,
+        "sameIndexObject": true,
+        "reason": "candidate_budget"
+      },
+      "cancellation": {
+        "requestedAfterMs": 5,
+        "requestDelivered": true,
+        "scheduledToDeliveryMs": 15.049874999999929,
+        "observedReason": "cancelled",
+        "elapsedMs": 16.266750000000002,
+        "deliveryToReturnMs": 1.2476670000000922,
+        "note": "Stress cancellation deliberately disables candidate/neighbor caps and uses whole-globe radius. Cooperative Node event-loop cancellation: timer delivery can exceed 5ms during one synchronous geokdbush call. Browser worker/render measured separately."
+      },
+      "oracle": {
+        "skipped": "Brute force restricted to 1k records; no dense 10k/100k materialization."
+      }
+    },
+    {
+      "distribution": "dense",
+      "count": 1000,
+      "buildMs": 1.3813330000000406,
+      "queryMs": 140.83170799999994,
+      "complete": true,
+      "reason": "complete",
+      "possibleCount": 250000,
+      "matchedCount": 250000,
+      "matchedCountIsLowerBound": false,
+      "retainedPairs": 200,
+      "processedOrigins": 500,
+      "totalOrigins": 500,
+      "candidateCount": 250000,
+      "elapsedMs": 140.83170799999994,
+      "visitedPointCount": 250000,
+      "exactDistanceCount": 250000,
+      "radiusPrunedGroups": 0,
+      "indexBytes": 18016,
+      "indexReused": false,
+      "memory": {
+        "before": {
+          "rssMiB": 411.25,
+          "heapUsedMiB": 200.11282348632812
+        },
+        "afterDataset": {
+          "rssMiB": 411.265625,
+          "heapUsedMiB": 200.78590393066406
+        },
+        "afterBuild": {
+          "rssMiB": 411.484375,
+          "heapUsedMiB": 202.5236053466797
+        },
+        "afterQuery": {
+          "rssMiB": 411.125,
+          "heapUsedMiB": 195.21073150634766
+        },
+        "peakSampledRssMiB": 412.453125,
+        "peakSampledHeapMiB": 236.40668487548828,
+        "note": "RSS and V8 heap sampled at phase boundaries and query progress, not an instrumented absolute peak; source objects included; memory is process-wide."
+      },
+      "sliderQuery": {
+        "ms": 44.89383399999997,
+        "sameIndexObject": true,
+        "reason": "complete"
+      },
+      "cancellation": {
+        "requestedAfterMs": 5,
+        "requestDelivered": true,
+        "scheduledToDeliveryMs": 9.647833999999875,
+        "observedReason": "cancelled",
+        "elapsedMs": 10.92450000000008,
+        "deliveryToReturnMs": 1.3123329999998532,
+        "note": "Stress cancellation deliberately disables candidate/neighbor caps and uses whole-globe radius. Cooperative Node event-loop cancellation: timer delivery can exceed 5ms during one synchronous geokdbush call. Browser worker/render measured separately."
+      },
+      "oracle": {
+        "ms": 531.4596670000001,
+        "possibleCount": 250000,
+        "matchedCount": 250000,
+        "indexedCompleteMs": 138.0871249999998,
+        "top200ExactAgreement": true
+      }
+    },
+    {
+      "distribution": "dense",
+      "count": 10000,
+      "buildMs": 14.035499999999956,
+      "queryMs": 6.200667000000067,
+      "complete": false,
+      "reason": "neighbor_limit",
+      "possibleCount": 25000000,
+      "matchedCount": 4096,
+      "matchedCountIsLowerBound": true,
+      "retainedPairs": 200,
+      "processedOrigins": 0,
+      "totalOrigins": 5000,
+      "candidateCount": 4096,
+      "elapsedMs": 6.200667000000067,
+      "visitedPointCount": 4653,
+      "exactDistanceCount": 4096,
+      "radiusPrunedGroups": 0,
+      "indexBytes": 180016,
+      "indexReused": false,
+      "memory": {
+        "before": {
+          "rssMiB": 501.0625,
+          "heapUsedMiB": 290.0306396484375
+        },
+        "afterDataset": {
+          "rssMiB": 503.390625,
+          "heapUsedMiB": 295.5470428466797
+        },
+        "afterBuild": {
+          "rssMiB": 506.375,
+          "heapUsedMiB": 313.2538604736328
+        },
+        "afterQuery": {
+          "rssMiB": 506.390625,
+          "heapUsedMiB": 318.24720001220703
+        },
+        "peakSampledRssMiB": 506.390625,
+        "peakSampledHeapMiB": 318.24676513671875,
+        "note": "RSS and V8 heap sampled at phase boundaries and query progress, not an instrumented absolute peak; source objects included; memory is process-wide."
+      },
+      "sliderQuery": {
+        "ms": 8.219208999999864,
+        "sameIndexObject": true,
+        "reason": "neighbor_limit"
+      },
+      "cancellation": {
+        "requestedAfterMs": 5,
+        "requestDelivered": true,
+        "scheduledToDeliveryMs": 11.08395900000005,
+        "observedReason": "cancelled",
+        "elapsedMs": 12.348582999999962,
+        "deliveryToReturnMs": 1.30074999999988,
+        "note": "Stress cancellation deliberately disables candidate/neighbor caps and uses whole-globe radius. Cooperative Node event-loop cancellation: timer delivery can exceed 5ms during one synchronous geokdbush call. Browser worker/render measured separately."
+      },
+      "oracle": {
+        "skipped": "Brute force restricted to 1k records; no dense 10k/100k materialization."
+      }
+    },
+    {
+      "distribution": "dense",
+      "count": 100000,
+      "buildMs": 164.61362499999996,
+      "queryMs": 23.65129100000013,
+      "complete": false,
+      "reason": "neighbor_limit",
+      "possibleCount": 2500000000,
+      "matchedCount": 4096,
+      "matchedCountIsLowerBound": true,
+      "retainedPairs": 200,
+      "processedOrigins": 0,
+      "totalOrigins": 50000,
+      "candidateCount": 4096,
+      "elapsedMs": 23.65129100000013,
+      "visitedPointCount": 5105,
+      "exactDistanceCount": 4096,
+      "radiusPrunedGroups": 0,
+      "indexBytes": 1800016,
+      "indexReused": false,
+      "memory": {
+        "before": {
+          "rssMiB": 506.0625,
+          "heapUsedMiB": 292.6214370727539
+        },
+        "afterDataset": {
+          "rssMiB": 534.921875,
+          "heapUsedMiB": 340.3541564941406
+        },
+        "afterBuild": {
+          "rssMiB": 580.09375,
+          "heapUsedMiB": 342.40830993652344
+        },
+        "afterQuery": {
+          "rssMiB": 586.40625,
+          "heapUsedMiB": 353.9453659057617
+        },
+        "peakSampledRssMiB": 586.40625,
+        "peakSampledHeapMiB": 353.94493103027344,
+        "note": "RSS and V8 heap sampled at phase boundaries and query progress, not an instrumented absolute peak; source objects included; memory is process-wide."
+      },
+      "sliderQuery": {
+        "ms": 87.65941599999996,
+        "sameIndexObject": true,
+        "reason": "neighbor_limit"
+      },
+      "cancellation": {
+        "requestedAfterMs": 5,
+        "requestDelivered": true,
+        "scheduledToDeliveryMs": 22.115584000000126,
+        "observedReason": "cancelled",
+        "elapsedMs": 23.38949999999977,
+        "deliveryToReturnMs": 1.3145829999998568,
+        "note": "Stress cancellation deliberately disables candidate/neighbor caps and uses whole-globe radius. Cooperative Node event-loop cancellation: timer delivery can exceed 5ms during one synchronous geokdbush call. Browser worker/render measured separately."
+      },
+      "oracle": {
+        "skipped": "Brute force restricted to 1k records; no dense 10k/100k materialization."
+      }
+    },
+    {
+      "distribution": "separated",
+      "count": 1000,
+      "buildMs": 1.7868749999997817,
+      "queryMs": 1.9559170000002268,
+      "complete": true,
+      "reason": "complete",
+      "possibleCount": 250000,
+      "matchedCount": 0,
+      "matchedCountIsLowerBound": false,
+      "retainedPairs": 0,
+      "processedOrigins": 500,
+      "totalOrigins": 500,
+      "candidateCount": 0,
+      "elapsedMs": 1.9559170000002268,
+      "visitedPointCount": 0,
+      "exactDistanceCount": 0,
+      "radiusPrunedGroups": 500,
+      "indexBytes": 18016,
+      "indexReused": false,
+      "memory": {
+        "before": {
+          "rssMiB": 567.15625,
+          "heapUsedMiB": 181.9280548095703
+        },
+        "afterDataset": {
+          "rssMiB": 567.296875,
+          "heapUsedMiB": 182.46410369873047
+        },
+        "afterBuild": {
+          "rssMiB": 569.84375,
+          "heapUsedMiB": 184.5335922241211
+        },
+        "afterQuery": {
+          "rssMiB": 571.03125,
+          "heapUsedMiB": 185.0689239501953
+        },
+        "peakSampledRssMiB": 571.03125,
+        "peakSampledHeapMiB": 185.06848907470703,
+        "note": "RSS and V8 heap sampled at phase boundaries and query progress, not an instrumented absolute peak; source objects included; memory is process-wide."
+      },
+      "sliderQuery": {
+        "ms": 2.1287499999998545,
+        "sameIndexObject": true,
+        "reason": "complete"
+      },
+      "cancellation": {
+        "requestedAfterMs": 5,
+        "requestDelivered": true,
+        "scheduledToDeliveryMs": 9.433500000000095,
+        "observedReason": "cancelled",
+        "elapsedMs": 10.795792000000347,
+        "deliveryToReturnMs": 1.385541000000103,
+        "note": "Stress cancellation deliberately disables candidate/neighbor caps and uses whole-globe radius. Cooperative Node event-loop cancellation: timer delivery can exceed 5ms during one synchronous geokdbush call. Browser worker/render measured separately."
+      },
+      "oracle": {
+        "ms": 385.4647920000002,
+        "possibleCount": 250000,
+        "matchedCount": 0,
+        "indexedCompleteMs": 1.5442080000002534,
+        "top200ExactAgreement": true
+      }
+    },
+    {
+      "distribution": "separated",
+      "count": 10000,
+      "buildMs": 13.718584000000192,
+      "queryMs": 4.243583999999828,
+      "complete": true,
+      "reason": "complete",
+      "possibleCount": 25000000,
+      "matchedCount": 0,
+      "matchedCountIsLowerBound": false,
+      "retainedPairs": 0,
+      "processedOrigins": 5000,
+      "totalOrigins": 5000,
+      "candidateCount": 0,
+      "elapsedMs": 4.243583999999828,
+      "visitedPointCount": 0,
+      "exactDistanceCount": 0,
+      "radiusPrunedGroups": 5000,
+      "indexBytes": 180016,
+      "indexReused": false,
+      "memory": {
+        "before": {
+          "rssMiB": 573.21875,
+          "heapUsedMiB": 289.86976623535156
+        },
+        "afterDataset": {
+          "rssMiB": 573.21875,
+          "heapUsedMiB": 295.00917053222656
+        },
+        "afterBuild": {
+          "rssMiB": 573.9375,
+          "heapUsedMiB": 314.5068893432617
+        },
+        "afterQuery": {
+          "rssMiB": 573.9375,
+          "heapUsedMiB": 318.73120880126953
+        },
+        "peakSampledRssMiB": 573.9375,
+        "peakSampledHeapMiB": 318.73077392578125,
+        "note": "RSS and V8 heap sampled at phase boundaries and query progress, not an instrumented absolute peak; source objects included; memory is process-wide."
+      },
+      "sliderQuery": {
+        "ms": 8.01541700000007,
+        "sameIndexObject": true,
+        "reason": "complete"
+      },
+      "cancellation": {
+        "requestedAfterMs": 5,
+        "requestDelivered": true,
+        "scheduledToDeliveryMs": 11.211625000000367,
+        "observedReason": "cancelled",
+        "elapsedMs": 12.539749999999913,
+        "deliveryToReturnMs": 1.3586669999999685,
+        "note": "Stress cancellation deliberately disables candidate/neighbor caps and uses whole-globe radius. Cooperative Node event-loop cancellation: timer delivery can exceed 5ms during one synchronous geokdbush call. Browser worker/render measured separately."
+      },
+      "oracle": {
+        "skipped": "Brute force restricted to 1k records; no dense 10k/100k materialization."
+      }
+    },
+    {
+      "distribution": "separated",
+      "count": 100000,
+      "buildMs": 124.67295899999999,
+      "queryMs": 25.6814159999999,
+      "complete": true,
+      "reason": "complete",
+      "possibleCount": 2500000000,
+      "matchedCount": 0,
+      "matchedCountIsLowerBound": false,
+      "retainedPairs": 0,
+      "processedOrigins": 50000,
+      "totalOrigins": 50000,
+      "candidateCount": 0,
+      "elapsedMs": 25.6814159999999,
+      "visitedPointCount": 0,
+      "exactDistanceCount": 0,
+      "radiusPrunedGroups": 50000,
+      "indexBytes": 1800016,
+      "indexReused": false,
+      "memory": {
+        "before": {
+          "rssMiB": 571.515625,
+          "heapUsedMiB": 292.3750762939453
+        },
+        "afterDataset": {
+          "rssMiB": 572.28125,
+          "heapUsedMiB": 335.1339111328125
+        },
+        "afterBuild": {
+          "rssMiB": 581.390625,
+          "heapUsedMiB": 354.7426071166992
+        },
+        "afterQuery": {
+          "rssMiB": 587.640625,
+          "heapUsedMiB": 397.7569274902344
+        },
+        "peakSampledRssMiB": 587.640625,
+        "peakSampledHeapMiB": 397.7564926147461,
+        "note": "RSS and V8 heap sampled at phase boundaries and query progress, not an instrumented absolute peak; source objects included; memory is process-wide."
+      },
+      "sliderQuery": {
+        "ms": 67.44362499999988,
+        "sameIndexObject": true,
+        "reason": "complete"
+      },
+      "cancellation": {
+        "requestedAfterMs": 5,
+        "requestDelivered": true,
+        "scheduledToDeliveryMs": 8.177542000000358,
+        "observedReason": "cancelled",
+        "elapsedMs": 9.426208999999744,
+        "deliveryToReturnMs": 1.2925829999999223,
+        "note": "Stress cancellation deliberately disables candidate/neighbor caps and uses whole-globe radius. Cooperative Node event-loop cancellation: timer delivery can exceed 5ms during one synchronous geokdbush call. Browser worker/render measured separately."
+      },
+      "oracle": {
+        "skipped": "Brute force restricted to 1k records; no dense 10k/100k materialization."
+      }
+    }
+  ]
+}

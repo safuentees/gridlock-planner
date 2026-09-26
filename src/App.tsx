@@ -1,1124 +1,989 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@base-ui/react/button";
-import { Checkbox } from "@base-ui/react/checkbox";
-import { Input } from "@base-ui/react/input";
 import { Slider } from "@base-ui/react/slider";
-import { Tabs } from "@base-ui/react/tabs";
 import {
   ArrowDownToLine,
-  ArrowRight,
-  ArrowUpRight,
-  Check,
   ChevronRight,
-  CircleHelp,
-  Compass,
-  ExternalLink,
-  FileText,
-  FlaskConical,
   Layers,
   MapPin,
   Network,
   RotateCcw,
-  SlidersHorizontal,
-  Target,
+  Upload,
+  X,
 } from "lucide-react";
 import projectData from "./data/projects.json";
-import type { Company, Comparison, Project, Scenario } from "./types";
+import metadata from "./data/metadata.json";
+import type {
+  Comparison,
+  ExplorationMode,
+  Project,
+  ProjectOverride,
+  RuntimeDataset,
+} from "./types";
 import {
+  centerPoint,
   compareProjects,
-  filterProjects,
-  isNearby,
-  milesToUnit,
   milesFromUnit,
-  buildScenarioSummary,
+  milesToUnit,
 } from "./lib/comparisons";
+import { createDemoDataset, applyOverrides } from "./lib/datasets";
+import { projectDateBounds, shiftDateBounds } from "./lib/temporal";
+import { monthISO, monthEndISO, timelineDistribution } from "./lib/timeline";
+import { useSpatialQuery } from "./hooks/useSpatialQuery";
 import { cn } from "./lib/cn";
-import { ProjectMap } from "./components/ProjectMap";
+import { originalComparison, comparisonCsv } from "./lib/exports";
+const ProjectMap = lazy(() =>
+  import("./components/ProjectMap").then((m) => ({ default: m.ProjectMap })),
+);
 import { EvidencePanel, formatDate } from "./components/EvidencePanel";
 import { DataReadiness } from "./components/DataReadiness";
+import { TimelineControl } from "./components/TimelineControl";
+const ImportWizard = lazy(() =>
+  import("./components/ImportWizard").then((m) => ({
+    default: m.ImportWizard,
+  })),
+);
+import { OverridesPanel } from "./components/OverridesPanel";
+const ExtractionReview = lazy(() =>
+  import("./components/ExtractionReview").then((m) => ({
+    default: m.ExtractionReview,
+  })),
+);
 
-const PROJECTS = projectData as Project[];
-const companies: { id: Company; label: string; short: string }[] = [
-  { id: "DESC", label: "Dominion Energy SC", short: "Dominion" },
-  { id: "GPC", label: "Georgia Power", short: "Georgia Power" },
-];
 const control =
   "rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-40";
-const tab =
-  "rounded-md px-3 py-2 text-sm font-medium text-stone-500 data-[active]:bg-white data-[active]:text-stone-900 data-[active]:shadow-sm";
-const numberInput =
+const field =
   "w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm tabular-nums";
+const PROJECTS = projectData as Project[];
+const EMPTY_SHIFTS: Record<string, number> = {};
 
-function IntegerControl({
-  id,
-  value,
-  min,
-  max,
-  onChange,
-}: {
-  id: string;
-  value: number;
-  min: number;
-  max: number;
-  onChange: (n: number) => void;
-}) {
-  const [draft, setDraft] = useState(String(value));
-  useEffect(() => setDraft(String(value)), [value]);
-  const n = Number(draft);
-  const valid =
-    draft.trim() !== "" && Number.isInteger(n) && n >= min && n <= max;
-  return (
-    <>
-      <Input
-        id={id}
-        type="number"
-        min={min}
-        max={max}
-        step={1}
-        value={draft}
-        aria-invalid={!valid}
-        aria-describedby={!valid ? `${id}-error` : undefined}
-        onValueChange={(v) => {
-          setDraft(v);
-          const next = Number(v);
-          if (
-            v.trim() !== "" &&
-            Number.isInteger(next) &&
-            next >= min &&
-            next <= max
-          )
-            onChange(next);
-        }}
-        onBlur={() => setDraft(String(value))}
-        className={numberInput}
-      />
-      {!valid && (
-        <p id={`${id}-error`} className="mt-1 text-xs text-red-700">
-          Enter a whole number from {min} to {max}. Last valid setting still
-          applies.
-        </p>
-      )}
-    </>
-  );
-}
-
-function DownloadComparisons({
-  pairs,
-  threshold,
-}: {
-  pairs: Comparison[];
-  threshold: number;
-}) {
-  function download() {
-    const head = [
-      "project_a",
-      "project_b",
-      "distance_miles",
-      "milestone_gap_days",
-      "threshold_miles",
-      "within_threshold",
-      "construction_overlap",
-    ];
-    const rows = pairs.map((p) => [
-      p.a.id,
-      p.b.id,
-      p.distanceMiles ?? "",
-      p.gapDays ?? "",
-      threshold,
-      isNearby(p, threshold),
-      "unknown",
-    ]);
-    const blob = new Blob(
-      [[head, ...rows].map((r) => r.join(",")).join("\n")],
-      { type: "text/csv;charset=utf-8;" },
-    );
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "gridlock-comparisons.csv";
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
-  return (
-    <Button
-      onClick={download}
-      className={cn(control, "flex items-center gap-2 text-xs")}
-    >
-      <ArrowDownToLine size={14} />
-      Export comparisons
-    </Button>
-  );
-}
-
-function Metric({
-  value,
-  label,
-  note,
-}: {
-  value: number | string;
-  label: string;
-  note?: string;
-}) {
-  return (
-    <div className="min-w-0">
-      <p className="text-3xl font-semibold tabular-nums text-stone-900">
-        {value}
-      </p>
-      <p className="mt-1 text-xs font-medium text-stone-500">{label}</p>
-      {note && <p className="mt-1 text-xs text-stone-400">{note}</p>}
-    </div>
-  );
-}
-
-function ThresholdControl({
-  miles,
-  unit,
-  onMiles,
-  onUnit,
-}: {
-  miles: number;
-  unit: "mi" | "km";
-  onMiles: (x: number) => void;
-  onUnit: (x: "mi" | "km") => void;
-}) {
-  const shown = milesToUnit(miles, unit);
-  return (
-    <div>
-      <div className="mb-3 flex items-center justify-between">
-        <label
-          id="threshold-label"
-          className="text-xs font-semibold text-stone-600"
-        >
-          Nearby distance
-        </label>
-        <div className="flex rounded-md bg-stone-100 p-0.5">
-          {(["mi", "km"] as const).map((u) => (
-            <Button
-              key={u}
-              aria-pressed={u === unit}
-              onClick={() => onUnit(u)}
-              className={cn(
-                "rounded px-2 py-1 text-xs",
-                unit === u
-                  ? "bg-white font-semibold text-stone-800 shadow-sm"
-                  : "text-stone-500",
-              )}
-            >
-              {u}
-            </Button>
-          ))}
-        </div>
-      </div>
-      <p className="mb-4 text-3xl font-semibold tabular-nums">
-        {Number(shown.toFixed(1))}
-        <span className="ml-1.5 text-base font-normal text-stone-500">
-          {unit === "mi" ? "miles" : "kilometers"}
-        </span>
-      </p>
-      <Slider.Root
-        value={shown}
-        min={0}
-        max={unit === "mi" ? 250 : 402.336}
-        step={unit === "mi" ? 1 : 0.5}
-        onValueChange={(value) => onMiles(milesFromUnit(Number(value), unit))}
-      >
-        <Slider.Control className="flex h-5 w-full cursor-pointer items-center">
-          <Slider.Track className="h-1.5 w-full rounded-full bg-stone-200">
-            <Slider.Indicator className="rounded-full bg-emerald-700" />
-            <Slider.Thumb
-              aria-labelledby="threshold-label"
-              className="size-4 rounded-full border-2 border-emerald-700 bg-white shadow-sm"
-            />
-          </Slider.Track>
-        </Slider.Control>
-      </Slider.Root>
-      <div className="mt-3 flex gap-2">
-        {[10, 25, 50].map((v) => (
-          <Button
-            key={v}
-            onClick={() => onMiles(milesFromUnit(v, unit))}
-            className={cn(
-              "rounded-md border px-2.5 py-1 text-xs tabular-nums",
-              Math.abs(shown - v) < 0.001
-                ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                : "border-stone-200 text-stone-500",
-            )}
-          >
-            {v} {unit}
-          </Button>
-        ))}
-      </div>
-      <p className="mt-3 text-xs leading-relaxed text-stone-500">
-        Straight-line distance between approximate representative points.
-        Includes distances strictly below this threshold.
-      </p>
-    </div>
-  );
-}
-
-function PairList({
-  pairs,
-  selected,
-  onSelect,
-  unit,
-  threshold,
-  allCount,
-  reset,
-  showAll,
-  onShowAll,
-}: {
-  pairs: Comparison[];
-  selected: Comparison | null;
-  onSelect: (p: Comparison) => void;
-  unit: "mi" | "km";
-  threshold: number;
-  allCount: number;
-  reset: () => void;
-  showAll: boolean;
-  onShowAll: (b: boolean) => void;
-}) {
-  return (
-    <div className="flex min-h-96 flex-col overflow-hidden rounded-xl border border-stone-200 bg-white lg:max-h-[38rem]">
-      <div className="border-b border-stone-100 p-4">
-        <h2 className="text-base font-semibold">Cross-company comparisons</h2>
-        <p className="mt-1 text-xs text-stone-500">
-          Ranked by distance, nearest first
-        </p>
-        <Tabs.Root
-          value={showAll ? "all" : "nearby"}
-          onValueChange={(v) => onShowAll(v === "all")}
-          className="mt-3"
-        >
-          <Tabs.List className="flex rounded-lg bg-stone-100 p-1">
-            <Tabs.Tab value="nearby" className={cn(tab, "flex-1 text-xs")}>
-              Nearby
-            </Tabs.Tab>
-            <Tabs.Tab value="all" className={cn(tab, "flex-1 text-xs")}>
-              All {allCount} pairs
-            </Tabs.Tab>
-          </Tabs.List>
-        </Tabs.Root>
-      </div>
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        {pairs.length === 0 ? (
-          <div className="p-6">
-            <Target className="mb-3 text-stone-400" size={24} />
-            <h3 className="font-medium">No comparisons in this view</h3>
-            <p className="mt-2 text-sm text-stone-500">
-              Nearby comparisons need two companies and records inside your date
-              and distance filters.
-            </p>
-            <Button onClick={reset} className={cn(control, "mt-4")}>
-              Reset filters
-            </Button>
-          </div>
-        ) : (
-          pairs.map((pair, index) => (
-            <Button
-              key={pair.id}
-              onClick={() => onSelect(pair)}
-              aria-pressed={selected?.id === pair.id}
-              className={cn(
-                "flex w-full items-start gap-3 border-b border-stone-100 p-4 text-left last:border-b-0 hover:bg-stone-50",
-                selected?.id === pair.id &&
-                  "bg-emerald-50/70 hover:bg-emerald-50",
-              )}
-            >
-              <span
-                className={cn(
-                  "mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md text-xs font-semibold tabular-nums",
-                  selected?.id === pair.id
-                    ? "bg-emerald-700 text-white"
-                    : "bg-stone-100 text-stone-500",
-                )}
-              >
-                {index + 1}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-xs font-semibold text-stone-800">
-                  {pair.a.shortName}
-                </span>
-                <span className="my-1 block text-xs text-stone-400">with</span>
-                <span className="block text-xs font-semibold text-stone-800">
-                  {pair.b.shortName}
-                </span>
-                <span className="mt-2 block text-xs text-stone-500">
-                  {pair.gapDays === null
-                    ? "Milestone gap unknown"
-                    : `${pair.gapDays.toLocaleString()} days between milestones`}
-                </span>
-                {!isNearby(pair, threshold) && (
-                  <span className="mt-1 block text-xs text-stone-400">
-                    {pair.distanceMiles === null
-                      ? "Location incomplete"
-                      : "Outside distance threshold"}
-                  </span>
-                )}
-              </span>
-              <span className="shrink-0 text-right">
-                <span className="block text-sm font-semibold tabular-nums">
-                  {pair.distanceMiles === null
-                    ? "—"
-                    : milesToUnit(pair.distanceMiles, unit).toFixed(2)}
-                </span>
-                <span className="text-xs text-stone-500">{unit}</span>
-              </span>
-            </Button>
-          ))
-        )}
-      </div>
-      <p className="border-t border-stone-100 px-4 py-3 text-xs text-stone-500">
-        Proximity candidates, not confirmed coordination opportunities.
-      </p>
-    </div>
-  );
+function download(name: string, text: string, type = "text/csv;charset=utf-8") {
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export default function App() {
-  const [page, setPage] = useState<"explore" | "scenarios" | "methods">(
-    "explore",
+  const [dataset, setDataset] = useState<RuntimeDataset | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [acceptance, setAcceptance] = useState(0);
+  const accept = (d: RuntimeDataset) => {
+    setDataset(d);
+    setAcceptance((n) => n + 1);
+  };
+  const restore = () => {
+    void createDemoDataset(PROJECTS, metadata.workbookSha256)
+      .then(accept)
+      .catch((e) => setError(String(e)));
+  };
+  useEffect(restore, []);
+  return (
+    <div className="min-h-dvh">
+      <header className="border-b border-stone-200 bg-white px-5 py-4">
+        <div className="mx-auto flex max-w-screen-2xl flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="rounded-lg bg-emerald-800 p-2 text-white">
+              <Network size={22} />
+            </span>
+            <div>
+              <h1 className="text-xl font-semibold">GridLock</h1>
+              <p className="text-xs text-stone-500">
+                Find nearby plans. Investigate the evidence.
+              </p>
+            </div>
+          </div>
+          <p className="text-xs text-stone-500">
+            Sperry challenge · planning intelligence
+          </p>
+        </div>
+      </header>
+      {error && (
+        <p role="alert" className="p-5">
+          {error}
+        </p>
+      )}
+      {dataset ? (
+        <DatasetWorkspace
+          key={`${dataset.id}:${acceptance}`}
+          source={dataset}
+          onAccept={accept}
+          onRestore={restore}
+        />
+      ) : (
+        <p role="status" className="p-8">
+          Preparing the supplied examples…
+        </p>
+      )}
+      <footer className="mx-auto flex max-w-screen-2xl flex-wrap justify-between gap-3 px-5 py-6 text-xs text-stone-500">
+        <span>
+          Approximate locations and planning milestones. Construction overlap is
+          not established.
+        </span>
+        <a
+          href="/THIRD_PARTY_NOTICES.txt"
+          target="_blank"
+          rel="noreferrer"
+          className="underline"
+        >
+          Third-party notices
+        </a>
+      </footer>
+    </div>
   );
-  const [threshold, setThreshold] = useState(25);
-  const [unit, setUnit] = useState<"mi" | "km">("mi");
-  const [selectedCompanies, setSelectedCompanies] = useState<Company[]>([
-    "DESC",
-    "GPC",
-  ]);
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+}
+
+function DatasetWorkspace({
+  source,
+  onAccept,
+  onRestore,
+}: {
+  source: RuntimeDataset;
+  onAccept: (d: RuntimeDataset) => void;
+  onRestore: () => void;
+}) {
+  const [overrides, setOverrides] = useState<ProjectOverride[]>([]);
+  const [effective, setEffective] = useState(source);
+  const [applying, setApplying] = useState(false);
+  const [layerError, setLayerError] = useState<string | null>(null);
+  const [methodsOpen, setMethodsOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    null,
+  );
+  const request = useRef(0);
+  useEffect(() => {
+    const id = ++request.current;
+    setApplying(true);
+    setLayerError(null);
+    void applyOverrides(source, overrides)
+      .then((d) => {
+        if (id === request.current) {
+          setEffective(d);
+          setApplying(false);
+        }
+      })
+      .catch((e) => {
+        if (id === request.current) {
+          setLayerError(String(e));
+          setApplying(false);
+        }
+      });
+    return () => {
+      request.current++;
+    };
+  }, [source, overrides]);
+  return (
+    <main className="mx-auto max-w-screen-2xl px-3 py-5 sm:px-5">
+      <section className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-base font-semibold">{source.name}</h2>
+          <p className="mt-1 text-xs text-stone-500">
+            {source.projects.length.toLocaleString()} source records ·{" "}
+            {source.kind === "demo"
+              ? "historical demonstration"
+              : "uploaded dataset"}{" "}
+            · {overrides.length} correction{overrides.length === 1 ? "" : "s"}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button className={control} onClick={() => setImportOpen((v) => !v)}>
+            <Upload size={14} className="mr-2 inline" />
+            Import CSV / XLSX
+          </Button>
+          <Button className={control} onClick={() => setEditOpen((v) => !v)}>
+            Review corrections
+          </Button>
+          {source.kind === "upload" && (
+            <Button className={control} onClick={onRestore}>
+              <RotateCcw size={14} className="mr-2 inline" />
+              Restore demo
+            </Button>
+          )}
+        </div>
+      </section>
+      {importOpen && (
+        <div className="mb-4 rounded-xl border border-stone-200 bg-white p-5">
+          <Suspense fallback={<p role="status">Loading importer…</p>}>
+            <ImportWizard
+              onAccept={(d) => {
+                setImportOpen(false);
+                onAccept(d);
+              }}
+              onCancel={() => setImportOpen(false)}
+            />
+          </Suspense>
+        </div>
+      )}
+      {editOpen && (
+        <div className="mb-4 rounded-xl border border-stone-200 bg-white p-5">
+          <OverridesPanel
+            dataset={source}
+            overrides={overrides}
+            onChange={setOverrides}
+            selectedProjectId={selectedProjectId ?? undefined}
+          />
+        </div>
+      )}
+      {layerError && (
+        <p
+          role="alert"
+          className="mb-4 rounded border border-stone-300 bg-white p-3 text-sm"
+        >
+          {layerError}
+        </p>
+      )}
+      {applying && (
+        <p role="status" className="p-3 text-sm">
+          Applying the separate correction layer…
+        </p>
+      )}
+      <Workspace
+        source={source}
+        dataset={effective}
+        overrides={overrides}
+        onProjectFocus={setSelectedProjectId}
+      />
+      <details
+        onToggle={(e) => setMethodsOpen(e.currentTarget.open)}
+        className="mt-5 rounded-xl border border-stone-200 bg-white p-5"
+      >
+        <summary className="cursor-pointer text-sm font-semibold">
+          Data, methods and model evaluation
+        </summary>
+        <div className="mt-5 space-y-5">
+          <div className="grid gap-5 md:grid-cols-2">
+            <article className="text-sm leading-relaxed text-stone-600">
+              <h3 className="mb-2 font-semibold text-stone-900">
+                How to read the map
+              </h3>
+              <p>
+                The arithmetic midpoint of available endpoints represents each
+                record. A single endpoint is a fallback. Distances are
+                straight-line haversine using Earth radius 3,958.7613 miles.
+                Nearby means strictly less than the selected radius, before
+                rounding. 25 miles is 40.2336 km.
+              </p>
+              <p className="mt-2">
+                Planned dates preserve source meaning and precision. Need dates
+                and in-service dates are different milestones; neither is
+                observed construction. What-if year shifts are explicit
+                assumptions. Approximate points do not establish routes or
+                shared work.
+              </p>
+            </article>
+            <article className="text-sm leading-relaxed text-stone-600">
+              <h3 className="mb-2 font-semibold text-stone-900">
+                Source provenance
+              </h3>
+              <p className="break-all text-xs">
+                Original source SHA-256: {source.sourceHash}
+              </p>
+              <p className="mt-2">
+                Uploaded records stay in this browser session. Download
+                corrections before refreshing. Original files, annotations and
+                source records remain unchanged.
+              </p>
+              {source.kind === "demo" && (
+                <a
+                  href="/sources/Projects_Overlaps.xlsx"
+                  download
+                  className="mt-3 inline-block font-medium text-emerald-800 underline"
+                >
+                  Download unchanged source workbook
+                </a>
+              )}
+              <p className="mt-2">
+                Sperry's clarification accepts centers or closest points and
+                either distance cutoff when explained. Other prize eligibility
+                is not claimed here.
+              </p>
+            </article>
+          </div>
+          <DataReadiness />
+          {methodsOpen && (
+            <Suspense fallback={<p role="status">Loading evaluation…</p>}>
+              <ExtractionReview />
+            </Suspense>
+          )}
+        </div>
+      </details>
+    </main>
+  );
+}
+
+function Workspace({
+  source,
+  dataset,
+  overrides,
+  onProjectFocus,
+}: {
+  source: RuntimeDataset;
+  dataset: RuntimeDataset;
+  overrides: ProjectOverride[];
+  onProjectFocus: (id: string | null) => void;
+}) {
+  const availableCompanies = useMemo(
+    () => [...new Set(dataset.projects.map((p) => p.company))].sort(),
+    [dataset.projects],
+  );
+  const [companies, setCompanies] = useState(availableCompanies);
+  const [companySearch, setCompanySearch] = useState("");
+  const selectedCompanies = useMemo(() => new Set(companies), [companies]);
+  const visibleCompanies = useMemo(
+    () =>
+      availableCompanies
+        .filter((c) => c.toLowerCase().includes(companySearch.toLowerCase()))
+        .slice(0, 100),
+    [availableCompanies, companySearch],
+  );
+  const previousCompanies = useRef(availableCompanies);
+  useEffect(() => {
+    const previous = new Set(previousCompanies.current);
+    const available = new Set(availableCompanies);
+    setCompanies((old) => [
+      ...old.filter((c) => available.has(c)),
+      ...availableCompanies.filter((c) => !previous.has(c)),
+    ]);
+    previousCompanies.current = availableCompanies;
+  }, [availableCompanies]);
+  const [mode, setMode] = useState<ExplorationMode>("planned");
+  const [shifts, setShifts] = useState<Record<string, number>>({});
+  const activeShifts = mode === "what_if" ? shifts : EMPTY_SHIFTS;
   const [includeUndated, setIncludeUndated] = useState(true);
+  const [thresholdMiles, setThresholdMiles] = useState(25);
+  const [unit, setUnit] = useState<"mi" | "km">("mi");
   const [mapMode, setMapMode] = useState<"points" | "heat">("points");
-  const [showAll, setShowAll] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [fitRequest, setFitRequest] = useState(0);
   const [fitAll, setFitAll] = useState(false);
-  function focusMap(all = false) {
-    setFitAll(all);
-    setFitRequest((x) => x + 1);
-  }
-  const [scenario, setScenario] = useState<Scenario>({
-    targetYear: 2028,
-    shifts: { DESC: 3, GPC: 1 },
-    windowMonths: 12,
-  });
-  const invalidRange = Boolean(from && to && from > to);
+  const [exhaustive, setExhaustive] = useState(false);
+  const [windowMonths, setWindowMonths] = useState<number | null>(null);
+  const sourceDates = useMemo(
+    () => dataset.projects.map((p) => ({ p, bounds: projectDateBounds(p) })),
+    [dataset.projects],
+  );
+  const shiftLimits = useMemo(() => {
+    const limits = new Map<string, { min: number; max: number }>();
+    for (const { p, bounds } of sourceDates) {
+      if (!bounds) continue;
+      const year = new Date(bounds.start).getUTCFullYear();
+      const limit = limits.get(p.company) ?? { min: -20, max: 20 };
+      limit.min = Math.max(limit.min, 1 - year);
+      limit.max = Math.min(limit.max, 9999 - year);
+      limits.set(p.company, limit);
+    }
+    return limits;
+  }, [sourceDates]);
+  const dated = useMemo(
+    () =>
+      sourceDates.map(({ p, bounds }) => ({
+        p,
+        bounds: shiftDateBounds(bounds, activeShifts[p.company] ?? 0),
+      })),
+    [sourceDates, activeShifts],
+  );
+  const distribution = useMemo(
+    () =>
+      timelineDistribution(
+        dated
+          .filter(({ p }) => selectedCompanies.has(p.company))
+          .map((r) => r.bounds),
+      ),
+    [dated, selectedCompanies],
+  );
+  const [chosenRange, setChosenRange] = useState<[number, number] | null>(null);
+  const range: [number, number] = chosenRange
+    ? [
+        Math.max(distribution.min, Math.min(distribution.max, chosenRange[0])),
+        Math.max(distribution.min, Math.min(distribution.max, chosenRange[1])),
+      ]
+    : [distribution.min, distribution.max];
+  const query = useMemo(
+    () => ({
+      companies,
+      from: monthISO(range[0]) + "-01",
+      to: monthEndISO(range[1]),
+      includeUndated,
+      shifts: activeShifts,
+      thresholdMiles,
+      limit: 200,
+      timeBudgetMs: 200,
+      maxCandidates: 250000,
+      ...(mode === "what_if" && windowMonths !== null ? { windowMonths } : {}),
+    }),
+    [
+      companies,
+      range[0],
+      range[1],
+      includeUndated,
+      activeShifts,
+      thresholdMiles,
+      mode,
+      windowMonths,
+    ],
+  );
+  const search = useSpatialQuery(
+    dataset.projects,
+    {
+      datasetVersion: dataset.featureHash,
+      geometryVersion: dataset.geometryVersion,
+    },
+    query,
+  );
+  const results = search.result;
+  const projectById = useMemo(
+    () => new Map(dataset.projects.map((p) => [p.id, p])),
+    [dataset.projects],
+  );
+  const originals = useMemo(
+    () => new Map(source.projects.map((p) => [p.id, p])),
+    [source.projects],
+  );
+  const centers = useMemo(
+    () => new Map(dataset.projects.map((p) => [p.id, centerPoint(p)])),
+    [dataset.geometryVersion],
+  );
   const filtered = useMemo(
     () =>
-      invalidRange
-        ? []
-        : filterProjects(PROJECTS, {
-            companies: selectedCompanies,
-            from,
-            to,
-            includeUndated,
-          }),
-    [selectedCompanies, from, to, includeUndated, invalidRange],
+      results
+        ? results.eligibleProjectIds.flatMap((id) => {
+            const p = projectById.get(id);
+            return p ? [p] : [];
+          })
+        : [],
+    [results, projectById],
   );
-  const pairs = useMemo(() => compareProjects(filtered), [filtered]);
-  const nearby = useMemo(
-    () => pairs.filter((p) => isNearby(p, threshold)),
-    [pairs, threshold],
-  );
-  const shownPairs = showAll ? pairs : nearby;
-  const selected = projectId
-    ? null
-    : (shownPairs.find((p) => p.id === selectedId) ?? shownPairs[0] ?? null);
-  const selectedProject = projectId
-    ? (filtered.find((p) => p.id === projectId) ?? null)
-    : null;
-  const scenarioResult = useMemo(
-    () => buildScenarioSummary(PROJECTS, scenario, threshold),
-    [scenario, threshold],
-  );
-  const baseline = useMemo(
+  const allPairs = useMemo(
     () =>
-      buildScenarioSummary(
-        PROJECTS,
-        { ...scenario, shifts: { DESC: 0, GPC: 0 } },
-        threshold,
-      ),
-    [scenario.targetYear, scenario.windowMonths, threshold],
+      exhaustive && filtered.length <= 20 ? compareProjects(filtered) : null,
+    [exhaustive, filtered],
   );
-  function reset() {
-    setThreshold(25);
-    setUnit("mi");
-    setSelectedCompanies(["DESC", "GPC"]);
-    setFrom("");
-    setTo("");
-    setIncludeUndated(true);
-    setShowAll(false);
+  const pairs = allPairs ?? results?.pairs ?? [];
+  const selected = pairs.find((p) => p.id === selectedId) ?? null;
+  const project =
+    projectId && results?.eligibleProjectIds.includes(projectId)
+      ? (projectById.get(projectId) ?? null)
+      : null;
+  const originalSelection = selected
+    ? originalComparison(selected, originals)
+    : null;
+  const selectedRecords = selected
+    ? [selected.a, selected.b]
+    : project
+      ? [project]
+      : [];
+  const focus = () => {
+    setFitAll(false);
+    setFitRequest((n) => n + 1);
+  };
+  const selectPair = (id: string) => {
+    setSelectedId(id);
+    setProjectId(null);
+    onProjectFocus(null);
+  };
+  const selectProject = (id: string) => {
+    setProjectId(id);
     setSelectedId(null);
-    setProjectId(null);
-    focusMap(true);
-  }
-  function pickPair(p: Comparison) {
-    setSelectedId(p.id);
-    setProjectId(null);
-  }
-  function inspectScenario(pair: Comparison) {
-    reset();
-    setShowAll(true);
-    setSelectedId(pair.id);
-    focusMap();
-    setPage("explore");
-  }
-  function openCase() {
-    reset();
-    const pair = compareProjects(PROJECTS).find(
-      (p) =>
-        [p.a.id, p.b.id].includes("DESC_3") &&
-        [p.a.id, p.b.id].includes("GPC_3"),
-    );
-    if (pair) setSelectedId(pair.id);
-    focusMap();
-    setPage("explore");
-  }
-
+    onProjectFocus(id);
+  };
+  const sourceCount = dataset.projects.length;
   return (
-    <div className="min-h-dvh">
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:p-4"
-      >
-        Skip to main content
-      </a>
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 bg-white px-5 py-4 lg:px-8">
-        <div className="flex items-center gap-3">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-emerald-800 text-white">
-            <Network size={21} strokeWidth={1.8} />
-          </div>
-          <span className="text-xl font-semibold">GridLock</span>
-          <span className="hidden border-l border-stone-200 pl-4 text-sm text-stone-400 sm:inline">
-            Planning explorer
-          </span>
-        </div>
-        <nav aria-label="Main navigation" className="flex items-center gap-1">
+    <div className="overflow-hidden rounded-xl border border-stone-200 bg-white">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-200 px-5 py-3">
+        <div
+          role="group"
+          aria-label="Date interpretation"
+          className="flex rounded-lg bg-stone-100 p-1"
+        >
           {(
             [
-              { id: "explore", label: "Explore", icon: Compass },
-              { id: "scenarios", label: "Scenarios", icon: FlaskConical },
-              { id: "methods", label: "Data & methods", icon: FileText },
+              ["planned", "Planned"],
+              ["what_if", "What-if"],
+              ["forecast", "Forecast"],
             ] as const
-          ).map((item) => (
+          ).map(([value, label]) => (
             <Button
-              key={item.id}
-              onClick={() => setPage(item.id)}
-              aria-current={page === item.id ? "page" : undefined}
+              key={value}
+              aria-pressed={mode === value}
+              onClick={() => {
+                setMode(value);
+                setExhaustive(false);
+              }}
               className={cn(
-                "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium",
-                page === item.id
-                  ? "bg-emerald-50 text-emerald-800"
-                  : "text-stone-500 hover:bg-stone-50",
+                "rounded-md px-4 py-2 text-sm font-medium",
+                mode === value
+                  ? "bg-white text-stone-900 shadow-sm"
+                  : "text-stone-500",
               )}
             >
-              <item.icon size={16} />
-              <span>{item.label}</span>
+              {label}
             </Button>
           ))}
-        </nav>
-        <div className="hidden items-center gap-2 text-xs text-stone-400 xl:flex">
-          <span className="size-1.5 rounded-full bg-stone-400" />
-          ShellHacks 2026 · Proof of concept
         </div>
-      </header>
-
-      {page === "explore" && (
-        <div className="flex flex-col lg:flex-row">
-          <aside
-            aria-label="Explore filters"
-            className="shrink-0 border-b border-stone-200 bg-white p-5 lg:w-72 lg:border-r lg:border-b-0 lg:p-6"
-          >
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-sm font-semibold">
-                <SlidersHorizontal size={16} />
-                Explore filters
-              </h2>
+        <span className="text-xs text-stone-500">
+          Ranked by distance · evidence before action
+        </span>
+      </div>
+      {mode === "forecast" && (
+        <section
+          aria-label="Forecast unavailable"
+          className="border-b border-stone-200 bg-stone-50 px-5 py-4"
+        >
+          <h2 className="text-sm font-semibold">
+            Forecast estimates unavailable
+          </h2>
+          <p className="mt-1 max-w-4xl text-sm text-stone-600">
+            Target: documented field-construction activity for a known project
+            in a future month, using information available at the forecast
+            cutoff. The reports lack verified activity intervals and linked
+            historical snapshots. Missing activity is unknown. No forecast was
+            trained; the map below continues to show source plans.
+          </p>
+          <p className="mt-2 text-xs text-stone-500">
+            The evaluated Gemini experiment extracts document fields. It does
+            not predict construction. Changed uploads or features require a new
+            compatible inference manifest before estimates can be shown.
+          </p>
+        </section>
+      )}
+      <div className="grid lg:grid-cols-[16rem_minmax(0,1fr)]">
+        <aside className="space-y-5 border-b border-stone-200 bg-stone-50 p-5 lg:border-r lg:border-b-0">
+          <div>
+            <h2 className="mb-3 text-sm font-semibold">Utilities</h2>
+            {availableCompanies.length > 12 && (
+              <label className="mb-3 block text-xs">
+                Find utility
+                <input
+                  type="search"
+                  value={companySearch}
+                  onChange={(e) => setCompanySearch(e.target.value)}
+                  className={cn(field, "mt-1")}
+                />
+              </label>
+            )}
+            <div className="mb-3 flex gap-3 text-xs">
               <Button
-                onClick={reset}
-                aria-label="Reset filters"
-                className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-700"
+                className="text-emerald-800 underline"
+                onClick={() => setCompanies(availableCompanies)}
               >
-                <RotateCcw size={15} />
+                Select all utilities
+              </Button>
+              <Button
+                className="text-stone-600 underline"
+                onClick={() => setCompanies([])}
+              >
+                Clear utilities
               </Button>
             </div>
-            <ThresholdControl
-              miles={threshold}
-              unit={unit}
-              onMiles={setThreshold}
-              onUnit={setUnit}
+            {availableCompanies.length > 100 && (
+              <p className="mb-2 text-xs text-stone-500">
+                First 100 matching utilities shown. Search to find others.{" "}
+                {companies.length.toLocaleString()} selected.
+              </p>
+            )}
+            <div className="max-h-48 space-y-3 overflow-auto">
+              {visibleCompanies.map((c) => (
+                <label key={c} className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={selectedCompanies.has(c)}
+                    onChange={(e) =>
+                      setCompanies((old) =>
+                        e.target.checked
+                          ? [...old, c]
+                          : old.filter((v) => v !== c),
+                      )
+                    }
+                    className="size-4 accent-emerald-700"
+                  />
+                  {c}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <label htmlFor="radius" className="text-sm font-semibold">
+                Distance radius
+              </label>
+              <select
+                aria-label="Distance units"
+                value={unit}
+                onChange={(e) => setUnit(e.target.value as "mi" | "km")}
+                className="rounded border border-stone-200 bg-white p-1 text-xs"
+              >
+                <option value="mi">mi</option>
+                <option value="km">km</option>
+              </select>
+            </div>
+            <input
+              id="radius"
+              type="number"
+              min={milesToUnit(0.1, unit)}
+              max={unit === "mi" ? 500 : 804.672}
+              step="any"
+              value={Number(milesToUnit(thresholdMiles, unit).toFixed(4))}
+              onChange={(e) => {
+                const n = Number(e.target.value);
+                if (
+                  Number.isFinite(n) &&
+                  milesFromUnit(n, unit) >= 0.1 &&
+                  milesFromUnit(n, unit) <= 500
+                )
+                  setThresholdMiles(milesFromUnit(n, unit));
+              }}
+              className={field}
             />
-            <fieldset className="mt-7 border-t border-stone-100 pt-5">
-              <legend className="float-left mb-4 w-full text-xs font-semibold text-stone-600">
-                Companies
-              </legend>
-              <div className="clear-both space-y-3">
-                {companies.map((c) => (
-                  <label
-                    key={c.id}
-                    className="flex cursor-pointer items-center gap-2.5 text-sm"
-                  >
-                    <Checkbox.Root
-                      checked={selectedCompanies.includes(c.id)}
-                      onCheckedChange={(checked) =>
-                        setSelectedCompanies((x) =>
-                          checked
-                            ? [...new Set([...x, c.id])]
-                            : x.filter((v) => v !== c.id),
-                        )
-                      }
-                      className="flex size-4 items-center justify-center rounded border border-stone-300 bg-white data-[checked]:border-emerald-700 data-[checked]:bg-emerald-700"
-                    >
-                      <Checkbox.Indicator>
-                        <Check size={12} className="text-white" />
-                      </Checkbox.Indicator>
-                    </Checkbox.Root>
-                    <span>{c.label}</span>
-                    <span
-                      className={cn(
-                        "ml-auto size-2.5",
-                        c.id === "DESC"
-                          ? "rounded-full bg-emerald-700"
-                          : "rounded-sm bg-stone-600",
-                      )}
+            <Slider.Root
+              value={thresholdMiles}
+              min={0.1}
+              max={500}
+              step={0.1}
+              onValueChange={setThresholdMiles}
+              className="mt-2"
+            >
+              <Slider.Control className="relative flex h-7 items-center">
+                <Slider.Track className="h-1 w-full rounded-full bg-stone-200">
+                  <Slider.Indicator className="rounded-full bg-emerald-700" />
+                  <Slider.Thumb
+                    aria-label="Distance radius in miles"
+                    className="size-4 rounded-full border-2 border-emerald-700 bg-white"
+                  />
+                </Slider.Track>
+              </Slider.Control>
+            </Slider.Root>
+            <p className="text-xs text-stone-500">
+              Strictly less than {milesToUnit(thresholdMiles, unit).toFixed(2)}{" "}
+              {unit}. Approximate centers.
+            </p>
+          </div>
+          <label className="flex items-start gap-2 text-xs text-stone-600">
+            <input
+              type="checkbox"
+              checked={includeUndated}
+              onChange={(e) => setIncludeUndated(e.target.checked)}
+              className="mt-0.5 size-4 accent-emerald-700"
+            />
+            Include unknown milestone dates
+          </label>
+          {mode === "what_if" && (
+            <section className="border-t border-stone-200 pt-4">
+              <h2 className="text-sm font-semibold">Assumed year shifts</h2>
+              <p className="mt-1 text-xs text-stone-500">
+                Applied to source milestones. Zero means unchanged.
+              </p>
+              <div className="mt-3 space-y-3">
+                {visibleCompanies.map((c) => (
+                  <label key={c} className="block text-xs">
+                    {c}
+                    <input
+                      type="number"
+                      min={shiftLimits.get(c)?.min ?? -20}
+                      max={shiftLimits.get(c)?.max ?? 20}
+                      step={1}
+                      value={shifts[c] ?? 0}
+                      onChange={(e) => {
+                        const n = Number(e.target.value);
+                        if (
+                          Number.isInteger(n) &&
+                          n >= (shiftLimits.get(c)?.min ?? -20) &&
+                          n <= (shiftLimits.get(c)?.max ?? 20)
+                        ) {
+                          setShifts((old) => ({ ...old, [c]: n }));
+                          setChosenRange(null);
+                        }
+                      }}
+                      className={cn(field, "mt-1")}
                     />
                   </label>
                 ))}
               </div>
-            </fieldset>
-            <div className="mt-7 border-t border-stone-100 pt-5">
-              <h3 className="mb-3 text-xs font-semibold text-stone-600">
-                Original milestone dates
-              </h3>
-              <label
-                className="mb-1 block text-xs text-stone-500"
-                htmlFor="date-from"
-              >
-                From
-              </label>
-              <Input
-                id="date-from"
-                type="date"
-                value={from}
-                onValueChange={setFrom}
-                className={cn(numberInput, "date-input mb-3")}
-              />
-              <label
-                className="mb-1 block text-xs text-stone-500"
-                htmlFor="date-to"
-              >
-                Through
-              </label>
-              <Input
-                id="date-to"
-                type="date"
-                value={to}
-                onValueChange={setTo}
-                className={cn(numberInput, "date-input")}
-              />
-              {invalidRange && (
-                <p role="alert" className="mt-2 text-xs text-red-700">
-                  The start date must be on or before the end date.
-                </p>
-              )}
-              <label className="mt-3 flex cursor-pointer items-center gap-2 text-xs text-stone-500">
-                <Checkbox.Root
-                  checked={includeUndated}
-                  onCheckedChange={setIncludeUndated}
-                  className="flex size-4 items-center justify-center rounded border border-stone-300 data-[checked]:border-emerald-700 data-[checked]:bg-emerald-700"
+              <label className="mt-4 block text-xs">
+                Maximum milestone gap
+                <select
+                  value={windowMonths ?? ""}
+                  onChange={(e) =>
+                    setWindowMonths(
+                      e.target.value === "" ? null : Number(e.target.value),
+                    )
+                  }
+                  className={cn(field, "mt-1")}
                 >
-                  <Checkbox.Indicator>
-                    <Check size={12} className="text-white" />
-                  </Checkbox.Indicator>
-                </Checkbox.Root>
-                Include records without a date
+                  <option value="">No gap restriction</option>
+                  {[0, 3, 6, 12, 24].map((n) => (
+                    <option key={n} value={n}>
+                      {n} calendar months
+                    </option>
+                  ))}
+                </select>
               </label>
-              <p className="mt-3 text-xs leading-relaxed text-stone-400">
-                Planned in-service or need dates. These are not verified
-                construction windows.
-              </p>
-            </div>
-            <div className="mt-7 border-t border-stone-100 pt-5">
-              <p className="mb-2 text-xs font-semibold text-stone-600">
-                Start with a case
+              <p className="mt-2 text-xs text-stone-500">
+                With a gap restriction, imprecise or missing dates are excluded.
+                This compares milestones, not construction overlap.
               </p>
               <Button
-                onClick={openCase}
-                aria-label="Inspect Jasper–Okatie and Goshen–Georgia Pacific case"
-                className="flex w-full items-start justify-between gap-2 text-left text-sm font-medium text-emerald-800"
+                className="mt-3 text-xs font-medium text-emerald-800 underline"
+                onClick={() => {
+                  setShifts({});
+                  setChosenRange(null);
+                  setWindowMonths(null);
+                }}
               >
-                <span>
-                  Jasper–Okatie
-                  <br />
-                  <span className="text-xs font-normal text-stone-500">
-                    with Goshen–McIntosh
-                  </span>
-                </span>
-                <ArrowRight size={16} className="mt-1 shrink-0" />
-              </Button>
-              <p className="mt-3 text-xs leading-relaxed text-stone-400">
-                The reviewed Goshen work section ends at Georgia Pacific.
-                Inspect the scope notes.
-              </p>
-            </div>
-          </aside>
-          <main id="main-content" className="min-w-0 flex-1">
-            <div className="p-5 lg:p-6">
-              <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
-                <div>
-                  <p className="mb-2 text-xs font-semibold text-emerald-800">
-                    GEORGIA & SOUTH CAROLINA
-                  </p>
-                  <h1 className="text-3xl font-semibold">
-                    Explore nearby grid work
-                  </h1>
-                  <p className="mt-2 text-sm text-stone-500">
-                    Find proximity candidates, then inspect what the sources
-                    actually say.
-                  </p>
-                </div>
-                <DownloadComparisons pairs={pairs} threshold={threshold} />
-              </div>
-              <div className="mb-5 flex flex-wrap items-center gap-7 border-y border-stone-200 py-4 sm:gap-12">
-                <Metric
-                  value={filtered.length}
-                  label="Planning records shown"
-                />
-                <Metric
-                  value={pairs.length}
-                  label="Cross-company comparisons"
-                />
-                <Metric
-                  value={nearby.length}
-                  label={`Within ${Number(milesToUnit(threshold, unit).toFixed(1))} ${unit}`}
-                />
-                <p className="max-w-xs text-xs leading-relaxed text-stone-500">
-                  Supplied historical planning records.
-                  <br />
-                  Original values preserved; research notes available on
-                  inspection.
-                </p>
-              </div>
-              <div className="grid gap-4 xl:grid-cols-3">
-                <section className="min-w-0 overflow-hidden rounded-xl border border-stone-200 bg-white xl:col-span-2">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-100 px-4 py-3">
-                    <div className="flex rounded-lg bg-stone-100 p-1">
-                      {(["points", "heat"] as const).map((mode) => (
-                        <Button
-                          key={mode}
-                          aria-pressed={mapMode === mode}
-                          onClick={() => setMapMode(mode)}
-                          className={cn(
-                            "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium",
-                            mapMode === mode
-                              ? "bg-white text-stone-900 shadow-sm"
-                              : "text-stone-500",
-                          )}
-                        >
-                          {mode === "points" ? (
-                            <MapPin size={13} />
-                          ) : (
-                            <Layers size={13} />
-                          )}
-                          {mode === "points" ? "Project points" : "Heat map"}
-                        </Button>
-                      ))}
-                    </div>
-                    <Button
-                      onClick={() => focusMap()}
-                      className="flex items-center gap-1.5 rounded px-2 py-1 text-xs text-stone-500 hover:bg-stone-50"
-                    >
-                      <Target size={13} />
-                      Focus selection
-                    </Button>
-                    <Button
-                      onClick={() => focusMap(true)}
-                      className="rounded px-2 py-1 text-xs text-stone-500 hover:bg-stone-50"
-                    >
-                      Show all locations
-                    </Button>
-                  </div>
-                  <div className="h-96 sm:h-[30rem]">
-                    <ProjectMap
-                      projects={filtered}
-                      selected={selected}
-                      selectedProjectId={projectId}
-                      fitAll={fitAll}
-                      mode={mapMode}
-                      fitRequest={fitRequest}
-                      onProjectSelect={setProjectId}
-                    />
-                  </div>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-stone-100 px-4 py-3 text-xs text-stone-500">
-                    <span className="flex items-center gap-1.5">
-                      <i className="size-2 rounded-full bg-emerald-700" />
-                      Dominion
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <i className="size-2 rounded-sm bg-stone-600" />
-                      Georgia Power
-                    </span>
-                    <span className="ml-auto">
-                      Dashed line = measured separation, not a route
-                    </span>
-                  </div>
-                </section>
-                <PairList
-                  pairs={shownPairs}
-                  selected={selected}
-                  onSelect={pickPair}
-                  unit={unit}
-                  threshold={threshold}
-                  allCount={pairs.length}
-                  reset={reset}
-                  showAll={showAll}
-                  onShowAll={setShowAll}
-                />
-              </div>
-            </div>
-            <EvidencePanel
-              comparison={selected}
-              project={selectedProject}
-              onFocus={() => focusMap()}
-            />
-          </main>
-        </div>
-      )}
-
-      {page === "scenarios" && (
-        <main id="main-content" className="mx-auto max-w-7xl p-5 lg:p-8">
-          <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="mb-2 text-xs font-semibold text-emerald-800">
-                EXPLICIT ASSUMPTIONS
-              </p>
-              <h1 className="text-3xl font-semibold">
-                What if the schedules moved?
-              </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-500">
-                Shift the supplied milestones and explore a target year. This is
-                a deterministic planning scenario, not a forecast of actual
-                construction.
-              </p>
-            </div>
-            <span className="rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-600">
-              Scenario · no probabilities
-            </span>
-          </div>
-          <div className="grid gap-5 lg:grid-cols-4">
-            <section className="space-y-6 rounded-xl border border-stone-200 bg-white p-5">
-              <div>
-                <label
-                  htmlFor="scenario-year"
-                  className="mb-2 block text-xs font-semibold text-stone-600"
-                >
-                  Target calendar year
-                </label>
-                <IntegerControl
-                  id="scenario-year"
-                  min={2023}
-                  max={2045}
-                  value={scenario.targetYear}
-                  onChange={(n) =>
-                    setScenario((x) => ({ ...x, targetYear: n }))
-                  }
-                />
-              </div>
-              {companies.map((c) => (
-                <div key={c.id}>
-                  <label
-                    htmlFor={`shift-${c.id}`}
-                    className="mb-2 block text-xs font-semibold text-stone-600"
-                  >
-                    {c.short} shift in years
-                  </label>
-                  <IntegerControl
-                    id={`shift-${c.id}`}
-                    min={-10}
-                    max={10}
-                    value={scenario.shifts[c.id]}
-                    onChange={(n) =>
-                      setScenario((x) => ({
-                        ...x,
-                        shifts: { ...x.shifts, [c.id]: n },
-                      }))
-                    }
-                  />
-                  <p className="mt-1 text-xs text-stone-400">
-                    {scenario.shifts[c.id] >= 0 ? "+" : ""}
-                    {scenario.shifts[c.id]} years from original milestones
-                  </p>
-                </div>
-              ))}
-              <div>
-                <label
-                  htmlFor="scenario-gap"
-                  className="mb-2 block text-xs font-semibold text-stone-600"
-                >
-                  Maximum milestone gap in months
-                </label>
-                <IntegerControl
-                  id="scenario-gap"
-                  min={0}
-                  max={36}
-                  value={scenario.windowMonths}
-                  onChange={(n) =>
-                    setScenario((x) => ({ ...x, windowMonths: n }))
-                  }
-                />
-              </div>
-              <ThresholdControl
-                miles={threshold}
-                unit={unit}
-                onMiles={setThreshold}
-                onUnit={setUnit}
-              />
-              <Button
-                onClick={() =>
-                  setScenario((x) => ({ ...x, shifts: { DESC: 0, GPC: 0 } }))
-                }
-                className={cn(control, "w-full text-xs")}
-              >
-                Remove schedule shifts
+                Reset assumptions
               </Button>
             </section>
-            <div className="min-w-0 space-y-5 lg:col-span-3">
-              <div className="grid grid-cols-2 gap-5 rounded-xl border border-stone-200 bg-white p-5 sm:grid-cols-4">
-                <Metric
-                  value={baseline.projects.length}
-                  label="Original records in year"
-                />
-                <Metric
-                  value={scenarioResult.projects.length}
-                  label="After assumed shifts"
-                />
-                <Metric
-                  value={baseline.sameMilestoneWindow.length}
-                  label="Baseline nearby pairs"
-                  note="Also within milestone gap"
-                />
-                <Metric
-                  value={scenarioResult.sameMilestoneWindow.length}
-                  label="Scenario nearby pairs"
-                  note="Also within milestone gap"
-                />
-              </div>
-              <section className="overflow-hidden rounded-xl border border-stone-200 bg-white">
-                <div className="flex items-center justify-between border-b border-stone-100 p-4">
-                  <h2 className="font-semibold">
-                    Scenario concentrations in {scenario.targetYear}
-                  </h2>
-                  <span className="text-xs text-stone-500">
-                    Original locations retained
-                  </span>
-                </div>
-                <div className="h-96">
-                  <ProjectMap
-                    projects={scenarioResult.projects}
-                    selected={scenarioResult.sameMilestoneWindow[0] ?? null}
-                    mode="heat"
-                    fitRequest={0}
-                    onProjectSelect={(id) => {
-                      reset();
-                      setProjectId(id);
-                      focusMap();
-                      setPage("explore");
-                    }}
-                  />
-                </div>
-                <p className="px-4 py-3 text-xs text-stone-500">
-                  Heat describes the shifted planning records in the selected
-                  year, not predicted job locations. Unchanged baseline uses the
-                  same year, radius and milestone-gap setting.
-                </p>
-              </section>
-              <section className="rounded-xl border border-stone-200 bg-white p-5">
-                <h2 className="mb-3 font-semibold">
-                  Comparisons under these assumptions
-                </h2>
-                {scenarioResult.sameMilestoneWindow.length ? (
-                  <div className="divide-y divide-stone-100">
-                    {scenarioResult.sameMilestoneWindow.map((pair) => (
-                      <div
-                        key={pair.id}
-                        className="flex flex-wrap justify-between gap-2 py-3 text-sm"
-                      >
-                        <div>
-                          <p className="font-medium">
-                            {pair.a.shortName} + {pair.b.shortName}
-                          </p>
-                          <p className="mt-1 text-xs tabular-nums text-stone-500">
-                            {formatDate(pair.a.originalDate)} →{" "}
-                            {formatDate(pair.b.originalDate)} · shifted
-                            milestones
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="tabular-nums">
-                            {milesToUnit(pair.distanceMiles ?? 0, unit).toFixed(
-                              2,
-                            )}{" "}
-                            {unit}{" "}
-                            <span className="text-stone-400">
-                              / {pair.gapDays} days
-                            </span>
-                          </p>
-                          <Button
-                            onClick={() => inspectScenario(pair)}
-                            className="mt-2 text-xs font-medium text-emerald-800 underline"
-                          >
-                            Inspect original evidence
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-stone-500">
-                    No cross-company pair meets this scenario’s year, distance
-                    and milestone-gap settings. Adjust a shift or target year to
-                    explore another assumption.
-                  </p>
-                )}
-                <p className="mt-3 text-xs text-stone-400">
-                  Both shifted milestones must fall in the target year. The
-                  later date must be on or before the earlier date plus the
-                  selected calendar months, clamped to month end. This does not
-                  establish actual construction overlap or savings.
-                </p>
-              </section>
-            </div>
-          </div>
-          <div className="mt-6">
-            <DataReadiness compact />
-          </div>
-        </main>
-      )}
-
-      {page === "methods" && (
-        <main id="main-content" className="mx-auto max-w-6xl p-5 lg:p-8">
-          <p className="mb-2 text-xs font-semibold text-emerald-800">
-            TRACEABLE BY DESIGN
+          )}
+          <p className="border-t border-stone-200 pt-4 text-xs leading-relaxed text-stone-500">
+            {source.kind === "demo"
+              ? "Historical examples from the supplied workbook. Research updates are annotations, not replacements."
+              : "Uploaded records have independent identities and no inherited demo research."}
           </p>
-          <h1 className="text-3xl font-semibold">Data and methods</h1>
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-stone-500">
-            The working map starts with ten supplied examples. The full reports
-            were also assessed for additional records and whether they support a
-            credible forecasting experiment.
-          </p>
-          <section className="my-6 grid gap-5 md:grid-cols-2">
-            <article className="rounded-xl border border-stone-200 bg-white p-5">
-              <h2 className="mb-3 flex items-center gap-2 font-semibold">
-                <Compass size={18} className="text-emerald-800" />
-                Explainable proximity
-              </h2>
-              <p className="text-sm leading-relaxed text-stone-600">
-                Average the two named endpoint coordinates, or use the one
-                available endpoint. Calculate straight-line haversine distance
-                between those approximate representative points. Evaluate every
-                distinct cross-company pair and rank by distance.
-              </p>
-              <p className="mt-3 text-sm leading-relaxed text-stone-600">
-                The 25-mile default is adjustable. We use strictly below the
-                selected threshold and display two decimals while calculating
-                with unrounded values. Changing display units preserves the
-                physical threshold: 25 miles = 40.2336 km.
-              </p>
-              <p className="mt-3 text-xs text-stone-500">
-                Sperry’s user-supplied clarification permits either center or
-                closest-point methods and either cutoff. Center points were
-                selected for a reproducible first prototype.
-              </p>
-            </article>
-            <article className="rounded-xl border border-stone-200 bg-white p-5">
-              <h2 className="mb-3 flex items-center gap-2 font-semibold">
-                <CircleHelp size={18} className="text-emerald-800" />
-                What the dates mean
-              </h2>
-              <p className="text-sm leading-relaxed text-stone-600">
-                Dominion examples contain planned in-service dates. The Georgia
-                Power examples copy need dates from a December 2024 planning
-                snapshot. Neither field establishes actual construction start,
-                finish or simultaneous activity.
-              </p>
-              <p className="mt-3 text-sm leading-relaxed text-stone-600">
-                Original spreadsheet values drive the map, filters and
-                comparisons. Later scope corrections, completion statements and
-                changed schedules remain separate research notes. Missing values
-                stay unknown.
-              </p>
-              <a
-                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-emerald-800 underline"
-                href="/sources/Projects_Overlaps.xlsx"
+        </aside>
+        <div className="min-w-0">
+          <TimelineControl
+            distribution={distribution}
+            range={range}
+            onChange={setChosenRange}
+            assumed={mode === "what_if"}
+          />
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-200 px-5 py-3">
+            <p role="status" className="text-sm tabular-nums text-stone-600">
+              {search.status === "loading"
+                ? "Searching…"
+                : `${filtered.length.toLocaleString()} of ${sourceCount.toLocaleString()} records in view`}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                aria-pressed={mapMode === "points"}
+                onClick={() => setMapMode("points")}
+                className={cn(control, "text-xs")}
               >
-                <ArrowDownToLine size={14} />
-                Download unchanged source workbook
-              </a>
-            </article>
-          </section>
-          <DataReadiness />
-          <section className="mt-6 rounded-xl border border-stone-200 bg-white p-5">
-            <h2 className="mb-3 font-semibold">
-              Inspect every starting record
+                <MapPin size={13} className="mr-1 inline" />
+                Map
+              </Button>
+              <Button
+                aria-pressed={mapMode === "heat"}
+                onClick={() => setMapMode("heat")}
+                className={cn(control, "text-xs")}
+              >
+                <Layers size={13} className="mr-1 inline" />
+                Heat
+              </Button>
+              <Button
+                className={cn(control, "text-xs")}
+                onClick={() => {
+                  setFitAll(true);
+                  setFitRequest((n) => n + 1);
+                }}
+              >
+                Fit all
+              </Button>
+            </div>
+          </div>
+          <div className="h-[28rem] lg:h-[32rem]">
+            <Suspense
+              fallback={
+                <p role="status" className="p-6">
+                  Loading map…
+                </p>
+              }
+            >
+              <ProjectMap
+                projects={filtered}
+                centers={centers}
+                selected={selected}
+                selectedProjectId={project?.id ?? null}
+                mode={mapMode}
+                fitRequest={fitRequest}
+                fitAll={fitAll}
+                onProjectSelect={selectProject}
+              />
+            </Suspense>
+          </div>
+        </div>
+      </div>
+      <section
+        aria-labelledby="rank-title"
+        className="border-t border-stone-200"
+      >
+        <div className="flex flex-wrap items-start justify-between gap-3 p-5">
+          <div>
+            <h2 id="rank-title" className="text-lg font-semibold">
+              {allPairs
+                ? "All fixture comparisons"
+                : "Nearby cross-utility plans"}
             </h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="border-b border-stone-200 text-stone-500">
-                  <tr>
-                    <th className="py-2 pr-4">Project</th>
-                    <th className="pr-4">Original date</th>
-                    <th className="pr-4">Field meaning</th>
-                    <th>Source</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-stone-100">
-                  {PROJECTS.map((p) => (
-                    <tr key={p.id}>
-                      <td className="py-3 pr-4">
-                        <span className="font-medium">{p.shortName}</span>
-                        <span className="mt-1 block text-stone-400">
-                          {p.id}
-                        </span>
-                      </td>
-                      <td className="pr-4 whitespace-nowrap tabular-nums">
-                        {p.originalDate}
-                      </td>
-                      <td className="pr-4">
-                        {p.dateMeaning === "need_date"
-                          ? "Need date"
-                          : "Planned in-service"}
-                      </td>
-                      <td>
-                        <a
-                          href={`${p.originalSource.url}#page=${p.originalSource.page}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-emerald-800 underline"
-                        >
-                          PDF p. {p.originalSource.page}
-                          <ArrowUpRight size={12} />
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <p className="mt-1 text-xs text-stone-500">
+              {results
+                ? `${results.complete ? "" : "At least "}${results.matchedCount.toLocaleString()} nearby matches · ${results.possibleCount.toLocaleString()} possible cross-utility pairs before distance/gap checks.`
+                : "Select utilities and a date range to search."}
+            </p>
+            {results && (
+              <p className="mt-1 text-xs text-stone-500">
+                {results.complete
+                  ? `Search complete. ${results.matchedCount > results.pairs.length ? "Showing the closest 200." : "All nearby matches shown."}`
+                  : `Search bounded (${results.reason.replaceAll("_", " ")}). Showing the best visited pairs, not necessarily the global closest. Narrow the radius, utilities or dates.`}
+              </p>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {dataset.projects.length <= 20 && mode === "planned" && (
+              <Button
+                className={cn(control, "text-xs")}
+                onClick={() => setExhaustive((v) => !v)}
+              >
+                {exhaustive ? "Nearby only" : "Inspect all fixture pairs"}
+              </Button>
+            )}
+            <Button
+              disabled={!pairs.length || search.status === "loading"}
+              onClick={() =>
+                download(
+                  "GridLock-displayed-comparisons.csv",
+                  comparisonCsv(
+                    pairs,
+                    dataset,
+                    source,
+                    mode,
+                    activeShifts,
+                    allPairs ? true : !!results?.complete,
+                    allPairs
+                      ? "all fixture pairs"
+                      : "displayed bounded nearby results",
+                  ),
+                )
+              }
+              className={cn(control, "text-xs")}
+            >
+              <ArrowDownToLine size={13} className="mr-1 inline" />
+              Export {pairs.length} displayed
+            </Button>
+            {search.status === "loading" && (
+              <Button
+                className={cn(control, "text-xs")}
+                onClick={search.cancel}
+              >
+                <X size={13} className="mr-1 inline" />
+                Cancel
+              </Button>
+            )}
+          </div>
+        </div>
+        {search.error && (
+          <p role="alert" className="px-5 pb-4 text-sm">
+            {search.error}
+          </p>
+        )}
+        {search.status === "loading" ? (
+          <p className="px-5 pb-5 text-sm text-stone-500">
+            Preparing candidates; changing filters cancels obsolete work.
+          </p>
+        ) : pairs.length === 0 ? (
+          <p className="px-5 pb-6 text-sm text-stone-500">
+            No comparisons to show. Select two utilities, widen the dates or
+            radius, or include unknown dates.
+          </p>
+        ) : (
+          <div className="max-h-96 overflow-auto border-t border-stone-100">
+            <ol
+              aria-label="Ranked comparisons"
+              className="divide-y divide-stone-100"
+            >
+              {pairs.map((p, i) => (
+                <li key={p.id}>
+                  <Button
+                    aria-pressed={selectedId === p.id}
+                    onClick={() => selectPair(p.id)}
+                    className={cn(
+                      "flex w-full items-center gap-3 px-5 py-4 text-left hover:bg-stone-50",
+                      selectedId === p.id && "bg-emerald-50",
+                    )}
+                  >
+                    <span className="w-6 shrink-0 text-xs tabular-nums text-stone-400">
+                      {i + 1}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium">
+                        {p.a.shortName}{" "}
+                        <span className="font-normal text-stone-400">↔</span>{" "}
+                        {p.b.shortName}
+                      </span>
+                      <span className="mt-1 block text-xs text-stone-500">
+                        {p.a.company} / {p.b.company} ·{" "}
+                        {p.gapDays === null
+                          ? "Milestone gap unknown"
+                          : `${p.gapDays.toLocaleString()} days between ${mode === "what_if" ? "assumed" : overrides.length ? "effective" : "source"} milestones`}
+                      </span>
+                    </span>
+                    <strong className="whitespace-nowrap text-sm tabular-nums">
+                      {p.distanceMiles === null
+                        ? "Unknown"
+                        : `${milesToUnit(p.distanceMiles, unit).toFixed(2)} ${unit}`}
+                    </strong>
+                    <ChevronRight
+                      size={16}
+                      className="shrink-0 text-stone-400"
+                    />
+                  </Button>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+        {results && (
+          <details className="border-t border-stone-100 px-5 py-3 text-xs text-stone-500">
+            <summary className="cursor-pointer">Search diagnostics</summary>
+            <p className="mt-2 tabular-nums">
+              {results.diagnostics.candidateCount.toLocaleString()} candidates ·{" "}
+              {results.diagnostics.exactDistanceCount.toLocaleString()} exact
+              distances · {results.diagnostics.elapsedMs.toFixed(1)} ms query ·{" "}
+              {results.diagnostics.buildMs.toFixed(1)} ms dataset preparation ·{" "}
+              {(results.diagnostics.indexBytes / 1048576).toFixed(2)} MiB index
+              · {results.uncertainDateCount.toLocaleString()} imprecise dates in
+              view. Results bounded to 200; displayed export is bounded to those
+              rows. Dense output can be quadratic.
+            </p>
+          </details>
+        )}
+      </section>
+      {selectedRecords.length > 0 &&
+        (mode === "what_if" || overrides.length > 0) && (
+          <section className="border-t border-stone-200 bg-emerald-50 px-5 py-4">
+            <h2 className="text-sm font-semibold">
+              Applied layers · original evidence below
+            </h2>
+            <div className="mt-2 grid gap-3 md:grid-cols-2">
+              {selectedRecords.map((p) => (
+                <div key={p.id} className="text-xs leading-relaxed">
+                  <strong>{p.shortName}</strong>
+                  <p>
+                    Source:{" "}
+                    {formatDate(originals.get(p.id)?.originalDate ?? null)} ·
+                    Effective corrected date: {formatDate(p.originalDate)}
+                    {mode === "what_if"
+                      ? ` · Assumption: ${activeShifts[p.company] ?? 0} years → ${shiftDateBounds(projectDateBounds(p), activeShifts[p.company] ?? 0)?.label ?? "unknown"}`
+                      : ""}
+                  </p>
+                  {overrides
+                    .filter((o) => o.projectId === p.id)
+                    .map((o, i) => (
+                      <p key={i}>Correction reason: {o.reason}</p>
+                    ))}
+                </div>
+              ))}
             </div>
           </section>
-        </main>
-      )}
-      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-stone-200 bg-white px-6 py-4 text-xs text-stone-400">
-        <span>GridLock · Public planning records, explicit assumptions.</span>
-        <a
-          href="https://shellhacks-2026.devpost.com/"
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center gap-1.5 hover:text-stone-700"
-        >
-          ShellHacks 2026
-          <ExternalLink size={12} />
-        </a>
-      </footer>
+        )}
+      <EvidencePanel
+        comparison={originalSelection}
+        project={project ? (originals.get(project.id) ?? null) : null}
+        onFocus={focus}
+      />
     </div>
   );
 }

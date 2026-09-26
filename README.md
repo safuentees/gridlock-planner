@@ -60,6 +60,7 @@ The preferred future forecast target is documented field-construction activity f
 ## Verify and reproduce
 
 ```sh
+npm run notices:check
 npm run format:check
 npm test
 npm run build
@@ -79,7 +80,7 @@ python -m unittest discover -s scripts/extraction -p 'test_*.py' -v
 python scripts/extraction/benchmark.py evaluate --check
 ```
 
-The final command reproduces evaluation metrics offline from committed predictions/reference/configuration, not new provider responses. Omit `--check` from data generators only when intentionally regenerating outputs. Source bytes and hashes must remain unchanged. Known-report parsers are specific to the supplied report editions. Tests cover the original oracle, spatial boundaries/counts/cancellation, date precision, imports, source-preserving corrections and forecast compatibility. [Verification record](docs/VERIFICATION.md) and [scaling decisions](docs/CHALLENGES_AND_SCALING.md) distinguish engine measurements from browser checks.
+The final command reproduces evaluation metrics offline from committed predictions/reference/configuration, not new provider responses. Omit `--check` from data generators only when intentionally regenerating outputs. Source bytes and hashes must remain unchanged. Known-report parsers are specific to the supplied report editions. Tests cover the original oracle, spatial boundaries/counts/cancellation, date precision, imports, source-preserving corrections and forecast compatibility. [Current implementation verification](docs/IMPLEMENTATION_VERIFICATION.md), [original prototype verification](docs/VERIFICATION.md) and [scaling decisions](docs/CHALLENGES_AND_SCALING.md) distinguish engine measurements from browser checks.
 
 ## Team collaboration
 

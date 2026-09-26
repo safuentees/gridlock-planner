@@ -1,0 +1,885 @@
+{
+  "schema_version": 1,
+  "model": "gemini-3.5-flash-lite",
+  "gold_sha256": "3745c5142781ab42b67b43816d7325300dd6e309868b84485838c41a371fe65f",
+  "config_sha256": "fb4dcb2894791fc9a2bea6f4c12d1f6a053b6b7dd27d2e5d345bc11562aeab17",
+  "catalog_sha256": "6335686268d4ac916e38191b314ffd5f6baf7aadf7ff0e0647a14cef0bdcc38c",
+  "results": [
+    {
+      "case_id": "desc-2",
+      "split": "known_layout",
+      "source": {
+        "id": "desc_supplied",
+        "url": "/sources/Dominion_2024-2028_Project_Descriptions.pdf",
+        "sha256": "890876d0faefd40576a0b5e598a804b54b4d8d2d56dd96fb7e40d5a406db0f46",
+        "pdf_page": 2,
+        "title": "DESC 2024–2028 project descriptions"
+      },
+      "fields": {
+        "actual_end": {
+          "evidence_quote": null,
+          "missing_reason": "No actual end date or completion statement is present in the document.",
+          "value": null
+        },
+        "actual_start": {
+          "evidence_quote": null,
+          "missing_reason": "No actual start date or activity statement is present in the document.",
+          "value": null
+        },
+        "milestones": {
+          "evidence_quote": "Planned In-Service Date 12/31/27",
+          "missing_reason": null,
+          "value": [
+            {
+              "meaning": "planned_in_service",
+              "phase": null,
+              "precision": "day",
+              "value": "2027-12-31"
+            }
+          ]
+        },
+        "planned_start": {
+          "evidence_quote": null,
+          "missing_reason": "No planned start date is provided in the document.",
+          "value": null
+        },
+        "project_id": {
+          "evidence_quote": "0167C-D",
+          "missing_reason": null,
+          "value": "0167C-D"
+        },
+        "project_name": {
+          "evidence_quote": "Union Pier 115-13.8 kV Sub: Tap",
+          "missing_reason": null,
+          "value": "Union Pier 115-13.8 kV Sub: Tap"
+        },
+        "status": {
+          "evidence_quote": "Planned",
+          "missing_reason": null,
+          "value": "Planned"
+        },
+        "work_scope": {
+          "evidence_quote": "Installing a 115 kV Tap to feed the future Union Pier 115 kV Sub.",
+          "missing_reason": null,
+          "value": "Installing a 115 kV Tap to feed the future Union Pier 115 kV Sub."
+        }
+      },
+      "validation_issues": [],
+      "review_status": "review_required",
+      "map_eligible": false,
+      "training_eligible": false,
+      "cache_key": "0840e6e150b0ac7df4d98f0755b819ea0cea5af5158ac376958d142a7c60097c",
+      "cache_hit": true,
+      "received_at": "2026-09-26T22:02:21.101101+00:00",
+      "latency_seconds": 38.091,
+      "finish_reason": "STOP",
+      "model_version": "gemini-3.5-flash-lite",
+      "usage": {
+        "promptTokenCount": 882,
+        "candidatesTokenCount": 470,
+        "totalTokenCount": 1352,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 362
+          },
+          {
+            "modality": "IMAGE",
+            "tokenCount": 520
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "response_sha256": "34d066c09168a48e9fc8673a03d65b2030b8ac308fb1fc061f33b327ce88adb6"
+    },
+    {
+      "case_id": "desc-16",
+      "split": "known_layout",
+      "source": {
+        "id": "desc_supplied",
+        "url": "/sources/Dominion_2024-2028_Project_Descriptions.pdf",
+        "sha256": "890876d0faefd40576a0b5e598a804b54b4d8d2d56dd96fb7e40d5a406db0f46",
+        "pdf_page": 16,
+        "title": "DESC 2024–2028 project descriptions"
+      },
+      "fields": {
+        "actual_end": {
+          "evidence_quote": null,
+          "missing_reason": "No actual end date or completion statement is present in the text.",
+          "value": null
+        },
+        "actual_start": {
+          "evidence_quote": null,
+          "missing_reason": "No actual start date or activity statement is present in the text.",
+          "value": null
+        },
+        "milestones": {
+          "evidence_quote": "Planned In-Service Date 12/25/24",
+          "missing_reason": null,
+          "value": [
+            {
+              "meaning": "planned_in_service",
+              "phase": null,
+              "precision": "day",
+              "value": "2024-12-25"
+            }
+          ]
+        },
+        "planned_start": {
+          "evidence_quote": null,
+          "missing_reason": "No planned start date is mentioned in the text.",
+          "value": null
+        },
+        "project_id": {
+          "evidence_quote": "6805 G",
+          "missing_reason": null,
+          "value": "6805 G"
+        },
+        "project_name": {
+          "evidence_quote": "Edenwood Sub: #1 & #2 230-115kV Autobanks, Replace with 336MVA",
+          "missing_reason": null,
+          "value": "Edenwood Sub: #1 & #2 230-115kV Autobanks, Replace with 336MVA"
+        },
+        "status": {
+          "evidence_quote": "In Progress",
+          "missing_reason": null,
+          "value": "In Progress"
+        },
+        "work_scope": {
+          "evidence_quote": "Replace Autobank 1 and 2 at Edenwood Substation.",
+          "missing_reason": null,
+          "value": "Replace Autobank 1 and 2 at Edenwood Substation."
+        }
+      },
+      "validation_issues": [],
+      "review_status": "review_required",
+      "map_eligible": false,
+      "training_eligible": false,
+      "cache_key": "3778e2462dc45e8a29b0e12497153da839152c71492d30f7f978203ae637f3ab",
+      "cache_hit": true,
+      "received_at": "2026-09-26T22:02:39.166926+00:00",
+      "latency_seconds": 18.036,
+      "finish_reason": "STOP",
+      "model_version": "gemini-3.5-flash-lite",
+      "usage": {
+        "promptTokenCount": 882,
+        "candidatesTokenCount": 482,
+        "totalTokenCount": 1364,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 362
+          },
+          {
+            "modality": "IMAGE",
+            "tokenCount": 520
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "response_sha256": "73c772ce64e89cca594d9a0bd47f88f0a72f7812f0465b080cb0be8d8f04fabf"
+    },
+    {
+      "case_id": "desc-34",
+      "split": "known_layout",
+      "source": {
+        "id": "desc_supplied",
+        "url": "/sources/Dominion_2024-2028_Project_Descriptions.pdf",
+        "sha256": "890876d0faefd40576a0b5e598a804b54b4d8d2d56dd96fb7e40d5a406db0f46",
+        "pdf_page": 34,
+        "title": "DESC 2024–2028 project descriptions"
+      },
+      "fields": {
+        "actual_end": {
+          "evidence_quote": null,
+          "missing_reason": "Not mentioned in the text",
+          "value": null
+        },
+        "actual_start": {
+          "evidence_quote": null,
+          "missing_reason": "Not mentioned in the text",
+          "value": null
+        },
+        "milestones": {
+          "evidence_quote": "10/1/2025 (phase 1) and 10/1/2026 (phase 2)",
+          "missing_reason": null,
+          "value": [
+            {
+              "meaning": "planned_in_service",
+              "phase": "phase 1",
+              "precision": "day",
+              "value": "2025-10-01"
+            },
+            {
+              "meaning": "planned_in_service",
+              "phase": "phase 2",
+              "precision": "day",
+              "value": "2026-10-01"
+            }
+          ]
+        },
+        "planned_start": {
+          "evidence_quote": null,
+          "missing_reason": "Not mentioned in the text",
+          "value": null
+        },
+        "project_id": {
+          "evidence_quote": "6859",
+          "missing_reason": null,
+          "value": "6859"
+        },
+        "project_name": {
+          "evidence_quote": "Dawson 230kV Sub and Fold-in: Construct and Rebuild",
+          "missing_reason": null,
+          "value": "Dawson 230kV Sub and Fold-in: Construct and Rebuild"
+        },
+        "status": {
+          "evidence_quote": "In Progress",
+          "missing_reason": null,
+          "value": "In Progress"
+        },
+        "work_scope": {
+          "evidence_quote": "Construct Dawson 230kV substation. Fold in the existing Canadys – Church Creek and Canadys – Faber Place 230kV lines at the Dawson 230kV substation (phase 1). Rebuild Canadys – Dawson 230kV #1 and #2 with B1272 ACSR (phase 2).",
+          "missing_reason": null,
+          "value": "Construct Dawson 230kV substation. Fold in the existing Canadys – Church Creek and Canadys – Faber Place 230kV lines at the Dawson 230kV substation (phase 1). Rebuild Canadys – Dawson 230kV #1 and #2 with B1272 ACSR (phase 2)."
+        }
+      },
+      "validation_issues": [],
+      "review_status": "review_required",
+      "map_eligible": false,
+      "training_eligible": false,
+      "cache_key": "539b077a838305cefb4e754f8a2e94dcc970d2c3487382292937b55db8855e73",
+      "cache_hit": true,
+      "received_at": "2026-09-26T22:03:20.097582+00:00",
+      "latency_seconds": 40.893,
+      "finish_reason": "STOP",
+      "model_version": "gemini-3.5-flash-lite",
+      "usage": {
+        "promptTokenCount": 882,
+        "candidatesTokenCount": 628,
+        "totalTokenCount": 1510,
+        "promptTokensDetails": [
+          {
+            "modality": "IMAGE",
+            "tokenCount": 520
+          },
+          {
+            "modality": "TEXT",
+            "tokenCount": 362
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "response_sha256": "6cfedeec8e71c5ab52e4669aa18fbcb8b7164e499a2421f119b522bb5f11ed45"
+    },
+    {
+      "case_id": "gpc-231",
+      "split": "known_layout",
+      "source": {
+        "id": "gpc_supplied",
+        "url": "/sources/Georgia_Power_2025_IRP_Volume_3_PUBLIC_DISCLOSURE.pdf",
+        "sha256": "0dae2fc3a38462f0930cc2eb0acedca35e329cd0924e4749c81422bdc8602a12",
+        "pdf_page": 231,
+        "title": "Georgia Power 2025 IRP Volume 3 Public Disclosure"
+      },
+      "fields": {
+        "actual_end": {
+          "evidence_quote": null,
+          "missing_reason": "No actual end date or completion statement is present in the document.",
+          "value": null
+        },
+        "actual_start": {
+          "evidence_quote": null,
+          "missing_reason": "No actual start date is stated in the document.",
+          "value": null
+        },
+        "milestones": {
+          "evidence_quote": "Need Date 04/25/2025 Start Date 06/01/2022",
+          "missing_reason": null,
+          "value": [
+            {
+              "meaning": "need_date",
+              "phase": null,
+              "precision": "day",
+              "value": "2025-04-25"
+            }
+          ]
+        },
+        "planned_start": {
+          "evidence_quote": "Start Date 06/01/2022",
+          "missing_reason": null,
+          "value": "2022-06-01"
+        },
+        "project_id": {
+          "evidence_quote": "Teams # 19523",
+          "missing_reason": null,
+          "value": "19523"
+        },
+        "project_name": {
+          "evidence_quote": "SAV: CC - HYUNDAI MOTORS SAVANNAH AKA. PROJECT EA",
+          "missing_reason": null,
+          "value": "SAV: CC - HYUNDAI MOTORS SAVANNAH AKA. PROJECT EA"
+        },
+        "status": {
+          "evidence_quote": null,
+          "missing_reason": "No explicit project execution status statement is present in the document.",
+          "value": null
+        },
+        "work_scope": {
+          "evidence_quote": "Construct a new Hyundai 230kV substation with an eight element 230kV ring bus and four 230/25kV banks. Construct a new Newton Rd 230kV substation with a five element 230kV ring bus and loop through the Little Ogeechee - Meldrim Black and White 230kV lines. Build two new 230kV lines connecting from Hyundai - Newton Rd (12 miles) and Hyundai - Meldrim (10 miles). At Meldrim, add a breaker to accommodate for the new Hyundai line. Install a 115/25kV bank at Interstate Centre and build a new 115kV line from Interstate Centre - Hyundai (2.3 miles) for bridge power.",
+          "missing_reason": null,
+          "value": "Construct a new Hyundai 230kV substation with an eight element 230kV ring bus and four 230/25kV banks. Construct a new Newton Rd 230kV substation with a five element 230kV ring bus and loop through the Little Ogeechee - Meldrim Black and White 230kV lines. Build two new 230kV lines connecting from Hyundai - Newton Rd (12 miles) and Hyundai - Meldrim (10 miles). At Meldrim, add a breaker to accommodate for the new Hyundai line. Install a 115/25kV bank at Interstate Centre and build a new 115kV line from Interstate Centre - Hyundai (2.3 miles) for bridge power."
+        }
+      },
+      "validation_issues": [],
+      "review_status": "review_required",
+      "map_eligible": false,
+      "training_eligible": false,
+      "cache_key": "ce429a0ae359d8cad56512fd71b4eda6f0173cfa63b24914fc4d25bcbabc569d",
+      "cache_hit": true,
+      "received_at": "2026-09-26T22:04:14.867411+00:00",
+      "latency_seconds": 54.533,
+      "finish_reason": "STOP",
+      "model_version": "gemini-3.5-flash-lite",
+      "usage": {
+        "promptTokenCount": 882,
+        "candidatesTokenCount": 781,
+        "totalTokenCount": 1663,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 362
+          },
+          {
+            "modality": "IMAGE",
+            "tokenCount": 520
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "response_sha256": "72d5a8ce6f79407eafabcf4f88d23ca1d9fafd626b2f24e6650774bd364446f1"
+    },
+    {
+      "case_id": "gpc-314",
+      "split": "known_layout",
+      "source": {
+        "id": "gpc_supplied",
+        "url": "/sources/Georgia_Power_2025_IRP_Volume_3_PUBLIC_DISCLOSURE.pdf",
+        "sha256": "0dae2fc3a38462f0930cc2eb0acedca35e329cd0924e4749c81422bdc8602a12",
+        "pdf_page": 314,
+        "title": "Georgia Power 2025 IRP Volume 3 Public Disclosure"
+      },
+      "fields": {
+        "actual_end": {
+          "evidence_quote": null,
+          "missing_reason": "No actual completion statement or date provided on the page.",
+          "value": null
+        },
+        "actual_start": {
+          "evidence_quote": null,
+          "missing_reason": "No actual start statement or date provided on the page.",
+          "value": null
+        },
+        "milestones": {
+          "evidence_quote": "Need Date 06/01/2027 Start Date 06/01/2025",
+          "missing_reason": null,
+          "value": [
+            {
+              "meaning": "need_date",
+              "phase": null,
+              "precision": "day",
+              "value": "2027-06-01"
+            }
+          ]
+        },
+        "planned_start": {
+          "evidence_quote": "Start Date 06/01/2025",
+          "missing_reason": null,
+          "value": "2025-06-01"
+        },
+        "project_id": {
+          "evidence_quote": "Teams # 20065",
+          "missing_reason": null,
+          "value": "20065"
+        },
+        "project_name": {
+          "evidence_quote": "SAV: GOSHEN (SAV) - MCINTOSH 115KV LINE REBUILD",
+          "missing_reason": null,
+          "value": "SAV: GOSHEN (SAV) - MCINTOSH 115KV LINE REBUILD"
+        },
+        "status": {
+          "evidence_quote": null,
+          "missing_reason": "No explicit project execution status statement is provided on the page.",
+          "value": null
+        },
+        "work_scope": {
+          "evidence_quote": "Rebuild the Goshen (Savannah) - Georgia Pacific (Rincon) section, approximately 6.7 miles, of the Goshen (Sav) - McIntosh 115kV line using 100C 795 ACSR Drake conductor.",
+          "missing_reason": null,
+          "value": "Rebuild the Goshen (Savannah) - Georgia Pacific (Rincon) section, approximately 6.7 miles, of the Goshen (Sav) - McIntosh 115kV line using 100C 795 ACSR Drake conductor."
+        }
+      },
+      "validation_issues": [],
+      "review_status": "review_required",
+      "map_eligible": false,
+      "training_eligible": false,
+      "cache_key": "596b00be04cb096f984bfc0720fff49c5bfffc9677b007500af92f2bf5de50d0",
+      "cache_hit": true,
+      "received_at": "2026-09-26T22:04:22.476175+00:00",
+      "latency_seconds": 7.373,
+      "finish_reason": "STOP",
+      "model_version": "gemini-3.5-flash-lite",
+      "usage": {
+        "promptTokenCount": 882,
+        "candidatesTokenCount": 574,
+        "totalTokenCount": 1456,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 362
+          },
+          {
+            "modality": "IMAGE",
+            "tokenCount": 520
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "response_sha256": "864fceb0c7351eaee3723a46a722612fb1459eccf6a0cf967187bef11bc6a7af"
+    },
+    {
+      "case_id": "gpc-366",
+      "split": "known_layout",
+      "source": {
+        "id": "gpc_supplied",
+        "url": "/sources/Georgia_Power_2025_IRP_Volume_3_PUBLIC_DISCLOSURE.pdf",
+        "sha256": "0dae2fc3a38462f0930cc2eb0acedca35e329cd0924e4749c81422bdc8602a12",
+        "pdf_page": 366,
+        "title": "Georgia Power 2025 IRP Volume 3 Public Disclosure"
+      },
+      "fields": {
+        "actual_end": {
+          "evidence_quote": null,
+          "missing_reason": "No actual end date is stated in the document.",
+          "value": null
+        },
+        "actual_start": {
+          "evidence_quote": null,
+          "missing_reason": "No actual start date is stated in the document.",
+          "value": null
+        },
+        "milestones": {
+          "evidence_quote": "Need Date 12/31/2029",
+          "missing_reason": null,
+          "value": [
+            {
+              "meaning": "need_date",
+              "phase": null,
+              "precision": "day",
+              "value": "2029-12-31"
+            }
+          ]
+        },
+        "planned_start": {
+          "evidence_quote": "Start Date 06/01/2031",
+          "missing_reason": null,
+          "value": "2031-06-01"
+        },
+        "project_id": {
+          "evidence_quote": "Teams # 20248",
+          "missing_reason": null,
+          "value": "20248"
+        },
+        "project_name": {
+          "evidence_quote": "BAY CREEK - CONYERS 230KV REBUILD",
+          "missing_reason": null,
+          "value": "BAY CREEK - CONYERS 230KV REBUILD"
+        },
+        "status": {
+          "evidence_quote": null,
+          "missing_reason": "No project execution status statement is present.",
+          "value": null
+        },
+        "work_scope": {
+          "evidence_quote": "GPC will rebuild the Bay Creek - Conyers 230kV line, approximately 15.29 miles, using 200C 1351 ACSS \"Martin\" conductor.",
+          "missing_reason": null,
+          "value": "GPC will rebuild the Bay Creek - Conyers 230kV line, approximately 15.29 miles, using 200C 1351 ACSS \"Martin\" conductor."
+        }
+      },
+      "validation_issues": [],
+      "review_status": "review_required",
+      "map_eligible": false,
+      "training_eligible": false,
+      "cache_key": "3a17c31942d1d7feb3d3c0007023c449195634858f5b0efcff519ff164b47b76",
+      "cache_hit": true,
+      "received_at": "2026-09-26T22:04:37.231162+00:00",
+      "latency_seconds": 14.526,
+      "finish_reason": "STOP",
+      "model_version": "gemini-3.5-flash-lite",
+      "usage": {
+        "promptTokenCount": 882,
+        "candidatesTokenCount": 523,
+        "totalTokenCount": 1405,
+        "promptTokensDetails": [
+          {
+            "modality": "IMAGE",
+            "tokenCount": 520
+          },
+          {
+            "modality": "TEXT",
+            "tokenCount": 362
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "response_sha256": "8e82f7d281a100b7462c22cfd2612523bc0209db89ba5dc7100aef91de1851c7"
+    },
+    {
+      "case_id": "sertp-1",
+      "split": "unfamiliar_layout",
+      "source": {
+        "id": "sertp_2026",
+        "url": "https://www.southeasternrtp.com/docs/general/2026/2026_SERTP_Preliminary_Expansion_Plan_Report_%28Non-CEII%29.pdf",
+        "sha256": "d3785576bb2f558f558931b7fea22503deaafc6d1f81cec25b8d471deb32cb2c",
+        "pdf_page": 1,
+        "title": "2026 SERTP Preliminary Expansion Plan (Non-CEII public edition)"
+      },
+      "fields": {
+        "actual_end": {
+          "evidence_quote": null,
+          "missing_reason": "No actual completion statement is present in the document.",
+          "value": null
+        },
+        "actual_start": {
+          "evidence_quote": null,
+          "missing_reason": "No actual start statement is present in the document.",
+          "value": null
+        },
+        "milestones": {
+          "evidence_quote": "In-Service\nYear:\n2027",
+          "missing_reason": null,
+          "value": [
+            {
+              "meaning": "planned_in_service",
+              "phase": null,
+              "precision": "year",
+              "value": "2027"
+            }
+          ]
+        },
+        "planned_start": {
+          "evidence_quote": null,
+          "missing_reason": "No planned start date is provided in the document.",
+          "value": null
+        },
+        "project_id": {
+          "evidence_quote": null,
+          "missing_reason": "No explicitly labeled project ID is present in the document.",
+          "value": null
+        },
+        "project_name": {
+          "evidence_quote": "GAINESVILLE #2 - BULL SHOALS 161 KV TRANSMISSION LINE, REBUILD",
+          "missing_reason": null,
+          "value": "GAINESVILLE #2 - BULL SHOALS 161 KV TRANSMISSION LINE, REBUILD"
+        },
+        "status": {
+          "evidence_quote": null,
+          "missing_reason": "No explicit project execution status statement is present in the document.",
+          "value": null
+        },
+        "work_scope": {
+          "evidence_quote": "Rebuild the 24.42 mile-long Gainesville #2 - Bull Shoals 161 kV transmission line 795 ACSR at 100°C.",
+          "missing_reason": null,
+          "value": "Rebuild the 24.42 mile-long Gainesville #2 - Bull Shoals 161 kV transmission line 795 ACSR at 100°C."
+        }
+      },
+      "validation_issues": [],
+      "review_status": "review_required",
+      "map_eligible": false,
+      "training_eligible": false,
+      "cache_key": "b08604d7531e30a71ef0487c85ad7df88490097c946ef69dd32b4800b4a08b04",
+      "cache_hit": false,
+      "received_at": "2026-09-26T22:06:20.007862+00:00",
+      "latency_seconds": 10.158,
+      "finish_reason": "STOP",
+      "model_version": "gemini-3.5-flash-lite",
+      "usage": {
+        "promptTokenCount": 882,
+        "candidatesTokenCount": 508,
+        "totalTokenCount": 1390,
+        "promptTokensDetails": [
+          {
+            "modality": "IMAGE",
+            "tokenCount": 520
+          },
+          {
+            "modality": "TEXT",
+            "tokenCount": 362
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "response_sha256": "02c1081d0ae432334ec49448460191f672e3d00b6bc24889f004b4df758c729f"
+    },
+    {
+      "case_id": "sertp-2",
+      "split": "unfamiliar_layout",
+      "source": {
+        "id": "sertp_2026",
+        "url": "https://www.southeasternrtp.com/docs/general/2026/2026_SERTP_Preliminary_Expansion_Plan_Report_%28Non-CEII%29.pdf",
+        "sha256": "d3785576bb2f558f558931b7fea22503deaafc6d1f81cec25b8d471deb32cb2c",
+        "pdf_page": 2,
+        "title": "2026 SERTP Preliminary Expansion Plan (Non-CEII public edition)"
+      },
+      "fields": {
+        "actual_end": {
+          "evidence_quote": null,
+          "missing_reason": "No actual end date is stated in the text.",
+          "value": null
+        },
+        "actual_start": {
+          "evidence_quote": null,
+          "missing_reason": "No actual start date is stated in the text.",
+          "value": null
+        },
+        "milestones": {
+          "evidence_quote": "In-Service Year: 2027",
+          "missing_reason": null,
+          "value": [
+            {
+              "meaning": "planned_in_service",
+              "phase": null,
+              "precision": "year",
+              "value": "2027"
+            }
+          ]
+        },
+        "planned_start": {
+          "evidence_quote": null,
+          "missing_reason": "No planned start date is stated in the text.",
+          "value": null
+        },
+        "project_id": {
+          "evidence_quote": null,
+          "missing_reason": "No explicit project ID is stated in the text.",
+          "value": null
+        },
+        "project_name": {
+          "evidence_quote": "BUSH RIVER TIE 115/100 KV AUTOTRANSFORMERS, REPLACE",
+          "missing_reason": null,
+          "value": "BUSH RIVER TIE 115/100 KV AUTOTRANSFORMERS, REPLACE"
+        },
+        "status": {
+          "evidence_quote": null,
+          "missing_reason": "No explicit project status statement is provided in the text.",
+          "value": null
+        },
+        "work_scope": {
+          "evidence_quote": "Replace existing 115/100 kV autotransformers 7 and 8 with new transformers. Project is part of Red Zone 2.0.",
+          "missing_reason": null,
+          "value": "Replace existing 115/100 kV autotransformers 7 and 8 with new transformers. Project is part of Red Zone 2.0."
+        }
+      },
+      "validation_issues": [],
+      "review_status": "review_required",
+      "map_eligible": false,
+      "training_eligible": false,
+      "cache_key": "4e597cb5a9ac49520556e0acdeace303de23e9c7122b2822f38c208ee4a51eb8",
+      "cache_hit": false,
+      "received_at": "2026-09-26T22:06:31.945025+00:00",
+      "latency_seconds": 11.869,
+      "finish_reason": "STOP",
+      "model_version": "gemini-3.5-flash-lite",
+      "usage": {
+        "promptTokenCount": 882,
+        "candidatesTokenCount": 498,
+        "totalTokenCount": 1380,
+        "promptTokensDetails": [
+          {
+            "modality": "IMAGE",
+            "tokenCount": 520
+          },
+          {
+            "modality": "TEXT",
+            "tokenCount": 362
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "response_sha256": "1426884d4303e5d7768fbb0a561366303a3de032b474ada5ede49ea4a5272f92"
+    },
+    {
+      "case_id": "sertp-51",
+      "split": "unfamiliar_layout",
+      "source": {
+        "id": "sertp_2026",
+        "url": "https://www.southeasternrtp.com/docs/general/2026/2026_SERTP_Preliminary_Expansion_Plan_Report_%28Non-CEII%29.pdf",
+        "sha256": "d3785576bb2f558f558931b7fea22503deaafc6d1f81cec25b8d471deb32cb2c",
+        "pdf_page": 51,
+        "title": "2026 SERTP Preliminary Expansion Plan (Non-CEII public edition)"
+      },
+      "fields": {
+        "actual_end": {
+          "evidence_quote": null,
+          "missing_reason": "No actual completion information is stated in the text.",
+          "value": null
+        },
+        "actual_start": {
+          "evidence_quote": null,
+          "missing_reason": "No actual start information is stated in the text.",
+          "value": null
+        },
+        "milestones": {
+          "evidence_quote": "In-Service Year: 2028",
+          "missing_reason": null,
+          "value": [
+            {
+              "meaning": "planned_in_service",
+              "phase": null,
+              "precision": "year",
+              "value": "2028"
+            }
+          ]
+        },
+        "planned_start": {
+          "evidence_quote": null,
+          "missing_reason": "No planned start date is stated in the text.",
+          "value": null
+        },
+        "project_id": {
+          "evidence_quote": null,
+          "missing_reason": "No explicitly labeled project ID is present in the text for this project.",
+          "value": null
+        },
+        "project_name": {
+          "evidence_quote": "SOCO: MERIDIAN SUBSTATION 230 KV LINE TO LOOP-IN",
+          "missing_reason": null,
+          "value": "SOCO: MERIDIAN SUBSTATION 230 KV LINE TO LOOP-IN"
+        },
+        "status": {
+          "evidence_quote": null,
+          "missing_reason": "No project execution status is stated in the text.",
+          "value": null
+        },
+        "work_scope": {
+          "evidence_quote": "Construct 7.2 mile, 1351 ACSS at 200°C loop in new 230 kV substation.",
+          "missing_reason": null,
+          "value": "Construct 7.2 mile, 1351 ACSS at 200°C loop in new 230 kV substation."
+        }
+      },
+      "validation_issues": [],
+      "review_status": "review_required",
+      "map_eligible": false,
+      "training_eligible": false,
+      "cache_key": "fa72ea62302961930f7215f254105412f65351a726adbc566e12a68f0b083e62",
+      "cache_hit": false,
+      "received_at": "2026-09-26T22:06:50.403065+00:00",
+      "latency_seconds": 18.394,
+      "finish_reason": "STOP",
+      "model_version": "gemini-3.5-flash-lite",
+      "usage": {
+        "promptTokenCount": 882,
+        "candidatesTokenCount": 486,
+        "totalTokenCount": 1368,
+        "promptTokensDetails": [
+          {
+            "modality": "IMAGE",
+            "tokenCount": 520
+          },
+          {
+            "modality": "TEXT",
+            "tokenCount": 362
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "response_sha256": "3d0351850ec60c49ae1129f2bbaadc22a934c4a99ae9bc26d666bcf5d6096f6f"
+    },
+    {
+      "case_id": "sertp-53",
+      "split": "unfamiliar_layout",
+      "source": {
+        "id": "sertp_2026",
+        "url": "https://www.southeasternrtp.com/docs/general/2026/2026_SERTP_Preliminary_Expansion_Plan_Report_%28Non-CEII%29.pdf",
+        "sha256": "d3785576bb2f558f558931b7fea22503deaafc6d1f81cec25b8d471deb32cb2c",
+        "pdf_page": 53,
+        "title": "2026 SERTP Preliminary Expansion Plan (Non-CEII public edition)"
+      },
+      "fields": {
+        "actual_end": {
+          "evidence_quote": null,
+          "missing_reason": "Not mentioned in the text.",
+          "value": null
+        },
+        "actual_start": {
+          "evidence_quote": null,
+          "missing_reason": "Not mentioned in the text.",
+          "value": null
+        },
+        "milestones": {
+          "evidence_quote": "2028",
+          "missing_reason": null,
+          "value": [
+            {
+              "meaning": "planned_in_service",
+              "phase": null,
+              "precision": "year",
+              "value": "2028"
+            }
+          ]
+        },
+        "planned_start": {
+          "evidence_quote": null,
+          "missing_reason": "Not mentioned in the text.",
+          "value": null
+        },
+        "project_id": {
+          "evidence_quote": null,
+          "missing_reason": "No explicitly labeled project ID present in the text.",
+          "value": null
+        },
+        "project_name": {
+          "evidence_quote": "SOCO: SAV: GOSHEN (SAV) - MCINTOSH 115 KV LINE REBUILD",
+          "missing_reason": null,
+          "value": "SOCO: SAV: GOSHEN (SAV) - MCINTOSH 115 KV LINE REBUILD"
+        },
+        "status": {
+          "evidence_quote": null,
+          "missing_reason": "Not mentioned in the text.",
+          "value": null
+        },
+        "work_scope": {
+          "evidence_quote": "Rebuild the Goshen (Savannah) - Georgia Pacific (Rincon) section, approximately 6.7 miles, of the Goshen (Sav) - McIntosh 115 kV line using 200°C 1351 ACSS conductor.",
+          "missing_reason": null,
+          "value": "Rebuild the Goshen (Savannah) - Georgia Pacific (Rincon) section, approximately 6.7 miles, of the Goshen (Sav) - McIntosh 115 kV line using 200°C 1351 ACSS conductor."
+        }
+      },
+      "validation_issues": [],
+      "review_status": "review_required",
+      "map_eligible": false,
+      "training_eligible": false,
+      "cache_key": "8e52689222cd412c9b6d3f439ea9d08e605a933718c1eee342c42e3c29c1182f",
+      "cache_hit": false,
+      "received_at": "2026-09-26T22:07:03.077228+00:00",
+      "latency_seconds": 12.596,
+      "finish_reason": "STOP",
+      "model_version": "gemini-3.5-flash-lite",
+      "usage": {
+        "promptTokenCount": 882,
+        "candidatesTokenCount": 516,
+        "totalTokenCount": 1398,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 362
+          },
+          {
+            "modality": "IMAGE",
+            "tokenCount": 520
+          }
+        ],
+        "serviceTier": "standard"
+      },
+      "response_sha256": "7dfa4183ea7e138c116877822ffbe92516797b3d8498de09573d120cf2c104b8"
+    }
+  ]
+}

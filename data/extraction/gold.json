@@ -1,0 +1,290 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-09-26T21:59:44.944223+00:00",
+  "reviewer": "Codex visual source inspection; not independently double-annotated by humans",
+  "selection_policy": "Purposive challenge set, not a random or representative sample. No prompt examples or custom-model training. Gold and extraction configuration frozen before first inference; no post-result tuning. Known-layout gold uses parser output as transcription aid, independently checked against page rendering; unfamiliar-layout gold is manually transcribed.",
+  "field_count_per_case": 8,
+  "sources": {
+    "desc_supplied": {
+      "title": "DESC 2024–2028 project descriptions",
+      "file": "public/sources/Dominion_2024-2028_Project_Descriptions.pdf",
+      "url": "/sources/Dominion_2024-2028_Project_Descriptions.pdf",
+      "sha256": "890876d0faefd40576a0b5e598a804b54b4d8d2d56dd96fb7e40d5a406db0f46",
+      "publication": null,
+      "publication_note": "PDF creation metadata is not a verified publication or information-cutoff date."
+    },
+    "gpc_supplied": {
+      "title": "Georgia Power 2025 IRP Volume 3 Public Disclosure",
+      "file": "public/sources/Georgia_Power_2025_IRP_Volume_3_PUBLIC_DISCLOSURE.pdf",
+      "url": "/sources/Georgia_Power_2025_IRP_Volume_3_PUBLIC_DISCLOSURE.pdf",
+      "sha256": "0dae2fc3a38462f0930cc2eb0acedca35e329cd0924e4749c81422bdc8602a12",
+      "publication": "2024-12",
+      "publication_note": "Foreword gives December 2024 snapshot. Metadata dates describe the file, not extra historical observations."
+    },
+    "sertp_2026": {
+      "title": "2026 SERTP Preliminary Expansion Plan (Non-CEII public edition)",
+      "url": "https://www.southeasternrtp.com/docs/general/2026/2026_SERTP_Preliminary_Expansion_Plan_Report_%28Non-CEII%29.pdf",
+      "sha256": "d3785576bb2f558f558931b7fea22503deaafc6d1f81cec25b8d471deb32cb2c",
+      "publication": "2026-06-12",
+      "publication_note": "Dated footer; retrieved from official public Non-CEII URL. Do not infer access to restricted versions."
+    }
+  },
+  "cases": [
+    {
+      "case_id": "desc-2",
+      "source_id": "desc_supplied",
+      "pdf_page": 2,
+      "split": "known_layout",
+      "selection": "first/topmost project only",
+      "gold": {
+        "project_id": "0167C-D",
+        "project_name": "Union Pier 115-13.8 kV Sub: Tap",
+        "work_scope": "Installing a 115 kV Tap to feed the future Union Pier 115 kV Sub.",
+        "status": "Planned",
+        "milestones": [
+          {
+            "value": "2027-12-31",
+            "precision": "day",
+            "meaning": "planned_in_service",
+            "phase": null
+          }
+        ],
+        "planned_start": null,
+        "actual_start": null,
+        "actual_end": null
+      },
+      "visual_review": "All eight fields visually checked on rendered source page by Codex; no independent human timing."
+    },
+    {
+      "case_id": "desc-16",
+      "source_id": "desc_supplied",
+      "pdf_page": 16,
+      "split": "known_layout",
+      "selection": "first/topmost project only",
+      "gold": {
+        "project_id": "6805 G",
+        "project_name": "Edenwood Sub: #1 & #2 230-115kV Autobanks, Replace with 336MVA",
+        "work_scope": "Replace Autobank 1 and 2 at Edenwood Substation.",
+        "status": "In Progress",
+        "milestones": [
+          {
+            "value": "2024-12-25",
+            "precision": "day",
+            "meaning": "planned_in_service",
+            "phase": null
+          }
+        ],
+        "planned_start": null,
+        "actual_start": null,
+        "actual_end": null
+      },
+      "visual_review": "All eight fields visually checked on rendered source page by Codex; no independent human timing."
+    },
+    {
+      "case_id": "desc-34",
+      "source_id": "desc_supplied",
+      "pdf_page": 34,
+      "split": "known_layout",
+      "selection": "first/topmost project only",
+      "gold": {
+        "project_id": "6859",
+        "project_name": "Dawson 230kV Sub and Fold-in: Construct and Rebuild",
+        "work_scope": "Construct Dawson 230kV substation. Fold in the existing Canadys – Church Creek and Canadys – Faber Place 230kV lines at the Dawson 230kV substation (phase 1). Rebuild Canadys – Dawson 230kV #1 and #2 with B1272 ACSR (phase 2).",
+        "status": "In Progress",
+        "milestones": [
+          {
+            "value": "2025-10-01",
+            "precision": "day",
+            "meaning": "planned_in_service",
+            "phase": "phase 1"
+          },
+          {
+            "value": "2026-10-01",
+            "precision": "day",
+            "meaning": "planned_in_service",
+            "phase": "phase 2"
+          }
+        ],
+        "planned_start": null,
+        "actual_start": null,
+        "actual_end": null
+      },
+      "visual_review": "All eight fields visually checked on rendered source page by Codex; no independent human timing."
+    },
+    {
+      "case_id": "gpc-231",
+      "source_id": "gpc_supplied",
+      "pdf_page": 231,
+      "split": "known_layout",
+      "selection": "first/topmost project only",
+      "gold": {
+        "project_id": "19523",
+        "project_name": "SAV: CC - HYUNDAI MOTORS SAVANNAH AKA. PROJECT EA",
+        "work_scope": "Construct a new Hyundai 230kV substation with an eight element 230kV ring bus and four 230/25kV banks. Construct a new Newton Rd 230kV substation with a five element 230kV ring bus and loop through the Little Ogeechee - Meldrim Black and White 230kV lines. Build two new 230kV lines connecting from Hyundai - Newton Rd (12 miles) and Hyundai - Meldrim (10 miles). At Meldrim, add a breaker to accommodate for the new Hyundai line. Install a 115/25kV bank at Interstate Centre and build a new 115kV line from Interstate Centre - Hyundai (2.3 miles) for bridge power.",
+        "status": null,
+        "milestones": [
+          {
+            "value": "2025-04-25",
+            "precision": "day",
+            "meaning": "need_date",
+            "phase": null
+          }
+        ],
+        "planned_start": "2022-06-01",
+        "actual_start": null,
+        "actual_end": null
+      },
+      "visual_review": "All eight fields visually checked on rendered public-disclosure page by Codex; redactions remain untouched."
+    },
+    {
+      "case_id": "gpc-314",
+      "source_id": "gpc_supplied",
+      "pdf_page": 314,
+      "split": "known_layout",
+      "selection": "first/topmost project only",
+      "gold": {
+        "project_id": "20065",
+        "project_name": "SAV: GOSHEN (SAV) - MCINTOSH 115KV LINE REBUILD",
+        "work_scope": "Rebuild the Goshen (Savannah) - Georgia Pacific (Rincon) section, approximately 6.7 miles, of the Goshen (Sav) - McIntosh 115kV line using 100C 795 ACSR Drake conductor.",
+        "status": null,
+        "milestones": [
+          {
+            "value": "2027-06-01",
+            "precision": "day",
+            "meaning": "need_date",
+            "phase": null
+          }
+        ],
+        "planned_start": "2025-06-01",
+        "actual_start": null,
+        "actual_end": null
+      },
+      "visual_review": "All eight fields visually checked on rendered public-disclosure page by Codex; redactions remain untouched."
+    },
+    {
+      "case_id": "gpc-366",
+      "source_id": "gpc_supplied",
+      "pdf_page": 366,
+      "split": "known_layout",
+      "selection": "first/topmost project only",
+      "gold": {
+        "project_id": "20248",
+        "project_name": "BAY CREEK - CONYERS 230KV REBUILD",
+        "work_scope": "GPC will rebuild the Bay Creek - Conyers 230kV line, approximately 15.29 miles, using 200C 1351 ACSS \"Martin\" conductor.",
+        "status": null,
+        "milestones": [
+          {
+            "value": "2029-12-31",
+            "precision": "day",
+            "meaning": "need_date",
+            "phase": null
+          }
+        ],
+        "planned_start": "2031-06-01",
+        "actual_start": null,
+        "actual_end": null
+      },
+      "visual_review": "All eight fields visually checked on rendered public-disclosure page by Codex; redactions remain untouched."
+    },
+    {
+      "case_id": "sertp-1",
+      "source_id": "sertp_2026",
+      "pdf_page": 1,
+      "split": "unfamiliar_layout",
+      "selection": "first/topmost project only; other cards excluded",
+      "gold": {
+        "project_id": null,
+        "project_name": "GAINESVILLE #2 - BULL SHOALS 161 KV TRANSMISSION LINE, REBUILD",
+        "work_scope": "Rebuild the 24.42 mile-long Gainesville #2 - Bull Shoals 161 kV transmission line 795 ACSR at 100°C.",
+        "status": null,
+        "milestones": [
+          {
+            "value": "2027",
+            "precision": "year",
+            "meaning": "planned_in_service",
+            "phase": null
+          }
+        ],
+        "planned_start": null,
+        "actual_start": null,
+        "actual_end": null
+      },
+      "visual_review": "Manually transcribed and visually checked on rendered public Non-CEII page by Codex; document watermark is not project status."
+    },
+    {
+      "case_id": "sertp-2",
+      "source_id": "sertp_2026",
+      "pdf_page": 2,
+      "split": "unfamiliar_layout",
+      "selection": "first/topmost project only; other cards excluded",
+      "gold": {
+        "project_id": null,
+        "project_name": "BUSH RIVER TIE 115/100 KV AUTOTRANSFORMERS, REPLACE",
+        "work_scope": "Replace existing 115/100 kV autotransformers 7 and 8 with new transformers. Project is part of Red Zone 2.0.",
+        "status": null,
+        "milestones": [
+          {
+            "value": "2027",
+            "precision": "year",
+            "meaning": "planned_in_service",
+            "phase": null
+          }
+        ],
+        "planned_start": null,
+        "actual_start": null,
+        "actual_end": null
+      },
+      "visual_review": "Manually transcribed and visually checked on rendered public Non-CEII page by Codex; document watermark is not project status."
+    },
+    {
+      "case_id": "sertp-51",
+      "source_id": "sertp_2026",
+      "pdf_page": 51,
+      "split": "unfamiliar_layout",
+      "selection": "first/topmost project only; other cards excluded",
+      "gold": {
+        "project_id": null,
+        "project_name": "SOCO: MERIDIAN SUBSTATION 230 KV LINE TO LOOP-IN",
+        "work_scope": "Construct 7.2 mile, 1351 ACSS at 200°C loop in new 230 kV substation.",
+        "status": null,
+        "milestones": [
+          {
+            "value": "2028",
+            "precision": "year",
+            "meaning": "planned_in_service",
+            "phase": null
+          }
+        ],
+        "planned_start": null,
+        "actual_start": null,
+        "actual_end": null
+      },
+      "visual_review": "Manually transcribed and visually checked on rendered public Non-CEII page by Codex; document watermark is not project status."
+    },
+    {
+      "case_id": "sertp-53",
+      "source_id": "sertp_2026",
+      "pdf_page": 53,
+      "split": "unfamiliar_layout",
+      "selection": "first/topmost project only; other cards excluded",
+      "gold": {
+        "project_id": null,
+        "project_name": "SOCO: SAV: GOSHEN (SAV) - MCINTOSH 115 KV LINE REBUILD",
+        "work_scope": "Rebuild the Goshen (Savannah) - Georgia Pacific (Rincon) section, approximately 6.7 miles, of the Goshen (Sav) - McIntosh 115 kV line using 200°C 1351 ACSS conductor.",
+        "status": null,
+        "milestones": [
+          {
+            "value": "2028",
+            "precision": "year",
+            "meaning": "planned_in_service",
+            "phase": null
+          }
+        ],
+        "planned_start": null,
+        "actual_start": null,
+        "actual_end": null
+      },
+      "visual_review": "Manually transcribed and visually checked on rendered public Non-CEII page by Codex; document watermark is not project status."
+    }
+  ]
+}

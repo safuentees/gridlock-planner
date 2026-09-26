@@ -65,7 +65,7 @@ The automated tests cover every starting pair, known distances and gaps, more re
 
 ## Team collaboration
 
-Follow [the collaboration guide](CONTRIBUTING.md): use the shared `main` branch, one short-lived task branch per change, one teammate review, and passing checks before merging. GitHub automation and the pull-request template are prepared; `origin` points to the team repository. The initial app upload, teammate access and protection settings still need completion. The owner can follow [the post-push setup checklist](docs/REPOSITORY_OWNER_SETUP.md).
+Start by merging the initial demo PR so everyone has the same starting point; the owner can follow [these short instructions](docs/REPOSITORY_OWNER_SETUP.md). For later changes, follow [the collaboration guide](CONTRIBUTING.md): use the shared `main` branch, one short-lived task branch per change, one teammate review, and passing checks before merging. GitHub automation and the pull-request template are prepared; `origin` points to the team repository. The initial app upload, teammate access and protection settings still need completion.
 
 ## Code and data map
 

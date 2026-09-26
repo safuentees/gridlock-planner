@@ -82,7 +82,7 @@ For UI work, also open the app and check the changed flow on desktop and a narro
 
 ## Repository owner setup
 
-After the initial branch is pushed and its pull request is opened, send the owner the PR link and [the exact owner checklist](docs/REPOSITORY_OWNER_SETUP.md). The checklist starts with opening and reviewing that PR, then checking its results, protecting `main`, approving and merging the initial upload. Teammate invitations and the everyday squash policy follow.
+After the initial branch is pushed and its pull request is opened, send the owner the PR link and [the short owner instructions](docs/REPOSITORY_OWNER_SETUP.md). The owner merges this initial demo to establish the team's starting point, then invites missing teammates. The review and verification steps in this team guide apply to later changes. Set up protection of `main` before that ongoing work begins.
 
 The owner must apply these GitHub settings; committing the workflow or this guide does not activate branch protection. Our shared repository is public, and GitHub's documented rulesets support public repositories on GitHub Free.
 

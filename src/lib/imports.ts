@@ -168,7 +168,15 @@ function bounds(rows: Cell[][]) {
 }
 export function parseCsv(text: string): Cell[][] {
   const rows: Cell[][] = [];
+  // Delay blank runs until another nonempty row proves they are interior rows.
+  // Keep their positions/values within bounds, but never allocate an unbounded
+  // trailing run. A later nonempty row after an oversized run is still rejected.
+  let pendingBlankRows: Cell[][] = [];
+  let pendingRowCount = 0;
+  let pendingCellCount = 0;
+  let cellCount = 0;
   let problem = "";
+  const maxRows = IMPORT_LIMITS.rows + IMPORT_LIMITS.headerRows;
   Papa.parse<string[]>(text, {
     header: false,
     dynamicTyping: false,
@@ -179,13 +187,39 @@ export function parseCsv(text: string): Cell[][] {
         (item) => item.code !== "UndetectableDelimiter",
       );
       if (error) problem = `CSV parsing failed: ${error.message}`;
-      rows.push(result.data);
-      if (
-        rows.length > IMPORT_LIMITS.rows + IMPORT_LIMITS.headerRows ||
-        result.data.length > IMPORT_LIMITS.columns ||
-        problem
-      )
+      if (result.data.length > IMPORT_LIMITS.columns)
+        problem = `Sheet exceeds ${IMPORT_LIMITS.columns} columns.`;
+      if (problem) {
         parser.abort();
+        return;
+      }
+      if (result.data.every(blank)) {
+        pendingRowCount++;
+        pendingCellCount += result.data.length;
+        if (
+          rows.length + pendingRowCount <= maxRows &&
+          cellCount + pendingCellCount <= IMPORT_LIMITS.cells
+        )
+          pendingBlankRows.push(result.data);
+        return;
+      }
+      if (rows.length + pendingRowCount + 1 > maxRows)
+        problem = `Sheet exceeds ${IMPORT_LIMITS.rows.toLocaleString()} data rows plus ${IMPORT_LIMITS.headerRows} header rows. Split the file; no rows were imported.`;
+      else if (
+        cellCount + pendingCellCount + result.data.length >
+        IMPORT_LIMITS.cells
+      )
+        problem = `Sheet exceeds ${IMPORT_LIMITS.cells.toLocaleString()} cells.`;
+      if (problem) {
+        parser.abort();
+        return;
+      }
+      for (const row of pendingBlankRows) rows.push(row);
+      rows.push(result.data);
+      cellCount += pendingCellCount + result.data.length;
+      pendingBlankRows = [];
+      pendingRowCount = 0;
+      pendingCellCount = 0;
     },
   });
   if (problem) throw new Error(problem);
@@ -421,11 +455,15 @@ export async function validateImport(
     if (issues.length < IMPORT_LIMITS.issues)
       issues.push({ row, field, message });
   };
-  const rows = sheet.rows.slice(headerRow);
-  if (rows.length > IMPORT_LIMITS.rows)
+  // Ignore only trailing empty rows, without changing source row positions or
+  // the parsed sheet. Interior blanks still occupy their original physical row.
+  let endRow = sheet.rows.length;
+  while (endRow > headerRow && sheet.rows[endRow - 1].every(blank)) endRow--;
+  if (endRow - headerRow > IMPORT_LIMITS.rows)
     throw new Error(
       `Selected header leaves more than ${IMPORT_LIMITS.rows.toLocaleString()} data rows. No rows were imported.`,
     );
+  const rows = sheet.rows.slice(headerRow, endRow);
   for (let index = 0; index < rows.length; index++) {
     const row = rows[index];
     const rowNumber = headerRow + index + 1;

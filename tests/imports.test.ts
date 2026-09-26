@@ -115,6 +115,105 @@ describe("runtime file parsing and mapping", () => {
       result.dataset?.projects[2].endpoints.every((e) => e.coordinate === null),
     ).toBe(true);
   });
+  it("accepts exactly 25,000 CSV data rows with a trailing newline", async () => {
+    const csv =
+      "project_id,utility,project_name\n" +
+      Array.from(
+        { length: IMPORT_LIMITS.rows },
+        (_, i) => `${i},Utility A,Project ${i}`,
+      ).join("\n") +
+      "\n";
+    const rows = parseCsv(csv);
+    expect(rows).toHaveLength(IMPORT_LIMITS.rows + 1);
+    const file = source();
+    file.sheets[0].rows = rows;
+    // Also cover readers that retain trailing empty rows: validation must not
+    // reject the declared capacity or mutate the parsed source sheet.
+    file.sheets[0].rows.push([""], [null, " "]);
+    const result = await validateImport(
+      file,
+      "Projects",
+      1,
+      suggestMapping(rows[0]),
+      defaults,
+    );
+    expect(result.dataset?.projects).toHaveLength(IMPORT_LIMITS.rows);
+    expect(result.dataset?.projects.at(-1)?.sourceRow).toBe(
+      IMPORT_LIMITS.rows + 1,
+    );
+    expect(file.sheets[0].rows).toHaveLength(IMPORT_LIMITS.rows + 3);
+  });
+  it("rejects 25,001 nonempty data rows even with a trailing newline", async () => {
+    const rows = parseCsv(
+      "project_id,utility,project_name\n" +
+        Array.from(
+          { length: IMPORT_LIMITS.rows + 1 },
+          (_, i) => `${i},Utility A,Project ${i}`,
+        ).join("\n") +
+        "\n",
+    );
+    const file = source();
+    file.sheets[0].rows = rows;
+    await expect(
+      validateImport(file, "Projects", 1, suggestMapping(rows[0]), defaults),
+    ).rejects.toThrow(/more than 25,000 data rows/);
+  });
+  it("accepts header row 25 and 25,000 data rows without allocating trailing blank runs", async () => {
+    const preamble = "\n".repeat(IMPORT_LIMITS.headerRows - 1);
+    const data = Array.from(
+      { length: IMPORT_LIMITS.rows },
+      (_, i) => `${i},Utility A,Project ${i}`,
+    ).join("\n");
+    const rows = parseCsv(
+      preamble +
+        "project_id,utility,project_name\n" +
+        data +
+        "\n".repeat(100_000),
+    );
+    expect(rows).toHaveLength(IMPORT_LIMITS.rows + IMPORT_LIMITS.headerRows);
+    expect(rows[0]).toEqual([""]);
+    const file = source();
+    file.sheets[0].rows = rows;
+    const result = await validateImport(
+      file,
+      "Projects",
+      IMPORT_LIMITS.headerRows,
+      suggestMapping(rows[IMPORT_LIMITS.headerRows - 1]),
+      defaults,
+    );
+    expect(result.dataset?.projects).toHaveLength(IMPORT_LIMITS.rows);
+    expect(result.dataset?.projects[0].sourceRow).toBe(26);
+    expect(result.dataset?.projects.at(-1)?.sourceRow).toBe(25_025);
+    expect(() =>
+      parseCsv(
+        preamble +
+          "project_id,utility,project_name\n" +
+          data +
+          "\n\nextra,Utility A,Extra",
+      ),
+    ).toThrow(/exceeds/);
+  });
+  it("preserves interior blank rows and source row numbers", async () => {
+    const rows = parseCsv(
+      "project_id,utility,project_name\n1,Utility A,First\n\n, ,\n2,Utility B,Second\n\n",
+    );
+    expect(rows).toHaveLength(5);
+    expect(rows[2]).toEqual([""]);
+    expect(rows[3]).toEqual(["", " ", ""]);
+    const file = source();
+    file.sheets[0].rows = rows;
+    const result = await validateImport(
+      file,
+      "Projects",
+      1,
+      suggestMapping(rows[0]),
+      defaults,
+    );
+    expect(result.skippedRows).toBe(2);
+    expect(
+      result.dataset?.projects.map((project) => project.sourceRow),
+    ).toEqual([2, 5]);
+  });
   it("parses real XLSX XML with the pinned worker-compatible library", async () => {
     const parsed = await parseFile("projects.xlsx", xlsx());
     expect(parsed.sheets.map((sheet) => sheet.name)).toEqual(["Projects"]);

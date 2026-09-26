@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Use `setup/team-workflow` for the initial upload and conventional task prefixes; add the documented post-push repository-owner checklist.
+- Start the owner checklist at the received pull request, with team settings after review, protection and the initial merge.
 
 - Add the four-person collaboration guide, pull-request template and app/data CI checks.
 

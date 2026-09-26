@@ -63,6 +63,10 @@ Omit `--check` to regenerate the checked-in JSON. Importing does not edit the wo
 
 The automated tests cover every starting pair, known distances and gaps, more records, distant and missing-data cases, duplicate IDs, invalid coordinates/dates, exact threshold boundaries, units, inclusive filters, scenario immutability, leap days and calendar-month windows. [Recorded browser and data verification](docs/VERIFICATION.md).
 
+## Team collaboration
+
+Follow [the collaboration guide](CONTRIBUTING.md): use the shared `main` branch, one short-lived task branch per change, one teammate review, and passing checks before merging. GitHub automation and the pull-request template are prepared; `origin` points to the team repository. The initial app upload, teammate access and protection settings still need completion.
+
 ## Code and data map
 
 | Location | Responsibility |

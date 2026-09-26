@@ -1,4 +1,6 @@
-export type Company = "DESC" | "GPC";
+export type Company = string;
+export type DatePrecision = "day" | "month" | "year" | "unknown";
+export type DateMeaning = "planned_in_service" | "need_date" | "planned_start" | "unknown";
 export type Coordinate = [number, number]; // latitude, longitude, WGS84
 export interface Project {
   id: string;
@@ -10,7 +12,10 @@ export interface Project {
   endpoints: { name: string; coordinate: Coordinate | null }[];
   originalDate: string | null; // ISO calendar date, original workbook value normalized
   originalDateRaw: string | null;
-  dateMeaning: "planned_in_service" | "need_date";
+  dateMeaning: DateMeaning;
+  datePrecision?: DatePrecision; // absent legacy values are exact ISO days
+  sourceRow?: number;
+  sourceSheet?: string;
   originalSource: {
     title: string;
     url: string;
@@ -55,3 +60,26 @@ export interface Scenario {
   shifts: Record<Company, number>; // whole years; explicit user assumptions
   windowMonths: number;
 }
+
+
+/** Source records are immutable. Overrides and scenarios are separate layers. */
+export interface RuntimeDataset {
+  id: string;
+  name: string;
+  kind: "demo" | "upload";
+  sourceHash: string;
+  featureHash: string;
+  geometryVersion: string;
+  projects: Project[];
+  importedAt: string;
+  sourceFileName?: string;
+  warnings: string[];
+}
+export interface ProjectOverride {
+  projectId: string;
+  reason: string;
+  updatedAt: string;
+  patch: Partial<Pick<Project, "name" | "shortName" | "company" | "utility" | "endpoints" | "originalDate" | "originalDateRaw" | "dateMeaning" | "datePrecision">>;
+}
+export interface TimelineRange { from: string; to: string; }
+export type ExplorationMode = "planned" | "what_if" | "forecast";

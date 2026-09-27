@@ -491,18 +491,10 @@ export function ProjectMap({
         className="pointer-events-none absolute z-20 w-64 max-w-[calc(100%-7rem)] space-y-2"
         data-map-notices
       >
-        {((showCircles && radiusLabel) || (mode === "heat" && heatReady)) && (
+        {mode === "heat" && heatReady && (
           <div className="map-notice rounded-md border px-3 py-2 text-xs shadow-sm">
-            {showCircles && radiusLabel && (
-              <p className="text-pretty tabular-nums">
-                <span className="font-medium">{radiusLabel}</span> (proximity)
-              </p>
-            )}
             {mode === "heat" && heatReady && (
-              <div
-                className={cn(showCircles && radiusLabel && "mt-2")}
-                data-heat-legend
-              >
+              <div data-heat-legend>
                 <div className="mb-1 flex flex-wrap items-center gap-2">
                   <span className="font-medium">Density</span>
                   <span className="flex gap-0.5" aria-hidden="true">

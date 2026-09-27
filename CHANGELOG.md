@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Put distance controls inside the expandable nearby-pair card and remove the bottom-left slider. Use Motion with Base UI for a short, reduced-motion-aware expansion while preserving the mounted editor and stable query presentation.
+
 - Consolidate comparison CSV exports into one Base UI icon menu, with displayed and selected comparison options and disabled states for unavailable exports.
 
 - Make Comparisons an inline accordion list with no scroll-to-details jump. Keep export in its header, location controls in Filters and map navigation in Map settings.

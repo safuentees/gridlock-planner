@@ -14,11 +14,13 @@ import {
 import { cn } from "../lib/cn";
 
 export function DistanceControl({
+  embedded = false,
   miles,
   unit,
   onChange,
   onUnitChange,
 }: {
+  embedded?: boolean;
   miles: number;
   unit: DistanceUnit;
   onChange: (miles: number) => void;
@@ -54,7 +56,11 @@ export function DistanceControl({
   return (
     <section
       aria-label="Comparison distance"
-      className="w-72 max-w-full rounded-xl border border-stone-200 bg-white p-3 shadow-sm"
+      className={cn(
+        "w-72 max-w-full",
+        !embedded &&
+          "rounded-xl border border-stone-200 bg-white p-3 shadow-sm",
+      )}
     >
       <div className="flex items-center justify-between gap-2">
         <label id="distance-label" className="text-xs font-semibold">

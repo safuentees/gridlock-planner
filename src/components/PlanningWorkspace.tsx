@@ -31,7 +31,7 @@ import { originalComparison, comparisonCsv } from "../lib/exports";
 import { distanceLabel, type DistanceUnit } from "../lib/distanceControl";
 import { EvidencePanel, formatDate } from "./EvidencePanel";
 import { TimelineControl } from "./TimelineControl";
-import { DistanceControl } from "./DistanceControl";
+import { NearbyDistanceCard } from "./NearbyDistanceCard";
 import { YearShiftControl } from "./YearShiftControl";
 import { WorkspaceDialog } from "./WorkspaceDialog";
 import { UtilityIcon, utilityLabel, utilityShortLabel } from "./UtilityIcon";
@@ -1337,58 +1337,52 @@ export function PlanningWorkspace({
           </Dialog.Root>
         </div>
         <div className="order-first flex w-full justify-center xl:absolute xl:inset-x-0 xl:top-0 xl:w-auto">
-          <section
-            aria-label="Nearby match overview"
-            aria-busy={search.status === "loading"}
-            className="map-match-overview pointer-events-auto rounded-xl border border-stone-200 bg-white p-4 shadow-sm"
+          <NearbyDistanceCard
+            busy={search.status === "loading"}
+            miles={thresholdMiles}
+            unit={unit}
+            onChange={setThresholdMiles}
+            onUnitChange={setUnit}
           >
-            <div role="status" aria-live="polite" aria-atomic="true">
-              {invalidAssumptions ? (
-                <p className="text-sm font-medium">Results paused</p>
-              ) : search.error ? (
-                <p className="text-sm font-medium">Search unavailable</p>
-              ) : matchCount === null ? (
-                <p className="text-sm text-stone-600">Finding nearby pairs…</p>
-              ) : (
-                <>
-                  <div className="flex flex-wrap items-center justify-center gap-4">
-                    <strong
-                      className={cn(
-                        "text-5xl font-semibold tabular-nums",
-                        matchCount > 0 ? "text-emerald-700" : "text-stone-500",
-                      )}
-                    >
-                      {partialSearch && (
-                        <span className="mb-0.5 block text-xs font-medium">
-                          At least
-                        </span>
-                      )}
-                      {matchCount.toLocaleString()}
-                    </strong>
-                    <div>
-                      <h2 className="text-lg font-semibold">
-                        {mode === "what_if" ? "What-if" : "Nearby"}{" "}
-                        {reference ? "reference " : ""}
-                        {matchCount === 1 ? "pair" : "pairs"}
-                      </h2>
-                      <p className="text-sm text-stone-600">
-                        Under {distanceLabel(displayedThreshold, unit)} {unit}
-                      </p>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </section>
+            {invalidAssumptions ? (
+              <span className="text-sm font-medium">Results paused</span>
+            ) : search.error ? (
+              <span className="text-sm font-medium">Search unavailable</span>
+            ) : matchCount === null ? (
+              <span className="block text-sm text-stone-600">
+                Finding nearby pairs…
+              </span>
+            ) : (
+              <>
+                <span className="flex flex-wrap items-center justify-center gap-4">
+                  <strong
+                    className={cn(
+                      "text-5xl font-semibold tabular-nums",
+                      matchCount > 0 ? "text-emerald-700" : "text-stone-500",
+                    )}
+                  >
+                    {partialSearch && (
+                      <span className="mb-0.5 block text-xs font-medium">
+                        At least
+                      </span>
+                    )}
+                    {matchCount.toLocaleString()}
+                  </strong>
+                  <span>
+                    <span className="block text-lg font-semibold">
+                      {mode === "what_if" ? "What-if" : "Nearby"}{" "}
+                      {reference ? "reference " : ""}
+                      {matchCount === 1 ? "pair" : "pairs"}
+                    </span>
+                    <span className="block text-sm text-stone-600">
+                      Under {distanceLabel(displayedThreshold, unit)} {unit}
+                    </span>
+                  </span>
+                </span>
+              </>
+            )}
+          </NearbyDistanceCard>
         </div>
-      </div>
-      <div className="map-distance pointer-events-auto absolute bottom-7 left-3 z-10">
-        <DistanceControl
-          miles={thresholdMiles}
-          unit={unit}
-          onChange={setThresholdMiles}
-          onUnitChange={setUnit}
-        />
       </div>
     </div>
   );

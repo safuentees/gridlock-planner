@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Keep distance controls hidden until the expanding card surface fits them, and contain horizontal panel overflow.
+
 - Replace the text Comparisons toggle with a compact panel icon, an accessible name, show/hide tooltip and visible open state.
 
 - Remove the distance slider’s bottom numeric labels and tick lines; keep the expanded card free of a section divider.

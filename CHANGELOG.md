@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reveal distance controls immediately through a clip that follows the animated surface; remove the post-expansion delay without scaling the text.
+
 - Clarify comparison descriptions with paired distance/timing facts, readable source dates and compact source/research disclosures. Remove repeated timing summaries while retaining original records, corrections and uncertainty.
 
 - Keep distance controls hidden until the expanding card surface fits them, and contain horizontal panel overflow.

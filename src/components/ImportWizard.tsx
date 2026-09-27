@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import type { SyntheticEvent } from "react";
 import { Button } from "@base-ui/react/button";
 import { cn } from "../lib/cn";
 import { Upload, X } from "lucide-react";
@@ -30,8 +31,15 @@ const display = (cell: Cell | undefined) =>
 export interface ImportWizardProps {
   onAccept: (dataset: RuntimeDataset) => void;
   onCancel?: () => void;
+  compact?: boolean;
 }
-export function ImportWizard({ onAccept, onCancel }: ImportWizardProps) {
+export function ImportWizard({
+  onAccept,
+  onCancel,
+  compact = false,
+}: ImportWizardProps) {
+  const headingId = useId();
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const worker = useRef<Worker | null>(null);
   const gate = useRef(new RequestGate());
   const [fileName, setFileName] = useState("");
@@ -98,8 +106,18 @@ export function ImportWizard({ onAccept, onCancel }: ImportWizardProps) {
           setSheets(data.sheets);
           setSheetName(data.sheets[0].name);
           setHeaderRow(1);
-          setMapping(suggestMapping(data.sheets[0].preview[0] ?? []));
-        } else setResult(data.result);
+          const suggested = suggestMapping(data.sheets[0].preview[0] ?? []);
+          setMapping(suggested);
+          setSettingsOpen(
+            data.sheets.length > 1 ||
+              ["id", "utility", "name"].some(
+                (field) => suggested[field as ImportField] === undefined,
+              ),
+          );
+        } else {
+          setResult(data.result);
+          if (data.result.errorCount) setSettingsOpen(true);
+        }
       };
       instance.onerror = () => {
         if (worker.current === instance) {
@@ -131,33 +149,52 @@ export function ImportWizard({ onAccept, onCancel }: ImportWizardProps) {
       ),
     );
   };
+  const importedProjects = result?.dataset?.projects;
+  const locatedCount = importedProjects?.filter((project) =>
+    project.endpoints.some((endpoint) => endpoint.coordinate !== null),
+  ).length;
+  const utilityCount = importedProjects
+    ? new Set(importedProjects.map((project) => project.company)).size
+    : 0;
+  const unlocatedCount = importedProjects
+    ? importedProjects.length - (locatedCount ?? 0)
+    : 0;
+  const Settings = compact ? "details" : "div";
+  const Preview = compact ? "details" : "div";
   return (
     <section
-      aria-labelledby="import-heading"
-      className="min-w-0 rounded-xl border border-stone-300 bg-white p-4 sm:p-5"
+      aria-labelledby={compact ? undefined : headingId}
+      aria-label={compact ? "Upload project file" : undefined}
+      className={cn(
+        "min-w-0",
+        !compact && "rounded-xl border border-stone-300 bg-white p-4 sm:p-5",
+      )}
     >
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div>
-          <h2 id="import-heading" className="text-lg font-semibold">
-            Import project data
-          </h2>
-          <p className="mt-1 text-pretty text-sm text-stone-600">
-            Choose a sheet, map its columns, and review every validation error
-            before replacing the active dataset.
-          </p>
+      {!compact && (
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div>
+            <h2 id={headingId} className="text-balance text-lg font-semibold">
+              Import project data
+            </h2>
+            <p className="mt-1 text-pretty text-sm text-stone-600">
+              Choose a sheet, map its columns, and review every validation error
+              before replacing the active dataset.
+            </p>
+          </div>
+          <Button
+            onClick={onCancel}
+            aria-label="Back to workspace"
+            className="rounded p-1.5 hover:bg-stone-100"
+          >
+            <X size={18} />
+          </Button>
         </div>
-        <Button
-          onClick={onCancel}
-          aria-label="Back to workspace"
-          className="rounded p-1.5 hover:bg-stone-100"
-        >
-          <X size={18} />
-        </Button>
-      </div>
+      )}
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-stone-600">
         <p>
-          UTF-8 CSV or values-only XLSX · 10 MiB · up to 25,000 data rows · 100
-          columns
+          {compact
+            ? "CSV or Excel, up to 10 MiB."
+            : "UTF-8 CSV or values-only XLSX · 10 MiB · up to 25,000 data rows · 100 columns"}
         </p>
         <a
           href="/templates/GridLock-projects.csv"
@@ -167,6 +204,12 @@ export function ImportWizard({ onAccept, onCancel }: ImportWizardProps) {
           Download CSV template
         </a>
       </div>
+      {compact && (
+        <p className="mt-2 text-pretty text-xs text-stone-600">
+          Put both companies in one sheet, with a utility column for each
+          project. Include latitude and longitude to place records on the map.
+        </p>
+      )}
       <label className="mt-4 block text-sm font-medium">
         Project file
         <input
@@ -185,7 +228,9 @@ export function ImportWizard({ onAccept, onCancel }: ImportWizardProps) {
         className="mt-2 text-sm text-stone-600"
       >
         {busy
-          ? "Processing in a worker…"
+          ? compact
+            ? "Reading project data…"
+            : "Processing in a worker…"
           : fileName
             ? fileName
             : "Your file stays in this browser session."}
@@ -214,205 +259,246 @@ export function ImportWizard({ onAccept, onCancel }: ImportWizardProps) {
       )}
       {!!sheets.length && (
         <>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <label className="text-sm font-medium">
-              Sheet
-              <select
-                className={control}
-                value={sheetName}
-                onChange={(event) => changeHeader(event.target.value, 1)}
-              >
-                {sheets.map((sheet) => (
-                  <option key={sheet.name} value={sheet.name}>
-                    {sheet.name} ({sheet.rowCount} rows including header)
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="text-sm font-medium">
-              Header row
-              <select
-                className={control}
-                value={headerRow}
-                onChange={(event) =>
-                  changeHeader(sheetName, Number(event.target.value))
+          {compact && (
+            <p className="mt-3 text-pretty text-xs text-stone-600">
+              {Object.keys(mapping).length} columns mapped in {sheetName},
+              header row {headerRow}. Coordinates:{" "}
+              {options.coordinateOrder === "lat_lon"
+                ? "latitude, longitude"
+                : "longitude, latitude"}{" "}
+              (WGS84). Text dates:{" "}
+              {options.dateFormat === "ISO"
+                ? "YYYY-MM-DD"
+                : options.dateFormat === "MDY"
+                  ? "MM/DD/YYYY"
+                  : "DD/MM/YYYY"}
+              . Precision:{" "}
+              {mapping.precision === undefined
+                ? options.datePrecision
+                : "from mapped column"}
+              . Date meaning:{" "}
+              {mapping.meaning === undefined
+                ? options.dateMeaning.replaceAll("_", " ")
+                : "from mapped column"}
+              .
+            </p>
+          )}
+          <Settings
+            className="mt-3"
+            {...(compact
+              ? {
+                  open: settingsOpen,
+                  onToggle: (event: SyntheticEvent<HTMLElement>) =>
+                    setSettingsOpen(event.currentTarget.hasAttribute("open")),
                 }
-              >
-                {Array.from(
-                  {
-                    length: Math.min(
-                      IMPORT_LIMITS.headerRows,
-                      current?.rowCount ?? 0,
+              : {})}
+          >
+            {compact && (
+              <summary className="cursor-pointer text-sm font-medium">
+                Columns and date settings
+              </summary>
+            )}
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <label className="text-sm font-medium">
+                Sheet
+                <select
+                  className={control}
+                  value={sheetName}
+                  onChange={(event) => changeHeader(event.target.value, 1)}
+                >
+                  {sheets.map((sheet) => (
+                    <option key={sheet.name} value={sheet.name}>
+                      {sheet.name} ({sheet.rowCount} rows including header)
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm font-medium">
+                Header row
+                <select
+                  className={control}
+                  value={headerRow}
+                  onChange={(event) =>
+                    changeHeader(sheetName, Number(event.target.value))
+                  }
+                >
+                  {Array.from(
+                    {
+                      length: Math.min(
+                        IMPORT_LIMITS.headerRows,
+                        current?.rowCount ?? 0,
+                      ),
+                    },
+                    (_, i) => (
+                      <option key={i} value={i + 1}>
+                        Row {i + 1}:{" "}
+                        {display(current?.preview[i]?.[0]).slice(0, 45)}
+                      </option>
                     ),
-                  },
-                  (_, i) => (
-                    <option key={i} value={i + 1}>
-                      Row {i + 1}:{" "}
-                      {display(current?.preview[i]?.[0]).slice(0, 45)}
-                    </option>
-                  ),
-                )}
-              </select>
-            </label>
-          </div>
-          <details className="mt-3 text-sm">
-            <summary className="cursor-pointer font-medium">
-              Inspect source rows
-            </summary>
-            <div className="mt-2 max-h-56 overflow-auto rounded border border-stone-200">
-              <table className="w-full text-left text-xs">
-                <caption className="p-2 text-left text-stone-500">
-                  Selected header and first five data rows. All selected-sheet
-                  rows are validated.
-                </caption>
-                <tbody>
-                  {current?.preview
-                    .slice(headerRow - 1, headerRow + 5)
-                    .map((row, i) => (
-                      <tr key={i} className="border-t border-stone-100">
-                        <th
-                          scope="row"
-                          className="sticky left-0 bg-stone-50 px-2 py-2 tabular-nums"
-                        >
-                          {headerRow + i}
-                        </th>
-                        {row.map((cell, j) => (
-                          <td
-                            key={j}
-                            className="max-w-64 min-w-24 break-words px-2 py-2"
+                  )}
+                </select>
+              </label>
+            </div>
+            <details className="mt-3 text-sm">
+              <summary className="cursor-pointer font-medium">
+                Inspect source rows
+              </summary>
+              <div className="mt-2 max-h-56 overflow-auto rounded border border-stone-200">
+                <table className="w-full text-left text-xs">
+                  <caption className="p-2 text-left text-stone-500">
+                    Selected header and first five data rows. All selected-sheet
+                    rows are validated.
+                  </caption>
+                  <tbody>
+                    {current?.preview
+                      .slice(headerRow - 1, headerRow + 5)
+                      .map((row, i) => (
+                        <tr key={i} className="border-t border-stone-100">
+                          <th
+                            scope="row"
+                            className="sticky left-0 bg-stone-50 px-2 py-2 tabular-nums"
                           >
-                            {display(cell).slice(0, 200)}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
-          </details>
-          <fieldset className="mt-4">
-            <legend className="font-semibold">Interpretation</legend>
-            <p className="mt-1 text-xs text-stone-500">
-              Set these choices explicitly. Blank dates remain unknown.
-              Month/year values retain their precision; no day is invented.
-            </p>
-            <div className="mt-2 grid gap-3 sm:grid-cols-2">
-              <label className="text-sm">
-                Coordinate order
-                <select
-                  className={control}
-                  value={options.coordinateOrder}
-                  onChange={(e) => {
-                    invalidate();
-                    setOptions({
-                      ...options,
-                      coordinateOrder: e.target
-                        .value as ImportOptions["coordinateOrder"],
-                    });
-                  }}
-                >
-                  <option value="lat_lon">
-                    1 = latitude, 2 = longitude (WGS84)
-                  </option>
-                  <option value="lon_lat">
-                    1 = longitude, 2 = latitude (WGS84)
-                  </option>
-                </select>
-              </label>
-              <label className="text-sm">
-                Text day-date format
-                <select
-                  className={control}
-                  value={options.dateFormat}
-                  onChange={(e) => {
-                    invalidate();
-                    setOptions({
-                      ...options,
-                      dateFormat: e.target.value as ImportOptions["dateFormat"],
-                    });
-                  }}
-                >
-                  <option value="ISO">YYYY-MM-DD (ISO)</option>
-                  <option value="MDY">MM/DD/YYYY</option>
-                  <option value="DMY">DD/MM/YYYY</option>
-                </select>
-              </label>
-              <label className="text-sm">
-                Default precision
-                <select
-                  className={control}
-                  value={options.datePrecision}
-                  onChange={(e) => {
-                    invalidate();
-                    setOptions({
-                      ...options,
-                      datePrecision: e.target
-                        .value as ImportOptions["datePrecision"],
-                    });
-                  }}
-                >
-                  {DATE_PRECISIONS.map((p) => (
-                    <option key={p}>{p}</option>
-                  ))}
-                </select>
-              </label>
-              <label className="text-sm">
-                Default date meaning
-                <select
-                  className={control}
-                  value={options.dateMeaning}
-                  onChange={(e) => {
-                    invalidate();
-                    setOptions({
-                      ...options,
-                      dateMeaning: e.target
-                        .value as ImportOptions["dateMeaning"],
-                    });
-                  }}
-                >
-                  {DATE_MEANINGS.map((meaning) => (
-                    <option key={meaning} value={meaning}>
-                      {meaning.replaceAll("_", " ")}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          </fieldset>
-          <fieldset className="mt-4">
-            <legend className="font-semibold">Column mapping</legend>
-            <p className="mt-1 text-xs text-stone-500">
-              Header aliases are suggestions. Verify them; each source column is
-              used at most once. Coordinate columns are decimal degrees in the
-              order chosen above.
-            </p>
-            <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {(Object.keys(FIELD_LABELS) as ImportField[]).map((field) => (
-                <label key={field} className="min-w-0 text-sm">
-                  {FIELD_LABELS[field]}
+                            {headerRow + i}
+                          </th>
+                          {row.map((cell, j) => (
+                            <td
+                              key={j}
+                              className="max-w-64 min-w-24 break-words px-2 py-2"
+                            >
+                              {display(cell).slice(0, 200)}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+            <fieldset className="mt-4">
+              <legend className="font-semibold">Interpretation</legend>
+              <p className="mt-1 text-xs text-stone-500">
+                Set these choices explicitly. Blank dates remain unknown.
+                Month/year values retain their precision; no day is invented.
+              </p>
+              <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                <label className="text-sm">
+                  Coordinate order
                   <select
                     className={control}
-                    value={mapping[field] ?? ""}
-                    onChange={(event) => {
+                    value={options.coordinateOrder}
+                    onChange={(e) => {
                       invalidate();
-                      const next = { ...mapping };
-                      if (event.target.value === "") delete next[field];
-                      else next[field] = Number(event.target.value);
-                      setMapping(next);
+                      setOptions({
+                        ...options,
+                        coordinateOrder: e.target
+                          .value as ImportOptions["coordinateOrder"],
+                      });
                     }}
                   >
-                    <option value="">Not mapped</option>
-                    {headers.map((header, index) => (
-                      <option key={index} value={index}>
-                        {index + 1}:{" "}
-                        {display(header).slice(0, 70) || "(empty header)"}
+                    <option value="lat_lon">
+                      1 = latitude, 2 = longitude (WGS84)
+                    </option>
+                    <option value="lon_lat">
+                      1 = longitude, 2 = latitude (WGS84)
+                    </option>
+                  </select>
+                </label>
+                <label className="text-sm">
+                  Text day-date format
+                  <select
+                    className={control}
+                    value={options.dateFormat}
+                    onChange={(e) => {
+                      invalidate();
+                      setOptions({
+                        ...options,
+                        dateFormat: e.target
+                          .value as ImportOptions["dateFormat"],
+                      });
+                    }}
+                  >
+                    <option value="ISO">YYYY-MM-DD (ISO)</option>
+                    <option value="MDY">MM/DD/YYYY</option>
+                    <option value="DMY">DD/MM/YYYY</option>
+                  </select>
+                </label>
+                <label className="text-sm">
+                  Default precision
+                  <select
+                    className={control}
+                    value={options.datePrecision}
+                    onChange={(e) => {
+                      invalidate();
+                      setOptions({
+                        ...options,
+                        datePrecision: e.target
+                          .value as ImportOptions["datePrecision"],
+                      });
+                    }}
+                  >
+                    {DATE_PRECISIONS.map((p) => (
+                      <option key={p}>{p}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="text-sm">
+                  Default date meaning
+                  <select
+                    className={control}
+                    value={options.dateMeaning}
+                    onChange={(e) => {
+                      invalidate();
+                      setOptions({
+                        ...options,
+                        dateMeaning: e.target
+                          .value as ImportOptions["dateMeaning"],
+                      });
+                    }}
+                  >
+                    {DATE_MEANINGS.map((meaning) => (
+                      <option key={meaning} value={meaning}>
+                        {meaning.replaceAll("_", " ")}
                       </option>
                     ))}
                   </select>
                 </label>
-              ))}
-            </div>
-          </fieldset>
+              </div>
+            </fieldset>
+            <fieldset className="mt-4">
+              <legend className="font-semibold">Column mapping</legend>
+              <p className="mt-1 text-xs text-stone-500">
+                Header aliases are suggestions. Verify them; each source column
+                is used at most once. Coordinate columns are decimal degrees in
+                the order chosen above.
+              </p>
+              <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {(Object.keys(FIELD_LABELS) as ImportField[]).map((field) => (
+                  <label key={field} className="min-w-0 text-sm">
+                    {FIELD_LABELS[field]}
+                    <select
+                      className={control}
+                      value={mapping[field] ?? ""}
+                      onChange={(event) => {
+                        invalidate();
+                        const next = { ...mapping };
+                        if (event.target.value === "") delete next[field];
+                        else next[field] = Number(event.target.value);
+                        setMapping(next);
+                      }}
+                    >
+                      <option value="">Not mapped</option>
+                      {headers.map((header, index) => (
+                        <option key={index} value={index}>
+                          {index + 1}:{" "}
+                          {display(header).slice(0, 70) || "(empty header)"}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          </Settings>
           <Button
             disabled={busy}
             className={cn(button, "mt-4 inline-flex items-center gap-2")}
@@ -432,15 +518,47 @@ export function ImportWizard({ onAccept, onCancel }: ImportWizardProps) {
             }}
           >
             <Upload size={15} />
-            Validate mapped rows
+            {compact ? "Check dataset" : "Validate mapped rows"}
           </Button>
           {result && (
             <div className="mt-4 rounded-lg border border-stone-200 p-3">
               <p role="status" className="text-sm font-medium tabular-nums">
-                {result.validRows.toLocaleString()} valid rows ·{" "}
-                {result.errorCount.toLocaleString()} errors ·{" "}
-                {result.skippedRows.toLocaleString()} empty rows skipped
+                {compact ? (
+                  result.dataset ? (
+                    <>
+                      {result.validRows.toLocaleString()} records checked across{" "}
+                      {utilityCount.toLocaleString()}{" "}
+                      {utilityCount === 1 ? "utility" : "utilities"}.{" "}
+                      {locatedCount?.toLocaleString()} with coordinates.
+                    </>
+                  ) : (
+                    <>
+                      {result.errorCount.toLocaleString()}{" "}
+                      {result.errorCount === 1 ? "error" : "errors"} to fix.{" "}
+                      {result.validRows.toLocaleString()} valid records.
+                    </>
+                  )
+                ) : (
+                  <>
+                    {result.validRows.toLocaleString()} valid rows ·{" "}
+                    {result.errorCount.toLocaleString()} errors ·{" "}
+                    {result.skippedRows.toLocaleString()} empty rows skipped
+                  </>
+                )}
               </p>
+              {compact && unlocatedCount > 0 && (
+                <p className="mt-2 text-pretty text-xs text-stone-600">
+                  {unlocatedCount.toLocaleString()}{" "}
+                  {unlocatedCount === 1 ? "record has" : "records have"} no
+                  coordinates and will not appear on the map. All records are
+                  retained.
+                </p>
+              )}
+              {compact && result.skippedRows > 0 && (
+                <p className="mt-1 text-xs text-stone-600">
+                  {result.skippedRows.toLocaleString()} empty rows skipped.
+                </p>
+              )}
               {result.issues.length > 0 && (
                 <>
                   <p className="mt-1 text-xs text-stone-600">
@@ -456,53 +574,60 @@ export function ImportWizard({ onAccept, onCancel }: ImportWizardProps) {
                   </ul>
                 </>
               )}
-              <div className="mt-3 overflow-auto">
-                <table className="w-full text-left text-xs">
-                  <caption className="mb-2 text-left font-medium">
-                    Normalized preview · first {result.preview.length} valid
-                    records
-                  </caption>
-                  <thead>
-                    <tr>
-                      {[
-                        "Project",
-                        "Utility",
-                        "Milestone / precision",
-                        "Normalized latitude, longitude",
-                      ].map((label) => (
-                        <th key={label} className="border-b px-2 py-2">
-                          {label}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {result.preview.map((p) => (
-                      <tr key={p.id}>
-                        <td className="max-w-64 break-words px-2 py-2">
-                          {p.name}
-                        </td>
-                        <td className="px-2 py-2">{p.utility}</td>
-                        <td className="px-2 py-2 tabular-nums">
-                          {p.originalDate ?? "Unknown"} · {p.datePrecision}
-                          <br />
-                          {p.dateMeaning.replaceAll("_", " ")}
-                        </td>
-                        <td className="px-2 py-2 tabular-nums">
-                          {p.endpoints.map((endpoint, index) => (
-                            <div key={index} className="whitespace-nowrap">
-                              {index === 0 ? "A" : "B"}:{" "}
-                              {endpoint.coordinate
-                                ? endpoint.coordinate.join(", ")
-                                : "Unlocated"}
-                            </div>
-                          ))}
-                        </td>
+              <Preview className="mt-3">
+                {compact && (
+                  <summary className="cursor-pointer text-sm font-medium">
+                    Preview records
+                  </summary>
+                )}
+                <div className="mt-2 max-h-64 overflow-auto">
+                  <table className="w-full text-left text-xs">
+                    <caption className="mb-2 text-left font-medium">
+                      Normalized preview · first {result.preview.length} valid
+                      records
+                    </caption>
+                    <thead>
+                      <tr>
+                        {[
+                          "Project",
+                          "Utility",
+                          "Milestone / precision",
+                          "Normalized latitude, longitude",
+                        ].map((label) => (
+                          <th key={label} className="border-b px-2 py-2">
+                            {label}
+                          </th>
+                        ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {result.preview.map((p) => (
+                        <tr key={p.id}>
+                          <td className="max-w-64 break-words px-2 py-2">
+                            {p.name}
+                          </td>
+                          <td className="px-2 py-2">{p.utility}</td>
+                          <td className="px-2 py-2 tabular-nums">
+                            {p.originalDate ?? "Unknown"} · {p.datePrecision}
+                            <br />
+                            {p.dateMeaning.replaceAll("_", " ")}
+                          </td>
+                          <td className="px-2 py-2 tabular-nums">
+                            {p.endpoints.map((endpoint, index) => (
+                              <div key={index} className="whitespace-nowrap">
+                                {index === 0 ? "A" : "B"}:{" "}
+                                {endpoint.coordinate
+                                  ? endpoint.coordinate.join(", ")
+                                  : "Unlocated"}
+                              </div>
+                            ))}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Preview>
               {result.warnings.map((warning) => (
                 <p key={warning} className="mt-2 text-xs text-stone-600">
                   {warning}
@@ -520,7 +645,7 @@ export function ImportWizard({ onAccept, onCancel }: ImportWizardProps) {
                 }}
                 className="mt-3 rounded-lg bg-emerald-800 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
               >
-                Use this dataset
+                {compact ? "Show on map" : "Use this dataset"}
               </Button>
             </div>
           )}

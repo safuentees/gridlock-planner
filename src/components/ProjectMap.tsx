@@ -47,6 +47,40 @@ function tooltip(text: string) {
   return label;
 }
 
+/** Leaflet.heat 0.2.0 leaves requested animation frames alive on removal.
+ * A synchronous _reset can also clear _frame before its queued callback runs.
+ * Guard this instance's redraw as well as cancelling the tracked frame; never
+ * patch the shared plugin prototype. Recheck these internals on a dependency bump.
+ */
+function createHeatLayer(
+  points: L.HeatLatLngTuple[],
+  options: L.HeatMapOptions,
+) {
+  const layer = L.heatLayer(points, options);
+  const internals = layer as unknown as {
+    _frame: number | null | undefined;
+    _map: L.Map | null | undefined;
+    _redraw: () => void;
+  };
+  const redraw = internals._redraw;
+  internals._redraw = () => {
+    if (!internals._map) {
+      internals._frame = null;
+      return;
+    }
+    redraw.call(layer);
+  };
+  const onRemove = layer.onRemove;
+  layer.onRemove = function (view) {
+    if (internals._frame != null) {
+      L.Util.cancelAnimFrame(internals._frame);
+      internals._frame = null;
+    }
+    return onRemove.call(this, view);
+  };
+  return layer;
+}
+
 function markerIcon(
   company: string,
   spriteId: string,
@@ -206,7 +240,7 @@ export function ProjectMap({
       });
     };
     if (mode === "heat" && heatReady) {
-      heat.current = L.heatLayer(presentation.heat, {
+      heat.current = createHeatLayer(presentation.heat, {
         radius: HEAT_RADIUS,
         blur: HEAT_BLUR,
         maxZoom: view.getZoom(),

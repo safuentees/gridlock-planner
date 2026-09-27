@@ -26,6 +26,12 @@ export function connectionSegments(
   if (Math.abs(b[1] - a[1]) <= 180) return [[a, b]];
   const edge = a[1] >= 0 ? 180 : -180;
   const wrappedB = b[1] + (a[1] >= 0 ? 360 : -360);
+  if (wrappedB === a[1]) {
+    return [
+      [a, [b[0], a[1]]],
+      [[a[0], b[1]], b],
+    ];
+  }
   const fraction = (edge - a[1]) / (wrappedB - a[1]);
   const latitude = a[0] + (b[0] - a[0]) * fraction;
   return [

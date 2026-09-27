@@ -148,6 +148,16 @@ describe("map proximity overlays", () => {
       [b, [10.5, -180]],
       [[10.5, 180], a],
     ]);
+    expect(connectionSegments([10, 180], [11, -180])).toEqual([
+      [
+        [10, 180],
+        [11, 180],
+      ],
+      [
+        [10, -180],
+        [11, -180],
+      ],
+    ]);
     expect(a).toEqual([10, 179.5]);
     expect(b).toEqual([11, -179.5]);
     expect(connectionSegments([32, -81], [33, -82])).toEqual([

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Simplify the app to Explore, remove the Reset view action, and move focus/show-all to icon-only map controls with one-word hover and keyboard hints. Reuse Leaflet's built-in `fitBounds` behavior.
+
 - Reorganize Explore around an expandable map with collapsible filter and comparison panels, in-panel evidence, and consolidated focus/reset controls.
 - Add a green-to-red planning-density toggle, distinct Lucide company markers, and explicit line-number labels while preserving original source names and comparison rules.
 

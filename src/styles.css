@@ -156,6 +156,15 @@
   left: 14px;
   z-index: 10;
 }
+.map-focus-controls {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 .explore-drawer {
   display: flex;
   flex-direction: column;
@@ -182,7 +191,7 @@
 }
 @media (max-width: 767px) {
   .explore-workspace {
-    height: calc(100dvh - 130px);
+    height: calc(100dvh - 78px);
     min-height: 640px;
   }
   .explore-expanded {

@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Button } from "@base-ui/react/button";
 import {
   ArrowLeft,
   Expand,
+  Scan,
   Layers,
   Menu,
   Minimize,
@@ -16,6 +17,58 @@ import {
 import { cn } from "../lib/cn";
 
 type Panel = "filters" | "comparisons" | null;
+
+/** Icon-only map action; the same short hint is available on hover and focus. */
+function MapAction({
+  label,
+  hint,
+  onClick,
+  disabled,
+  children,
+}: {
+  label: string;
+  hint: string;
+  onClick: () => void;
+  disabled?: boolean;
+  children: ReactNode;
+}) {
+  const [showHint, setShowHint] = useState(false);
+  const hintId = useId();
+  return (
+    <div
+      className="relative"
+      onPointerEnter={() => setShowHint(true)}
+      onPointerLeave={() => setShowHint(false)}
+    >
+      <Button
+        aria-label={label}
+        aria-describedby={showHint ? hintId : undefined}
+        disabled={disabled}
+        onClick={onClick}
+        onFocus={() => setShowHint(true)}
+        onBlur={() => setShowHint(false)}
+        onKeyDown={(event) => {
+          if (event.key === "Escape" && showHint) {
+            event.stopPropagation();
+            setShowHint(false);
+          }
+        }}
+        className="flex size-11 items-center justify-center rounded-xl border border-slate-200 bg-white/95 text-slate-700 shadow-sm hover:bg-blue-50 hover:text-blue-700 disabled:opacity-40"
+      >
+        {children}
+      </Button>
+      {showHint && (
+        <span
+          id={hintId}
+          role="tooltip"
+          className="absolute right-full top-1/2 mr-2 -translate-y-1/2 rounded-md bg-slate-900 px-2 py-1 text-xs font-medium text-white shadow-sm"
+        >
+          {hint}
+        </span>
+      )}
+    </div>
+  );
+}
 
 export function ExploreWorkspace({
   children,
@@ -197,6 +250,28 @@ export function ExploreWorkspace({
               </span>
             </Button>
           </div>
+          <div
+            className="map-focus-controls"
+            role="group"
+            aria-label="Map view controls"
+          >
+            <MapAction
+              label="Focus selection"
+              hint="Focus"
+              onClick={onFocus}
+              disabled={!canFocus}
+            >
+              <Target size={19} aria-hidden="true" />
+            </MapAction>
+            <MapAction
+              label="Show all locations"
+              hint="All"
+              onClick={onShowAll}
+              disabled={recordCount === 0}
+            >
+              <Scan size={19} aria-hidden="true" />
+            </MapAction>
+          </div>
         </section>
         {panel && (
           <aside
@@ -231,23 +306,6 @@ export function ExploreWorkspace({
                 <X size={17} />
               </Button>
             </div>
-            {panel === "comparisons" && (
-              <div className="flex flex-wrap gap-2 border-b border-slate-100 bg-slate-50 p-3">
-                <Button
-                  onClick={onFocus}
-                  disabled={!canFocus}
-                  className={action}
-                >
-                  <Target size={14} /> Focus selection
-                </Button>
-                <Button onClick={onShowAll} className={action}>
-                  Show all locations
-                </Button>
-                <Button onClick={onReset} className={action}>
-                  <RotateCcw size={14} /> Reset view
-                </Button>
-              </div>
-            )}
             <div
               ref={drawerContent}
               tabIndex={-1}

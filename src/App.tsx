@@ -741,11 +741,15 @@ export default function App() {
                   <div className="h-96 sm:h-[30rem]">
                     <ProjectMap
                       projects={filtered}
+                      comparisons={pairs}
                       selected={selected}
                       selectedProjectId={projectId}
                       fitAll={fitAll}
                       mode={mapMode}
                       fitRequest={fitRequest}
+                      explorerControls
+                      websiteThresholdMiles={threshold}
+                      websiteUnit={unit}
                       onProjectSelect={setProjectId}
                     />
                   </div>

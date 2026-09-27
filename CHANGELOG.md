@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add the Vercel suggestion endpoint with hosted-origin checks, bounded parsed/raw inputs, server-only API configuration and clearer service/rate-limit errors. Preserve local-only dev behavior.
+
 - Restore map wheel/trackpad and touch zoom. Clear selection by activating a selected marker again or clicking empty map space, with pressed-state labels and retained marker keyboard focus.
 
 - Add top padding to the comparison empty-state message and upload action.

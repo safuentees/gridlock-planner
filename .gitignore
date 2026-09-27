@@ -11,3 +11,5 @@ output/
 __pycache__/
 *.tsbuildinfo
 .venv/
+
+.vercel/

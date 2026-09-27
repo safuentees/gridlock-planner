@@ -49,6 +49,14 @@ function RecommendationRequest({
           AbortSignal.timeout(25000),
         ]),
       });
+      if (response.status === 429)
+        throw new Error(
+          "Too many suggestions. Please wait one minute and try again.",
+        );
+      if (!response.headers.get("content-type")?.includes("application/json"))
+        throw new Error(
+          "The suggestion service is unavailable. Please try again shortly.",
+        );
       const data = await response.json();
       if (!response.ok)
         throw new Error(
@@ -67,7 +75,7 @@ function RecommendationRequest({
         setError(
           error instanceof Error && error.name === "Error"
             ? error.message
-            : "Suggestion unavailable; check the local server and try again.",
+            : "Suggestion service unavailable; please try again shortly.",
         );
     } finally {
       if (!controller.signal.aborted) {

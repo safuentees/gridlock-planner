@@ -176,6 +176,9 @@ async function call(
     body?: string;
     method?: string;
     host?: string;
+    parsedBody?: unknown;
+    contentLength?: string;
+    remoteAddress?: string;
   } = {},
 ) {
   const req = Object.assign(
@@ -183,12 +186,16 @@ async function call(
     {
       url: "/api/pair-recommendation",
       method: options.method ?? "POST",
+      ...(options.parsedBody !== undefined ? { body: options.parsedBody } : {}),
       headers: {
         host: options.host ?? "127.0.0.1:4178",
         origin: options.origin ?? "http://127.0.0.1:4178",
         "content-type": "application/json",
+        ...(options.contentLength
+          ? { "content-length": options.contentLength }
+          : {}),
       },
-      socket: { remoteAddress: "127.0.0.1" },
+      socket: { remoteAddress: options.remoteAddress ?? "127.0.0.1" },
     },
   ) as unknown as IncomingMessage;
   let status = 0;
@@ -247,6 +254,100 @@ describe("local recommendation endpoint", () => {
         body: { recommendation: suggestion },
       });
     expect((await call(middleware)).status).toBe(429);
+    expect(fetcher).toHaveBeenCalledTimes(12);
+  });
+});
+
+describe("hosted recommendation endpoint", () => {
+  const hostedConfig = {
+    ...config,
+    allowedOrigins: ["https://gridlock-pink.vercel.app"],
+  };
+  const hosted = {
+    host: "gridlock-pink.vercel.app",
+    origin: "https://gridlock-pink.vercel.app",
+    remoteAddress: "203.0.113.5",
+  };
+  it("accepts Vercel parsed JSON and preserves the shared provider contract", async () => {
+    const fetcher = vi.fn().mockResolvedValue(output());
+    vi.stubGlobal("fetch", fetcher);
+    expect(
+      await call(createRecommendationMiddleware(hostedConfig), {
+        ...hosted,
+        parsedBody: context,
+        body: "",
+      }),
+    ).toEqual({ status: 200, body: { recommendation: suggestion } });
+    expect(JSON.parse(fetcher.mock.calls[0][1].body).store).toBe(false);
+  });
+  it("accepts raw JSON from a hosted request", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(output()));
+    expect(
+      (await call(createRecommendationMiddleware(hostedConfig), hosted)).status,
+    ).toBe(200);
+  });
+  it("fails closed for missing, mismatched or untrusted origins", async () => {
+    const fetcher = vi.fn();
+    vi.stubGlobal("fetch", fetcher);
+    for (const options of [
+      { ...hosted, origin: "" },
+      { ...hosted, origin: "https://evil.example" },
+      { ...hosted, host: "evil.example" },
+    ])
+      expect(
+        (await call(createRecommendationMiddleware(hostedConfig), options))
+          .status,
+      ).toBe(403);
+    expect(
+      (
+        await call(
+          createRecommendationMiddleware({
+            ...hostedConfig,
+            allowedOrigins: [],
+          }),
+          hosted,
+        )
+      ).status,
+    ).toBe(403);
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+  it("rejects oversized parsed bodies, declared lengths and invalid JSON before OpenAI", async () => {
+    const fetcher = vi.fn();
+    vi.stubGlobal("fetch", fetcher);
+    for (const options of [
+      { ...hosted, parsedBody: { text: "x".repeat(20001) } },
+      { ...hosted, contentLength: "20001" },
+    ])
+      expect(
+        (await call(createRecommendationMiddleware(hostedConfig), options))
+          .status,
+      ).toBe(413);
+    expect(
+      (
+        await call(createRecommendationMiddleware(hostedConfig), {
+          ...hosted,
+          parsedBody: "invalid",
+        })
+      ).status,
+    ).toBe(400);
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+  it("reports hosted missing configuration without local-server instructions", async () => {
+    const result = await call(
+      createRecommendationMiddleware({ ...hostedConfig, apiKey: "" }),
+      hosted,
+    );
+    expect(result.status).toBe(503);
+    expect(result.body.error).toContain("deployment");
+    expect(result.body.error).not.toContain(".env.local");
+  });
+  it("retains the per-instance request cap on the public route", async () => {
+    const fetcher = vi.fn().mockImplementation(() => Promise.resolve(output()));
+    vi.stubGlobal("fetch", fetcher);
+    const middleware = createRecommendationMiddleware(hostedConfig);
+    for (let i = 0; i < 12; i++)
+      expect((await call(middleware, hosted)).status).toBe(200);
+    expect((await call(middleware, hosted)).status).toBe(429);
     expect(fetcher).toHaveBeenCalledTimes(12);
   });
 });

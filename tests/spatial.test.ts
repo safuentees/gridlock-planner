@@ -276,7 +276,7 @@ describe("preparation, filtering and bounded output", () => {
     expect(rows).toEqual(before);
     expect((await run(rows, { companies: [] })).possibleCount).toBe(0);
     expect((await run(rows, { from: "invalid" })).reason).toBe("invalid_range");
-    expect((await run(rows, { thresholdMiles: 0 })).reason).toBe(
+    expect((await run(rows, { thresholdMiles: -1 })).reason).toBe(
       "invalid_threshold",
     );
   });
@@ -344,5 +344,203 @@ describe("preparation, filtering and bounded output", () => {
     expect(exported.pairs).toHaveLength(4);
     expect(exported.matchedCount).toBeGreaterThan(4);
     await expect(run(dataset, { limit: 20_001 })).rejects.toThrow("20000");
+  });
+});
+
+describe("saved location eligibility and reference comparisons", () => {
+  it("applies saved exclusions together with company/date filters while reusing geometry", async () => {
+    const rows = [
+      fixture("a", "A"),
+      fixture("b", "B"),
+      fixture("past", "B", [0, 0], "2024-01-01"),
+      fixture("other", "C"),
+    ];
+    const prepared = prepare(rows);
+    const geometry = prepared.geometry;
+    const query = {
+      ...defaults,
+      companies: ["A", "B"],
+      from: "2026",
+      to: "2026",
+    };
+    const enabled = await querySpatial(prepared, query);
+    expect(enabled.eligibleProjectIds).toEqual(["a", "b"]);
+    expect(enabled.pairs.map((pair) => pair.id)).toEqual(["a::b"]);
+    expect(
+      await querySpatial(prepared, { ...query, excludedProjectIds: [] }),
+    ).toMatchObject({ pairs: enabled.pairs, possibleCount: 1 });
+    const excluded = await querySpatial(prepared, {
+      ...query,
+      excludedProjectIds: ["b", "not-in-dataset"],
+    });
+    expect(excluded.eligibleProjectIds).toEqual(["a"]);
+    expect(excluded.possibleCount).toBe(0);
+    expect(excluded.pairs).toEqual([]);
+    expect(prepared.geometry).toBe(geometry);
+    expect((await querySpatial(prepared, query)).pairs).toEqual(enabled.pairs);
+  });
+
+  it("queries a last-sorting reference directly instead of filtering the global top 200", async () => {
+    const rows = [
+      ...Array.from({ length: 30 }, (_, i) =>
+        fixture(`cluster-${String(i).padStart(2, "0")}`, i < 15 ? "A" : "B"),
+      ),
+      fixture("z-reference", "Z", [0, 1]),
+      fixture("a-neighbor", "A", [0, 1.01]),
+    ];
+    const settings = { companies: ["A", "B", "Z"] };
+    const global = await run(rows, settings);
+    expect(global.pairs).toHaveLength(200);
+    expect(global.matchedCount).toBe(226);
+    expect(
+      global.pairs.some(
+        (pair) => pair.a.id === "z-reference" || pair.b.id === "z-reference",
+      ),
+    ).toBe(false);
+    const reference = await run(rows, {
+      ...settings,
+      referenceProjectId: "z-reference",
+    });
+    expect(reference.complete).toBe(true);
+    expect(reference.possibleCount).toBe(31);
+    expect(reference.matchedCount).toBe(1);
+    expect(reference.pairs.map((pair) => pair.id)).toEqual([
+      "a-neighbor::z-reference",
+    ]);
+    expect(reference.eligibleProjectIds).toEqual(global.eligibleProjectIds);
+    expect(reference.diagnostics.totalOrigins).toBe(1);
+    expect(reference.pairs).toEqual(
+      compareProjects(rows).filter(
+        (pair) =>
+          (pair.a.id === "z-reference" || pair.b.id === "z-reference") &&
+          isNearby(pair, 25),
+      ),
+    );
+    expect(
+      (await run(rows, { ...settings, referenceProjectId: null })).pairs,
+    ).toEqual(global.pairs);
+  });
+
+  it("returns no pairs for unknown/ineligible references without narrowing map eligibility", async () => {
+    const rows = [
+      fixture("a", "A"),
+      fixture("b", "B"),
+      fixture("reference", "C", [0, 0], "2024-01-01"),
+    ];
+    for (const settings of [
+      { referenceProjectId: "unknown" },
+      { referenceProjectId: "reference", excludedProjectIds: ["reference"] },
+      { referenceProjectId: "reference", companies: ["A", "B"] },
+      { referenceProjectId: "reference", from: "2026", to: "2026" },
+    ]) {
+      const result = await run(rows, settings);
+      expect(result.complete).toBe(true);
+      expect(result.possibleCount).toBe(0);
+      expect(result.pairs).toEqual([]);
+      expect(result.eligibleProjectIds).toContain("a");
+      expect(result.eligibleProjectIds).toContain("b");
+    }
+    const unlocated = rows.map((row) =>
+      row.id === "reference"
+        ? { ...row, endpoints: [{ name: "unknown", coordinate: null }] }
+        : row,
+    );
+    const missingPoint = await run(unlocated, {
+      referenceProjectId: "reference",
+    });
+    expect(missingPoint).toMatchObject({
+      complete: true,
+      possibleCount: 2,
+      matchedCount: 0,
+      pairs: [],
+    });
+    expect(missingPoint.eligibleProjectIds).toEqual(["a", "b", "reference"]);
+    expect(missingPoint.diagnostics.visitedPointCount).toBe(0);
+  });
+
+  it("retains reference-specific limits, cancellation and scenario eligibility without mutating sources", async () => {
+    const rows = [
+      fixture("reference", "Z", [0, 0], "2024-01-01"),
+      ...Array.from({ length: 12 }, (_, i) =>
+        fixture(`neighbor-${i}`, "A", [0, i / 1000]),
+      ),
+    ];
+    const before = structuredClone(rows);
+    const prepared = prepare(rows);
+    const geometry = prepared.geometry;
+    const query = {
+      ...defaults,
+      companies: ["A", "Z"],
+      referenceProjectId: "reference",
+      from: "2026",
+      to: "2026",
+      shifts: { Z: 2 },
+      excludedProjectIds: ["neighbor-0"],
+      limit: 2,
+      maxNeighborsPerOrigin: 4,
+    };
+    const limited = await querySpatial(prepared, query);
+    expect(limited).toMatchObject({
+      complete: false,
+      reason: "neighbor_limit",
+      possibleCount: 11,
+      matchedCount: 3,
+      matchedCountIsLowerBound: true,
+    });
+    expect(limited.pairs).toHaveLength(2);
+    expect(
+      limited.pairs.every(
+        (pair) => pair.a.id === "reference" || pair.b.id === "reference",
+      ),
+    ).toBe(true);
+    expect(limited.pairs.every((pair) => pair.gapDays === 0)).toBe(true);
+    const controller = new AbortController();
+    const cancelled = await querySpatial(prepared, query, {
+      signal: controller.signal,
+      yieldControl: async () => controller.abort(),
+    });
+    expect(cancelled.reason).toBe("cancelled");
+    expect(cancelled.possibleCount).toBe(11);
+    expect(prepared.geometry).toBe(geometry);
+    expect(rows).toEqual(before);
+  });
+
+  it("keeps reference boundaries strict and treats zero radius as a valid complete empty query", async () => {
+    const rows = [fixture("a", "A", [0, 0]), fixture("z", "Z", [0, 0.1])];
+    const distance = haversineMiles([0, 0], [0, 0.1]);
+    const reference = { companies: ["A", "Z"], referenceProjectId: "z" };
+    expect(
+      (await run(rows, { ...reference, thresholdMiles: distance }))
+        .matchedCount,
+    ).toBe(0);
+    expect(
+      (await run(rows, { ...reference, thresholdMiles: distance + 1e-9 }))
+        .matchedCount,
+    ).toBe(1);
+    for (const settings of [{ companies: ["A", "Z"] }, reference]) {
+      const result = await run(rows, {
+        ...settings,
+        thresholdMiles: 0,
+        maxCandidates: 1,
+        timeBudgetMs: 0.00001,
+      });
+      expect(result).toMatchObject({
+        complete: true,
+        reason: "complete",
+        possibleCount: 1,
+        matchedCount: 0,
+        matchedCountIsLowerBound: false,
+        pairs: [],
+      });
+      expect(result.eligibleProjectIds).toEqual(["a", "z"]);
+      expect(result.diagnostics.visitedPointCount).toBe(0);
+    }
+    const coincident = rows.map((row) => ({
+      ...row,
+      endpoints: [{ name: "same", coordinate: [0, 0] as Coordinate }],
+    }));
+    expect(
+      (await run(coincident, { ...reference, thresholdMiles: 0 })).matchedCount,
+    ).toBe(0);
   });
 });

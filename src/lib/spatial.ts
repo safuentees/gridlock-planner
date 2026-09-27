@@ -117,6 +117,10 @@ export interface SpatialQuery {
   from: string;
   to: string;
   includeUndated: boolean;
+  /** Saved unchecked locations; omitted/empty keeps every otherwise eligible row. */
+  excludedProjectIds?: string[];
+  /** Omitted/null compares all eligible companies; a value scopes pairs to this row. */
+  referenceProjectId?: string | null;
   shifts?: Record<string, number>;
   thresholdMiles: number;
   limit?: number;
@@ -252,6 +256,9 @@ export async function querySpatial(
     throw new RangeError("Month window must be a non-negative whole number");
   const range = dateRangeBounds(query.from, query.to);
   const companies = new Set(query.companies);
+  const excluded = new Set(query.excludedProjectIds ?? []);
+  const referenceMode = query.referenceProjectId != null;
+  let referenceIndex = -1;
   const eligible = new Uint8Array(prepared.rows.length);
   const dates: (DateBounds | null)[] = new Array(prepared.rows.length);
   const counts = new Map<string, number>();
@@ -260,7 +267,8 @@ export async function querySpatial(
   let uncertainDateCount = 0;
   for (let i = 0; i < prepared.rows.length; i++) {
     const row = prepared.rows[i];
-    if (!companies.has(row.project.company)) continue;
+    if (!companies.has(row.project.company) || excluded.has(row.project.id))
+      continue;
     const date = shiftDateBounds(
       row.sourceDate,
       query.shifts?.[row.project.company] ?? 0,
@@ -268,24 +276,38 @@ export async function querySpatial(
     dates[i] = date;
     if (!overlapsDateRange(date, range, query.includeUndated)) continue;
     eligible[i] = 1;
+    if (referenceMode && row.project.id === query.referenceProjectId)
+      referenceIndex = i;
     eligibleProjectIds.push(row.project.id);
     if (date && date.precision !== "day") uncertainDateCount++;
     counts.set(row.project.company, (counts.get(row.project.company) ?? 0) + 1);
     if (row.center) origins.push(i);
   }
-  const possibleCount =
-    (eligibleProjectIds.length ** 2 -
-      [...counts.values()].reduce((sum, n) => sum + n * n, 0)) /
-    2;
+  // Eligibility is shared by the map and comparison scope. An unlocated but
+  // eligible reference still has possible comparisons, with no measurable pairs.
+  const possibleCount = referenceMode
+    ? referenceIndex < 0
+      ? 0
+      : eligibleProjectIds.length -
+        (counts.get(prepared.rows[referenceIndex].project.company) ?? 0)
+    : (eligibleProjectIds.length ** 2 -
+        [...counts.values()].reduce((sum, n) => sum + n * n, 0)) /
+      2;
   const groups = prepared.geometry.groups.filter((group) =>
     counts.has(group.company),
   );
   const lastCompany = groups.at(-1)?.company;
-  const queryOrigins = origins.filter(
-    (i) =>
-      lastCompany !== undefined &&
-      lexical(prepared.rows[i].project.company, lastCompany) < 0,
-  );
+  // A dedicated reference search cannot lose its neighbors to unrelated pairs
+  // in the globally retained top results. Its company may sort first or last.
+  const queryOrigins = referenceMode
+    ? referenceIndex >= 0 && prepared.rows[referenceIndex].center
+      ? [referenceIndex]
+      : []
+    : origins.filter(
+        (i) =>
+          lastCompany !== undefined &&
+          lexical(prepared.rows[i].project.company, lastCompany) < 0,
+      );
   const best = new BestPairs(limit);
   let processedOrigins = 0,
     candidateCount = 0,
@@ -295,7 +317,7 @@ export async function querySpatial(
     radiusPrunedGroups = 0;
   let reason: QueryStopReason = !range.valid
     ? "invalid_range"
-    : !(Number.isFinite(query.thresholdMiles) && query.thresholdMiles > 0)
+    : !(Number.isFinite(query.thresholdMiles) && query.thresholdMiles >= 0)
       ? "invalid_threshold"
       : "complete";
   const progress = (): SpatialProgress => ({
@@ -315,7 +337,12 @@ export async function querySpatial(
           : null;
 
   let lastYield = started;
-  if (reason === "complete" && groups.length > 1 && possibleCount) {
+  if (
+    reason === "complete" &&
+    query.thresholdMiles > 0 &&
+    queryOrigins.length &&
+    possibleCount
+  ) {
     control.onProgress?.(progress());
     await (control.yieldControl ?? yieldToEventLoop)();
     lastYield = performance.now();
@@ -323,9 +350,14 @@ export async function querySpatial(
       const a = prepared.rows[i];
       let originCandidates = 0;
       for (const group of groups) {
-        // Each company pair is searched in one direction. Canonical project IDs
-        // are restored below, independently of company-name ordering.
-        if (lexical(group.company, a.project.company) <= 0) continue;
+        // Global search visits each company pair in one direction; reference
+        // search must visit all other companies, regardless of lexical order.
+        if (
+          referenceMode
+            ? group.company === a.project.company
+            : lexical(group.company, a.project.company) <= 0
+        )
+          continue;
         const stopped = stop();
         if (stopped) {
           reason = stopped;

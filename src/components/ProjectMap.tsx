@@ -84,6 +84,7 @@ export function ProjectMap({
 }: Props) {
   const element = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
+  const lastFittedRequest = useRef<number | null>(null);
   const layers = useRef<L.LayerGroup | null>(null);
   const heat = useRef<L.HeatLayer | null>(null);
   const spriteId = useId();
@@ -125,6 +126,7 @@ export function ProjectMap({
       maxZoom: 17,
     }).setView([32.55, -81.9], 7);
     map.current = view;
+    lastFittedRequest.current = null;
     L.control.zoom({ position: "bottomright" }).addTo(view);
     const tiles = L.tileLayer(
       "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -294,7 +296,7 @@ export function ProjectMap({
 
   useEffect(() => {
     const view = map.current;
-    if (!view) return;
+    if (!view || lastFittedRequest.current === fitRequest) return;
     const allPoints = () =>
       projects
         .map((p) => centers.get(p.id) ?? null)
@@ -311,9 +313,13 @@ export function ProjectMap({
       : selected || selectedProjectId
         ? selectedPoints
         : allPoints();
+    // An empty request leaves the current view intact and stays pending until
+    // usable locations arrive. A newer request cancels the previous pending fit.
     if (!points.length) return;
     // Wait for the initial layout; appearance and panel changes never request a fit.
     const frame = requestAnimationFrame(() => {
+      if (map.current !== view || lastFittedRequest.current === fitRequest)
+        return;
       const size = view.getSize();
       const desktop = size.x >= 768;
       view.fitBounds(L.latLngBounds(points), {
@@ -328,9 +334,10 @@ export function ProjectMap({
         maxZoom: 11,
         animate: false,
       });
+      lastFittedRequest.current = fitRequest;
     });
     return () => cancelAnimationFrame(frame);
-  }, [fitRequest]); // Fit is an explicit user action, not a side effect of every filter.
+  }, [fitRequest, projects, centers, selected, selectedProjectId, fitAll]);
 
   return (
     <div

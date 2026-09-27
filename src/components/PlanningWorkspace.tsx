@@ -1232,7 +1232,7 @@ export function PlanningWorkspace({
                       </Button>
                     </div>
                   ) : !pairs.length ? (
-                    <div className="px-4 pb-4">
+                    <div className="p-4">
                       <p className="text-sm text-stone-600">
                         {invalidAssumptions
                           ? "Update or reset the invalid year shift in Filters."

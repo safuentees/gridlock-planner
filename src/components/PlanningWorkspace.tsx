@@ -95,12 +95,14 @@ function useNarrowScreen() {
 }
 
 export function PlanningWorkspace({
+  toolContainer,
   source,
   dataset,
   overrides,
   onProjectFocus,
   onNeedData,
 }: {
+  toolContainer: HTMLElement | null;
   source: RuntimeDataset;
   dataset: RuntimeDataset;
   overrides: ProjectOverride[];
@@ -479,8 +481,9 @@ export function PlanningWorkspace({
         </div>
         <div className="pointer-events-auto flex flex-wrap gap-2">
           <WorkspaceDialog
+            triggerContainer={toolContainer}
             label="Filters"
-            icon={<SlidersHorizontal size={15} />}
+            icon={<SlidersHorizontal size={17} />}
           >
             <div className="space-y-4">
               <fieldset>
@@ -632,7 +635,11 @@ export function PlanningWorkspace({
               </Button>
             </div>
           </WorkspaceDialog>
-          <WorkspaceDialog label="Map settings" icon={<Settings2 size={15} />}>
+          <WorkspaceDialog
+            triggerContainer={toolContainer}
+            label="Map settings"
+            icon={<Settings2 size={17} />}
+          >
             <div className="space-y-5">
               <Toggle label="Heatmap" checked={heatmap} onChange={setHeatmap} />
               <Toggle
@@ -667,7 +674,11 @@ export function PlanningWorkspace({
               </p>
             </div>
           </WorkspaceDialog>
-          <WorkspaceDialog label="Map help" icon={<HelpCircle size={15} />}>
+          <WorkspaceDialog
+            triggerContainer={toolContainer}
+            label="Map help"
+            icon={<HelpCircle size={17} />}
+          >
             <div className="space-y-4 text-sm text-stone-600">
               <p className="font-medium text-stone-900">Map legend</p>
               {availableCompanies.slice(0, 100).map((c) => (

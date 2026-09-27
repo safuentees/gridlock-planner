@@ -8,7 +8,7 @@ September 26, 2026 refinement. This supersedes the layout described in [the earl
 
 | Element | Current treatment and purpose |
 | --- | --- |
-| Header | Compact GridLock identity, record count, historical/uploaded context and correction count. Upload dataset sits beside Data tools and offers the default sample plus computer files. Source name remains available in Data tools and the header tooltip. |
+| Header | Compact GridLock identity, record count, historical/uploaded context and correction count. Filters, Map settings and Map help are labeled icon buttons beside Data tools. Upload dataset offers the default sample plus computer files. Source name remains available in Data tools and the header tooltip. |
 | Map | Fills the remaining viewport; panel, filter and appearance changes retain the same map instance and camera position. Explicit fit actions account for overlay space. |
 | Utility visibility | Top-left labeled buttons; all additional imported utilities remain accessible through Filters. Icons identify utility membership, not asset types. |
 | Comparisons | Labeled menu control; middle-right desktop panel, modal narrow-screen sheet. Same component tree stays mounted across open/close and breakpoint changes. |
@@ -105,3 +105,9 @@ Distance-only queries retain the last completed result while the worker calculat
 Real mouse drags at 1440px and 390px widths sampled 409 animation frames: no missing markers, circles or count; no loading-list replacement; and the same connected heat canvas throughout. A 900ms worker-delay check retained “6 / Under 25 mi” while a new threshold was pending, disabled both exports, rejected an obsolete zero-distance response and updated coherently to “1 / Under 5 mi”. Changing utility scope still cleared the previous results synchronously. Tests cover scope isolation and repeated pending changes; all 81 tests, formatting, notices, production build and whitespace checks passed. No screenshot review was performed. Local evidence is in ignored `output/playwright/slider-*.{js,log}`.
 
 The required seeded engine benchmark also completed on Apple M5 (10 logical CPUs, 32 GiB), Darwin 27.0.0, Node 24.14.1. All three 1,000-record distributions agreed with the exhaustive oracle. At 100,000 records, single-run queries took 32.6ms sparse (candidate-limited; at least 1,953 matches), 15.6ms dense (neighbor-limited; at least 4,096 matches), and 16.0ms separated (complete zero). These are bounded engine measurements, not completed dense searches or browser timings. Configuration, cancellation measurements and full results are in ignored `output/benchmarks/slider-refresh.json`.
+
+## Header map tools
+
+Filters, Map settings and Map help now use icon-only header triggers beside Data tools, with hover titles and accessible names. Their existing Base UI dialog trees remain mounted in the workspace; only the triggers are portaled into the header. The narrow header wraps the identity above the action row without introducing new navigation.
+
+Functional Chromium checks passed at 1440×900, 768×900, 390×844 and 320×740: buttons remained aligned beside Data tools without page overflow, each appeared once, keyboard opening/Tab/Escape/focus return worked, and filter and heatmap settings survived close/reopen. One map remained present and the six-pair sample recovered after filter changes. All 81 tests, notices, formatting, build and whitespace checks passed; screenshot review remained skipped. Ignored local verification: `output/playwright/header-tools-check.*`.

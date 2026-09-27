@@ -114,3 +114,97 @@
     transition: none !important;
   }
 }
+
+/* Dialog content stays mounted while hidden, preserving drafts and review checks. */
+.data-dialog {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+.data-confirm {
+  padding-top: max(1.5rem, env(safe-area-inset-top));
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  padding-left: max(1.5rem, env(safe-area-inset-left));
+  padding-right: max(1.5rem, env(safe-area-inset-right));
+}
+
+/* Base UI owns presence, focus and dismissal; only translate the sheet. */
+.comparison-panel {
+  top: 5rem;
+  bottom: calc(6rem + env(safe-area-inset-bottom));
+  max-height: calc(100% - 11rem - env(safe-area-inset-bottom));
+  transform: translateX(0);
+  transition: transform 180ms ease-out;
+}
+.comparison-panel[data-starting-style],
+.comparison-panel[data-ending-style] {
+  transform: translateX(calc(100% + 1rem));
+}
+.comparison-panel[data-closed],
+.comparison-backdrop[data-closed] {
+  pointer-events: none;
+}
+.comparison-backdrop {
+  opacity: 1;
+  transition: opacity 180ms ease-out;
+}
+.comparison-backdrop[data-starting-style],
+.comparison-backdrop[data-ending-style] {
+  opacity: 0;
+}
+@media (max-width: 1023px) {
+  .comparison-panel {
+    position: fixed;
+    inset: auto 0 0;
+    width: 100%;
+    max-height: 78dvh;
+    transform: translateY(0);
+    border-radius: 0.75rem 0.75rem 0 0;
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  .comparison-panel[data-starting-style],
+  .comparison-panel[data-ending-style] {
+    transform: translateY(100%);
+  }
+}
+
+/* Map notices stay above attribution, clear of the top controls. */
+.gridlock-map {
+  isolation: isolate;
+}
+.gridlock-map [data-map-notices] {
+  top: auto;
+  bottom: max(1.75rem, env(safe-area-inset-bottom));
+  left: 0.75rem;
+  width: 18rem;
+  max-width: calc(100% - 1.5rem);
+  transform: none;
+  translate: none;
+}
+
+/* Hug the summary while closed; grow evenly around the fixed center. */
+.map-match-overview {
+  width: max-content;
+  max-width: 100%;
+}
+.map-match-overview[data-expanded="true"] {
+  width: 20rem;
+}
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .comparison-panel {
+    top: 12rem;
+    width: 20rem;
+    max-height: calc(100% - 18rem - env(safe-area-inset-bottom));
+  }
+}
+
+.nearby-distance-panel {
+  max-height: calc(100dvh - 17rem);
+  max-width: calc(100vw - 1.5rem);
+}
+.nearby-distance-panel[hidden] {
+  display: none;
+}

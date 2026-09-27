@@ -1,6 +1,6 @@
 # Planning scenarios and forecast readiness
 
-GridLock uses the ten original mapped workbook examples for its map and comparisons. The full supplied reports provide a larger **unlocated planning catalog**, not a historical dataset of actual construction. No forecasting model is trained.
+GridLock defaults to the ten original mapped workbook examples and also supports separate runtime CSV/XLSX datasets. The full supplied reports provide a larger **unlocated planning catalog**, not a historical dataset of actual construction. The bounded readiness decision remains **no activity or schedule-revision forecast**. The implemented ML component is evaluated document extraction; no forecasting model is trained.
 
 | Supplied section | Extracted coverage | Source pages |
 | --- | --- | --- |
@@ -15,11 +15,35 @@ The 252 canonical active transmission records are not 252 independently observed
 
 The catalog preserves three summary/detail need-date conflicts (19523, 20684, 17900), a start-after-need anomaly (20248), and project 20482 appearing in both active and removed lists. It does not silently reconcile them. Georgia's 208 summary rows and 208 detail entries represent 208 IDs; the active and removed lists together contain 230 unique IDs because of that conflict. Repeated budget/task pages for 20466 are not additional jobs.
 
-## What the scenario does
+## What the unified timeline does
 
-Users shift each company's original planned milestones by explicit whole calendar years and choose a date window. GridLock recounts nearby cross-company pairs and planning-record concentrations against unchanged dates. Original values remain available. These are deterministic assumptions, not learned delays, future probabilities or evidence of simultaneous construction. A planning date filter is not a construction-window filter.
+Planned and What-if modes share the main map, a rolling month-range slider and a compact milestone distribution. Planned uses source dates with any separately recorded effective corrections. What-if shifts each utility's effective milestones by explicit whole calendar years, with leap-day clamping and an optional inclusive calendar-month gap. Source values, corrections and assumptions stay separate; source evidence always resolves to originals. Reset assumptions to inspect unchanged effective dates.
 
-A credible forecast would require archived snapshots with known publication cutoffs, stable project identity and geometry, and later actual activity intervals for both utilities. Evaluation would use later temporal holdouts and simple persistence/count baselines, keeping related IDs and phases together. One supplied snapshot per report and 13 undated completion-status flags cannot support that evaluation.
+Month/year precision spans its possible calendar interval and can overlap a date filter without an invented exact day. Exact milestone gaps require two exact-day dates. Heat and distribution values describe selected planning records, including uncertainty, not actual activity. The Forecast mode explains unavailability while leaving source plans visible. Future planned dates are not model predictions; a planning date filter is not a construction-window filter.
+
+## Forecast target and evidence gate
+
+The eventual target is **documented field-construction activity for a known project during a future calendar month, using only information available at the forecast cutoff**. It concerns whether documented field work occurs during that month. It does not estimate unknown future project locations, completion, staffing compatibility, cost savings or exact simultaneous work. Two projects active in the same month need not overlap on the same day; multiplying their marginal probabilities is not a justified joint-overlap estimate.
+
+Credible evaluation requires archived snapshots with publication cutoffs, stable project/phase identities, appropriate geometry and later independently observed activity outcomes. Missing activity is unknown, not an inactive label. Past planned dates are not construction observations. Summary/detail repetitions and phases cannot be treated as independent jobs. Splitting one report by future need-date years is not temporal validation.
+
+Begin with planning-window/persistence and regularized logistic regression baselines if adequate labels become available. Fit preprocessing on training data only, keep related IDs/phases grouped, use chronological cutoffs and outcomes available by each training cutoff, and reserve untouched later evaluation separately from tuning/calibration. Compare histogram gradient boosting only when justified. Report baseline comparisons, class coverage, Brier/log loss, reliability and planner-facing precision/recall at a stated review budget. Training alone does not establish usefulness.
+
+The present sources lack that activity cohort. A separate schedule-revision target would need linked frozen plan vintages and a later untouched evaluation cohort; case-specific later schedules and a few additional public pages do not establish such a panel. No artificial labels, fabricated inactive observations or real predictive-accuracy claim were created to fill these gaps.
+
+## Implemented extraction alternative
+
+The pretrained Gemini API extracted eight fields for the first project on each of ten purposively selected public report pages. The fixed reference/configuration preceded the live calls. Gemini matched **80/80 selected field values**: 48/48 from six known-layout pages and 32/32 from four unfamiliar-layout pages. The deterministic parser matched 48/48 on its supported pages and abstained on the unfamiliar layout. No custom model was trained.
+
+The reference was visually checked on rendered pages by Codex, not independently human double-annotated. Four unfamiliar pages share one report, and a project appears in both report splits. This is a narrow source-page evaluation, not general accuracy or an independent-project holdout. Human review time and savings were not measured. See [EXTRACTION_EVALUATION.md](EXTRACTION_EVALUATION.md) for metric definitions, actual latency, source hashes/pages, limitations and offline reproduction.
+
+All structured outputs remain review-required, map-ineligible and training-ineligible, with page evidence and explicit missing reasons. A session acknowledgment is not operational approval. Identity, work scope, date meaning/precision and evidence require review; map promotion needs credible geometry; model training additionally needs valid outcome labels and temporal provenance. Null actual start/end fields must never become inactive labels.
+
+## Future forecast compatibility contract
+
+`src/lib/forecast.ts` validates a versioned external manifest with the target, source dataset identity/hash, effective feature hash, forecast cutoff, model version and known project-month records. Each record is either a finite probability in `[0,1]` or explicit unavailable/null probability with a reason. A forecast month must be a complete future calendar month after the cutoff month. Missing records remain missing estimates.
+
+New uploads or relevant corrections invalidate incompatible manifests. Reset can restore compatibility only when effective inputs match again. Schema/hash compatibility does not establish calibration, temporal evaluation or model quality. No manifest currently supplies displayed forecast estimates, and the app has no forecast training or live inference on slider changes. A future evaluated model should run offline batch inference first, with dataset/horizon partitions if volumes require them.
 
 ## Reproduce the catalog
 

@@ -62,7 +62,7 @@ export function DataReadiness({ compact = false }: { compact?: boolean }) {
         <Info size={16} className="mt-0.5 shrink-0 text-emerald-800" />
         <span>
           <strong className="font-semibold text-stone-800">
-            Decision: scenario exploration.
+            Decision: scenarios and reviewed extraction.
           </strong>{" "}
           No forecasting model was trained or validated. A credible experiment
           needs earlier frozen plans, later observed construction intervals and

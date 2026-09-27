@@ -14,12 +14,12 @@ The GitHub Actions workflow and pull-request template are prepared. Hosted check
 
 These branch names are examples for the next task in each area, not four permanently open branches. Claim a small task in the team chat before starting and name one reviewer.
 
-| Owner                      | Main area                                            | Example task branch        | Coordination                                                              |
-| -------------------------- | ---------------------------------------------------- | -------------------------- | ------------------------------------------------------------------------- |
-| 1 — Map and interface      | `src/components/ProjectMap.tsx`, styles and controls | `feature/map-interactions` | Coordinate changes to `src/App.tsx`; it is the shared integration file.   |
-| 2 — Data and evidence      | Importers, source annotations and evidence cards     | `data/source-provenance`   | Preserve supplied originals; regenerate derived data with scripts.        |
-| 3 — Logic and checks       | `src/lib/comparisons.ts`, scenarios and tests        | `test/scenario-validation` | Agree changes to `src/types.ts` with owners 1 and 2 before coding.        |
-| 4 — Demo and documentation | Demo story, README and submission materials          | `docs/demo-notes`          | Verify every claim against the working app; coordinate final demo freeze. |
+| Owner | Main area | Example task branch | Coordination |
+| --- | --- | --- | --- |
+| 1 — Spatial engine and performance | Spatial/temporal logic, worker and benchmarks | `codex/spatial-query` | Agree shared query and version contracts with the integration owner. |
+| 2 — Data ingestion, provenance and ML | Import validation, corrections, source evidence and offline extraction | `codex/import-provenance` | Preserve source bytes; keep reviewed extraction separate from mapped/training data. |
+| 3 — Main-map interface | Map, timeline, import/correction UI and evidence views | `codex/workspace-ui` | Coordinate `src/App.tsx` and shared types; preserve bounded rendering and uncertainty labels. |
+| 4 — Integration, tests, documentation and demo | Shared dependencies, combined checks, handoff and rehearsal | `codex/integration-checks` | Own dependency changes and validate the complete vertical slice; reserve submission buffer. |
 
 One teammate acts as merge coordinator at a time. This person can also own a lane. They merge approved pull requests in dependency order and check the combined app. Another teammate reviews their own pull requests. Package/dependency changes and `package-lock.json` should have one owner at a time.
 
@@ -75,8 +75,8 @@ The pull-request author requests **one teammate's approval**. The merge coordina
 
 The prepared GitHub workflow runs two checks on pull requests and pushes to the stable branch:
 
-- **GridLock app checks:** locked dependency installation, formatting, tests and production build.
-- **GridLock data checks:** workbook normalization and full-report extraction in read-only `--check` mode, ensuring committed data is reproducible.
+- **GridLock app checks:** locked dependency installation, third-party notice consistency, formatting, tests and production build.
+- **GridLock data checks:** workbook normalization and full-report extraction in read-only `--check` mode, plus offline extraction tests and metric replay. No live model request is needed.
 
 For UI work, also open the app and check the changed flow on desktop and a narrow screen. For data or scenario work, verify original dates/coordinates stay intact and hypothetical assumptions remain labeled. Automated checks do not replace these specific manual checks. Keep keys in ignored environment files and commit neither dependencies nor build output.
 

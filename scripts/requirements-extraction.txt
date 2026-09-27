@@ -1,0 +1,2 @@
+# Offline PDF slicing and schema validation; no Gemini SDK required.
+pypdf>=6.0,<7

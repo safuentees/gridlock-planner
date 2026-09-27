@@ -1,0 +1,4 @@
+project_id,utility,project_name,state,endpoint_a_name,endpoint_a_latitude,endpoint_a_longitude,endpoint_b_name,endpoint_b_latitude,endpoint_b_longitude,milestone_date,date_precision,date_meaning
+EXAMPLE_A,Utility A,Example line project,GA,Station A,32.30,-81.20,Station B,32.35,-81.15,2028,year,need_date
+EXAMPLE_B,Utility B,Example station project,SC,Station C,32.34,-81.13,Unknown endpoint,,,2027-12,month,planned_in_service
+EXAMPLE_C,Utility C,Example unlocated project,SC,Unknown endpoint,,,Unknown endpoint,,,,unknown,unknown

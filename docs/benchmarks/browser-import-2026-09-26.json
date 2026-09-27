@@ -1,0 +1,47 @@
+{
+  "recordedAt": "2026-09-26T23:22:24.270Z",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36",
+  "hardwareConcurrency": 10,
+  "method": "Single run per size, production preview browser; timings include automation, transfer, React and two animation frames. Dense seeded fixture, no tile-load latency guarantee. Imports intentionally capped at 25000.",
+  "runs": [
+    {
+      "records": 1000,
+      "parseObservedMs": 834,
+      "validateObservedMs": 177,
+      "acceptToMapObservedMs": 437,
+      "heatObservedMs": 652,
+      "markers": 1000,
+      "rows": 200,
+      "heap": {
+        "usedJSHeapSize": 16674097,
+        "totalJSHeapSize": 35594729
+      }
+    },
+    {
+      "records": 10000,
+      "parseObservedMs": 120,
+      "validateObservedMs": 330,
+      "acceptToMapObservedMs": 404,
+      "heatObservedMs": 163,
+      "markers": 1112,
+      "rows": 200,
+      "heap": {
+        "usedJSHeapSize": 70805997,
+        "totalJSHeapSize": 115599645
+      }
+    },
+    {
+      "records": 25000,
+      "parseObservedMs": 121,
+      "validateObservedMs": 487,
+      "acceptToMapObservedMs": 699,
+      "heatObservedMs": 169,
+      "markers": 1191,
+      "rows": 200,
+      "heap": {
+        "usedJSHeapSize": 156792698,
+        "totalJSHeapSize": 199920746
+      }
+    }
+  ]
+}

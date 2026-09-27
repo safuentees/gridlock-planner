@@ -339,6 +339,11 @@ export function PlanningWorkspace({
         ? old.filter((c) => c !== company)
         : [...old, company],
     );
+  const clearSelection = () => {
+    setReferenceId(null);
+    setSelectedId(null);
+    onProjectFocus(null);
+  };
   const selectProject = (id: string) => {
     setReferenceId(id);
     setSelectedId(null);
@@ -537,8 +542,22 @@ export function PlanningWorkspace({
             matchesIncomplete={partialMatchDisplay}
             fitRequest={fitRequest}
             fitAll={fitAll}
-            onProjectSelect={selectProject}
-            onPairSelect={selectPair}
+            onProjectSelect={(id) => {
+              if (
+                referenceId === id ||
+                selected?.a.id === id ||
+                selected?.b.id === id
+              ) {
+                clearSelection();
+              } else {
+                selectProject(id);
+              }
+            }}
+            onPairSelect={(id) => {
+              if (selectedId === id) clearSelection();
+              else selectPair(id);
+            }}
+            onClearSelection={clearSelection}
           />
         </Suspense>
       </section>
@@ -935,8 +954,10 @@ export function PlanningWorkspace({
                 Unchecked locations stay available in the location list.
               </p>
               <p>
-                A selection outline identifies the inspected project or pair.
-                Green circles and numbered badges identify projects in displayed
+                Pinch or scroll over the map to zoom. A selection outline
+                identifies the inspected project or pair. Select its marker
+                again or click empty map space to clear the selection. Green
+                circles and numbered badges identify projects in displayed
                 nearby pairs. A badge counts other-utility partners, not
                 utilities. Select a marker to inspect its pairs, or select a
                 pair for one solid distance line. That line measures approximate

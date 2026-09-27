@@ -36,6 +36,7 @@ interface Props {
   fitAll?: boolean;
   onProjectSelect: (id: string) => void;
   onPairSelect?: (id: string) => void;
+  onClearSelection: () => void;
 }
 
 const NO_MATCHES: Comparison[] = [];
@@ -94,6 +95,7 @@ function markerIcon(
   pin.setAttribute("aria-label", accessibleLabel);
   pin.dataset.utility = utilityKind(company);
   pin.dataset.selected = String(selected);
+  pin.setAttribute("aria-pressed", String(selected));
   pin.dataset.matched = String(matchCount > 0);
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 24 24");
@@ -133,6 +135,7 @@ export function ProjectMap({
   fitAll,
   onProjectSelect,
   onPairSelect,
+  onClearSelection,
 }: Props) {
   const element = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
@@ -140,13 +143,16 @@ export function ProjectMap({
   const layers = useRef<L.LayerGroup | null>(null);
   const heat = useRef<L.HeatLayer | null>(null);
   const spriteId = useId();
+  const activatedMarker = useRef<string | null>(null);
   const [heatReady, setHeatReady] = useState(false);
   const [heatError, setHeatError] = useState(false);
   const [tileError, setTileError] = useState(false);
   const callback = useRef(onProjectSelect);
   const pairCallback = useRef(onPairSelect);
+  const clearCallback = useRef(onClearSelection);
   callback.current = onProjectSelect;
   pairCallback.current = onPairSelect;
+  clearCallback.current = onClearSelection;
   const presentation = useMemo(
     () =>
       mapPresentation(
@@ -179,10 +185,12 @@ export function ProjectMap({
       fadeAnimation: false,
       markerZoomAnimation: false,
       inertia: false,
-      scrollWheelZoom: false,
+      scrollWheelZoom: true,
+      touchZoom: true,
       minZoom: 2,
       maxZoom: 17,
     }).setView([32.55, -81.9], 7);
+    view.on("click", () => clearCallback.current());
     map.current = view;
     lastFittedRequest.current = null;
     L.control.zoom({ position: "bottomright" }).addTo(view);
@@ -268,6 +276,13 @@ export function ProjectMap({
     const view = map.current;
     const group = layers.current;
     if (!view || !group) return;
+    // Preserve keyboard focus when selection rebuilds the marker buttons.
+    const focusedMarker =
+      activatedMarker.current ??
+      (view.getContainer().contains(document.activeElement)
+        ? document.activeElement?.closest<HTMLElement>("[data-project-id]")
+            ?.dataset.projectId
+        : undefined);
     group.clearLayers();
     const matchSummary = (id: string) => {
       const count = overlay.matchCounts.get(id) ?? 0;
@@ -367,10 +382,11 @@ export function ProjectMap({
           spriteId,
           active,
           overlay.matchCounts.get(p.id) ?? 0,
-          `${p.shortName}, ${utilityLabel(p.company)}, ${matchSummary(p.id)}, select project`,
+          `${p.shortName}, ${utilityLabel(p.company)}, ${matchSummary(p.id)}, ${active ? "clear selection" : "select project"}`,
         ),
         // The native button supplies Enter/Space activation and the only tab stop.
         keyboard: false,
+        bubblingMouseEvents: false,
         title: `${p.shortName}, ${utilityLabel(p.company)}, ${matchSummary(p.id)}, approximate location`,
         zIndexOffset: active ? 1000 : 0,
       });
@@ -380,7 +396,12 @@ export function ProjectMap({
         ),
         { direction: "top", offset: [0, -20] },
       );
-      marker.on("click", () => callback.current(p.id));
+      marker.on("click", () => {
+        if (marker.getElement()?.contains(document.activeElement)) {
+          activatedMarker.current = p.id;
+        }
+        callback.current(p.id);
+      });
       marker.addTo(group);
       marker.getElement()?.setAttribute("data-project-id", p.id);
       marker
@@ -389,6 +410,31 @@ export function ProjectMap({
           "data-match-count",
           String(overlay.matchCounts.get(p.id) ?? 0),
         );
+    }
+    if (focusedMarker) {
+      const frame = requestAnimationFrame(() => {
+        // Respect mobile dialog focus and any deliberate move outside the map.
+        if (
+          document.activeElement !== document.body &&
+          !view.getContainer().contains(document.activeElement)
+        ) {
+          activatedMarker.current = null;
+          return;
+        }
+        for (const marker of view
+          .getContainer()
+          .querySelectorAll<HTMLElement>("[data-project-id]")) {
+          if (marker.dataset.projectId === focusedMarker) {
+            marker.querySelector("button")?.focus({ preventScroll: true });
+            activatedMarker.current = null;
+            return;
+          }
+        }
+        // A reference change briefly clears pending results and all markers.
+        // Keep the focus request until the new result renders its markers.
+        if (presentation.markers.length) activatedMarker.current = null;
+      });
+      return () => cancelAnimationFrame(frame);
     }
   }, [
     presentation,

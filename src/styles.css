@@ -180,7 +180,7 @@
   bottom: max(1.75rem, env(safe-area-inset-bottom));
   left: 0.75rem;
   width: 18rem;
-  max-width: calc(100% - 1.5rem);
+  max-width: calc(100% - 4.5rem);
   transform: none;
   translate: none;
 }

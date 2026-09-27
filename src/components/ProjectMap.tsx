@@ -537,12 +537,90 @@ export function ProjectMap({
         className="pointer-events-none absolute z-20 w-64 max-w-[calc(100%-7rem)] space-y-2"
         data-map-notices
       >
-        {mode === "heat" && heatReady && (
-          <div className="map-notice rounded-md border px-3 py-2 text-xs shadow-sm">
+        {presentation.markers.length > 0 && (
+          <section
+            aria-label="Map legend"
+            className="rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-xs text-stone-700 shadow-sm"
+          >
+            <h2 className="mb-2 text-xs font-semibold text-stone-900">
+              Legend
+            </h2>
+            <ul className="space-y-1.5">
+              {[
+                ["dominion", "DESC", "Dominion Energy SC"],
+                ["georgia", "GPC", "Georgia Power"],
+                ["other", "other", "Other utilities"],
+              ]
+                .filter(([kind]) =>
+                  presentation.markers.some(
+                    ({ project }) => utilityKind(project.company) === kind,
+                  ),
+                )
+                .map(([kind, company, label]) => (
+                  <li key={kind} className="flex items-center gap-2">
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "flex size-5 shrink-0 items-center justify-center rounded-full",
+                        kind === "dominion" && "bg-blue-700",
+                        kind === "georgia" && "rounded-md bg-orange-700",
+                        kind === "other" && "bg-slate-600",
+                      )}
+                    >
+                      <UtilityIcon
+                        company={company}
+                        size={14}
+                        className="text-white"
+                      />
+                    </span>
+                    {label}
+                  </li>
+                ))}
+              {overlay.matchedProjectIds.size > 0 && (
+                <li className="flex items-start gap-2">
+                  <span
+                    aria-hidden="true"
+                    className="flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-700 font-semibold text-white"
+                  >
+                    #
+                  </span>
+                  <span>
+                    Other-utility partners
+                    <span className="block text-stone-500">
+                      In shown pairs · green ring = match
+                    </span>
+                  </span>
+                </li>
+              )}
+              {showCircles && radius !== null && (
+                <li className="flex items-center gap-2">
+                  <span
+                    aria-hidden="true"
+                    className="size-5 shrink-0 rounded-full border border-stone-500"
+                  />
+                  <span>Radius: half the distance limit</span>
+                </li>
+              )}
+              {overlay.connections.length > 0 && (
+                <li className="flex items-center gap-2">
+                  <span
+                    aria-hidden="true"
+                    className="w-5 shrink-0 border-t-2 border-stone-900"
+                  />
+                  <span>Selected distance, not a route</span>
+                </li>
+              )}
+            </ul>
+            <p className="mt-2 text-pretty text-stone-500">
+              Approximate locations.
+              {showCircles && radius !== null
+                ? " Circles are not work areas."
+                : ""}
+            </p>
             {mode === "heat" && heatReady && (
-              <div data-heat-legend>
-                <div className="mb-1 flex flex-wrap items-center gap-2">
-                  <span className="font-medium">Density</span>
+              <div data-heat-legend className="mt-2 space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span>Project density</span>
                   <span className="flex gap-0.5" aria-hidden="true">
                     {[
                       "bg-green-500",
@@ -550,12 +628,12 @@ export function ProjectMap({
                       "bg-orange-500",
                       "bg-red-600",
                     ].map((color) => (
-                      <span key={color} className={cn("h-2 w-4", color)} />
+                      <span key={color} className={cn("h-2 w-3", color)} />
                     ))}
                   </span>
                   <span>Low → high</span>
                 </div>
-                <p className="map-notice-secondary text-pretty">
+                <p className="text-pretty text-stone-500">
                   Equal weights. Rescales with zoom.
                   {presentation.cellDegrees > 0
                     ? ` Combined in ${presentation.cellDegrees}° cells.`
@@ -563,7 +641,7 @@ export function ProjectMap({
                 </p>
               </div>
             )}
-          </div>
+          </section>
         )}
         {presentation.locatedCount > presentation.markers.length && (
           <p

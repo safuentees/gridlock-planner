@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Make nearby matches visible in a map count overview, default-on circles and per-project partner badges; replace the dashed connection web with one selected, labeled measurement. Simplify Comparisons and refine density rendering.
+
 - Simplify Data tools into four expandable options with plain names, one-line descriptions and a quieter session reminder. Preserve all import, correction, review and source actions.
 
 - Replace the map's dot-separated filter summary with a simple project count; keep date details in Filters and active what-if warnings beside results.

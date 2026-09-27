@@ -166,3 +166,21 @@
   transform: none;
   translate: none;
 }
+
+/* The overview follows the toolbar's natural wrapping on small screens. */
+.map-match-overview {
+  width: 19rem;
+  max-width: 100%;
+}
+@media (min-width: 1024px) {
+  .map-match-overview-row[data-panel-open="true"] {
+    padding-right: 25.5rem;
+  }
+}
+@media (max-width: 1023px) {
+  .map-match-overview {
+    max-height: max(6rem, min(13rem, calc(100dvh - 33rem)));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}

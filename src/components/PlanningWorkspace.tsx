@@ -162,7 +162,7 @@ export function PlanningWorkspace({
   const [thresholdMiles, setThresholdMiles] = useState(25);
   const [unit, setUnit] = useState<DistanceUnit>("mi");
   const [heatmap, setHeatmap] = useState(false);
-  const [showCircles, setShowCircles] = useState(false);
+  const [showCircles, setShowCircles] = useState(true);
   const [appearance, setAppearance] = useState<"light" | "dark">("light");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [referenceId, setReferenceId] = useState<string | null>(null);
@@ -327,6 +327,18 @@ export function PlanningWorkspace({
       }
     return [...counts];
   }, [qualifying]);
+  const matchCount = allPairs
+    ? qualifying.length
+    : (results?.matchedCount ?? null);
+  const partialSearch = !allPairs && !!results && !results.complete;
+  const partialMatchDisplay =
+    !allPairs &&
+    !!results &&
+    (!results.complete || results.matchedCount > qualifying.length);
+  const matchedProjects = represented.reduce(
+    (sum, [, count]) => sum + count,
+    0,
+  );
   const toggleCompany = (company: string) =>
     setCompanies((old) =>
       old.includes(company)
@@ -424,6 +436,7 @@ export function PlanningWorkspace({
             thresholdMiles={thresholdMiles}
             unit={unit}
             matches={qualifying}
+            matchesIncomplete={partialMatchDisplay}
             fitRequest={fitRequest}
             fitAll={fitAll}
             onProjectSelect={selectProject}
@@ -442,6 +455,7 @@ export function PlanningWorkspace({
               <Button
                 key={company}
                 aria-pressed={selectedCompanies.has(company)}
+                aria-label={`${utilityShortLabel(company)} ${selectedCompanies.has(company) ? "enabled" : "disabled"}`}
                 onClick={() => toggleCompany(company)}
                 className={cn(
                   control,
@@ -451,7 +465,10 @@ export function PlanningWorkspace({
                 )}
               >
                 <UtilityIcon company={company} size={16} />
-                {utilityShortLabel(company)}
+                <span className="sm:hidden">{company}</span>
+                <span className="hidden sm:inline">
+                  {utilityShortLabel(company)}
+                </span>
                 <span className="sr-only">
                   {selectedCompanies.has(company) ? "enabled" : "disabled"}
                 </span>
@@ -460,26 +477,9 @@ export function PlanningWorkspace({
           </div>
           <p
             role="status"
-            className="w-fit max-w-80 rounded-md border border-stone-200 bg-white px-2 py-1 text-xs tabular-nums text-stone-600 shadow-sm"
+            className="hidden w-fit max-w-80 rounded-md border border-stone-200 bg-white px-2 py-1 text-xs tabular-nums text-stone-600 shadow-sm sm:block"
           >
             {search.status === "loading" ? "Updating projects…" : filterSummary}
-            {mode === "what_if" && (
-              <strong className="mt-1 block text-emerald-900">
-                {invalidAssumptions
-                  ? "Results paused: a retained year shift exceeds the corrected date range. Update or reset assumptions in Filters. "
-                  : "What-if active: "}
-                {Object.entries(shifts)
-                  .filter(([, n]) => n !== 0)
-                  .map(
-                    ([c, n]) =>
-                      `${utilityShortLabel(c)} ${n > 0 ? "+" : ""}${n}y`,
-                  )
-                  .join("; ") || "no year shifts"}
-                {invalidAssumptions
-                  ? ". Not applied."
-                  : ". Assumed milestones only."}
-              </strong>
-            )}
           </p>
         </div>
         <div className="pointer-events-auto flex flex-wrap gap-2">
@@ -693,10 +693,11 @@ export function PlanningWorkspace({
               </p>
               <p>
                 A selection outline identifies the inspected project or pair.
-                Matched markers and dashed connectors identify displayed
-                qualifying comparisons; a connector measures straight-line
-                separation, never a shared route. Select a marker to see its
-                relevant comparisons.
+                Green circles and numbered badges identify projects in displayed
+                nearby pairs. A badge counts other-utility partners, not
+                utilities. Select a marker to inspect its pairs, or select a
+                pair for one solid distance line. That line measures approximate
+                separation; it is not a route or an electrical connection.
               </p>
               <p>
                 Each circle is {distanceLabel(thresholdMiles / 2, unit)} {unit}{" "}
@@ -707,8 +708,10 @@ export function PlanningWorkspace({
               </p>
               <p>
                 Heat colors run green → yellow → orange → red from low to high
-                project density. They do not indicate risk, actual activity or
-                savings. Sampling and aggregation are labeled on the map.
+                project density, relative to zoom. They do not count matching
+                pairs or indicate risk, construction activity or savings. Every
+                located project has equal weight. Sampling and aggregation are
+                labeled on the map.
               </p>
               <p>
                 Distances use approximate representative points and the exact
@@ -776,39 +779,11 @@ export function PlanningWorkspace({
                   id="comparison-content"
                 >
                   <div className="space-y-3 p-4">
-                    <Dialog.Description className="text-xs text-stone-600">
-                      Find nearby projects from different utilities, then
-                      inspect timing and evidence.
+                    <Dialog.Description className="sr-only">
+                      Select a pair to inspect planned timing and source
+                      evidence.
                     </Dialog.Description>
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        className={control}
-                        disabled={
-                          selected
-                            ? !selected.aCenter && !selected.bCenter
-                            : !reference ||
-                              !eligibleIds.has(reference.id) ||
-                              !centers.get(reference.id)
-                        }
-                        onClick={focus}
-                      >
-                        <Focus size={14} />
-                        Focus selection
-                      </Button>
-                      <Button
-                        className={control}
-                        disabled={!filtered.some((p) => centers.get(p.id))}
-                        onClick={() => {
-                          setFitAll(true);
-                          setFitRequest((n) => n + 1);
-                          if (narrow) setPanelOpen(false);
-                        }}
-                      >
-                        <Expand size={14} />
-                        Show all locations
-                      </Button>
-                    </div>
-                    {reference ? (
+                    {reference && (
                       <div
                         ref={referenceSummary}
                         tabIndex={-1}
@@ -846,47 +821,15 @@ export function PlanningWorkspace({
                             onProjectFocus(null);
                           }}
                         >
-                          Clear reference · compare all locations
+                          Compare all locations
                         </Button>
                       </div>
-                    ) : (
-                      <p className="text-xs font-medium">
-                        Utilities in current cross-utility matches
-                      </p>
                     )}
-                    <div className="flex flex-wrap gap-2">
-                      {represented.length ? (
-                        represented.map(([c, count]) => (
-                          <span
-                            key={c}
-                            className="inline-flex items-center gap-1.5 rounded-md bg-stone-100 px-2 py-1 text-xs tabular-nums"
-                          >
-                            <UtilityIcon company={c} size={14} />
-                            {utilityShortLabel(c)} · {count}
-                          </span>
-                        ))
-                      ) : (
-                        <p className="text-xs text-stone-500">
-                          No qualifying projects in displayed matches.
-                        </p>
-                      )}
-                    </div>
-                    {!!represented.length && (
-                      <p className="text-xs text-stone-500">
-                        Unique projects in the displayed qualifying pairs
-                        {results &&
-                        (!results.complete ||
-                          results.matchedCount > qualifying.length)
-                          ? "; counts may omit other matches"
-                          : ""}
-                        .
-                      </p>
-                    )}
-                    <details open className="border-y border-stone-200 py-3">
+                    <details className="border-y border-stone-200 py-3">
                       <summary className="cursor-pointer text-sm font-semibold">
                         Locations{" "}
                         <span className="font-normal tabular-nums text-stone-500">
-                          ({dataset.projects.length - excluded.size} enabled)
+                          ({dataset.projects.length - excluded.size} checked)
                         </span>
                       </summary>
                       <label className="mt-3 block text-xs">
@@ -988,7 +931,11 @@ export function PlanningWorkspace({
                       )}
                     </details>
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h2 className="text-sm font-semibold">
+                      <h2
+                        id="nearby-comparisons-title"
+                        tabIndex={-1}
+                        className="text-sm font-semibold"
+                      >
                         {allPairs ? "All comparisons" : "Nearby comparisons"}
                       </h2>
                       <Button
@@ -1014,8 +961,12 @@ export function PlanningWorkspace({
                       {allPairs
                         ? `${pairs.length} pairs, including distant or unknown locations.`
                         : results
-                          ? `${results.complete ? "" : "At least "}${results.matchedCount.toLocaleString()} matches · ${results.complete ? "nearest first" : "partial search"}`
-                          : "Finding nearby comparisons…"}
+                          ? results.complete
+                            ? "Nearest first. Select a pair for evidence."
+                            : "Partial search. Select a pair for evidence."
+                          : search.error
+                            ? "Search unavailable."
+                            : "Finding nearby comparisons…"}
                     </p>
                     {results &&
                       !allPairs &&
@@ -1108,14 +1059,31 @@ export function PlanningWorkspace({
                             )}
                           >
                             <span className="min-w-0 flex-1">
-                              <span className="block text-sm font-medium">
-                                {displayName(p.a)}{" "}
-                                <span className="text-stone-500">↔</span>{" "}
-                                {displayName(p.b)}
+                              <span className="flex items-start gap-2 text-sm font-medium">
+                                <UtilityIcon
+                                  company={p.a.company}
+                                  size={15}
+                                  className="mt-0.5"
+                                />
+                                <span>
+                                  <span className="sr-only">
+                                    {utilityLabel(p.a.company)}:{" "}
+                                  </span>
+                                  {displayName(p.a)}
+                                </span>
                               </span>
-                              <span className="mt-1 block text-xs text-stone-600">
-                                {utilityShortLabel(p.a.company)} /{" "}
-                                {utilityShortLabel(p.b.company)}
+                              <span className="mt-1 flex items-start gap-2 text-sm font-medium">
+                                <UtilityIcon
+                                  company={p.b.company}
+                                  size={15}
+                                  className="mt-0.5"
+                                />
+                                <span>
+                                  <span className="sr-only">
+                                    {utilityLabel(p.b.company)}:{" "}
+                                  </span>
+                                  {displayName(p.b)}
+                                </span>
                               </span>
                               <span className="mt-1 block text-xs tabular-nums text-stone-600">
                                 {p.gapDays === null
@@ -1279,6 +1247,135 @@ export function PlanningWorkspace({
               </Dialog.Popup>
             </Dialog.Portal>
           </Dialog.Root>
+        </div>
+        <div
+          className="map-match-overview-row flex w-full justify-center"
+          data-panel-open={panelOpen}
+        >
+          <section
+            aria-label="Nearby match overview"
+            className="map-match-overview pointer-events-auto rounded-xl border border-stone-200 bg-white p-3 shadow-sm"
+          >
+            <div role="status" aria-live="polite" aria-atomic="true">
+              {mode === "what_if" && (
+                <strong className="mb-2 block text-xs text-emerald-900">
+                  {invalidAssumptions
+                    ? "Results paused: a retained year shift exceeds the corrected date range. Update or reset assumptions in Filters. "
+                    : "What-if active: "}
+                  {Object.entries(shifts)
+                    .filter(([, n]) => n !== 0)
+                    .map(
+                      ([c, n]) =>
+                        `${utilityShortLabel(c)} ${n > 0 ? "+" : ""}${n}y`,
+                    )
+                    .join("; ") || "no year shifts"}
+                  {invalidAssumptions
+                    ? ". Not applied."
+                    : ". Assumed milestones only."}
+                </strong>
+              )}
+              {search.error ? (
+                <p className="text-sm font-medium">Search unavailable</p>
+              ) : matchCount === null ? (
+                <p className="text-sm text-stone-600">Finding nearby pairs…</p>
+              ) : (
+                <>
+                  <div className="flex items-center gap-3">
+                    <strong
+                      className={cn(
+                        "text-4xl font-semibold tabular-nums",
+                        matchCount > 0 ? "text-emerald-700" : "text-stone-500",
+                      )}
+                    >
+                      {partialSearch && (
+                        <span className="mb-0.5 block text-xs font-medium">
+                          At least
+                        </span>
+                      )}
+                      {matchCount.toLocaleString()}
+                    </strong>
+                    <div>
+                      <h2 className="text-sm font-semibold">
+                        Nearby {matchCount === 1 ? "pair" : "pairs"}
+                      </h2>
+                      <p className="text-xs text-stone-600">
+                        Under {distanceLabel(thresholdMiles, unit)} {unit}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-xs tabular-nums text-stone-600">
+                    {matchedProjects} projects across {represented.length}{" "}
+                    utilities
+                    {partialMatchDisplay ? " in displayed pairs" : ""}
+                  </p>
+                  {partialMatchDisplay && (
+                    <p className="mt-1 text-xs font-medium text-stone-700">
+                      {partialSearch
+                        ? "Partial search. Map badges count displayed pairs only."
+                        : `Map badges cover ${qualifying.length} displayed pairs only.`}
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+            {reference && (
+              <p
+                className="mt-1 truncate text-xs text-stone-600"
+                title={reference.name}
+              >
+                For {displayName(reference)}
+              </p>
+            )}
+            <Button
+              className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 underline underline-offset-2"
+              onClick={() => {
+                setPanelOpen(true);
+                requestAnimationFrame(() => {
+                  const heading = document.getElementById(
+                    "nearby-comparisons-title",
+                  );
+                  heading?.scrollIntoView({ block: "start" });
+                  heading?.focus({ preventScroll: true });
+                });
+              }}
+            >
+              {search.error ? "Review search" : "Inspect comparisons"}
+              <ChevronRight size={14} />
+            </Button>
+            <p className="mt-2 text-xs text-stone-500">
+              Proximity does not establish simultaneous work.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2 border-t border-stone-100 pt-2">
+              <Button
+                className={control}
+                disabled={
+                  selected
+                    ? !selected.aCenter && !selected.bCenter
+                    : !reference ||
+                      !eligibleIds.has(reference.id) ||
+                      !centers.get(reference.id)
+                }
+                onClick={focus}
+                aria-label="Focus selection"
+              >
+                <Focus size={14} />
+                Focus
+              </Button>
+              <Button
+                className={control}
+                disabled={!filtered.some((p) => centers.get(p.id))}
+                aria-label="Show all locations"
+                onClick={() => {
+                  setFitAll(true);
+                  setFitRequest((n) => n + 1);
+                  if (narrow) setPanelOpen(false);
+                }}
+              >
+                <Expand size={14} />
+                Show all
+              </Button>
+            </div>
+          </section>
         </div>
       </div>
       <div className="map-distance pointer-events-auto absolute bottom-7 left-3 z-10">

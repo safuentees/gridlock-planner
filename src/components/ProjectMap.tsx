@@ -484,7 +484,6 @@ export function ProjectMap({
       >
         {(overlay.matchedProjectIds.size > 0 ||
           (showCircles && radiusLabel) ||
-          overlay.connections.length > 0 ||
           (mode === "heat" && heatReady)) && (
           <div className="map-notice rounded-md border px-3 py-2 text-xs shadow-sm">
             {overlay.matchedProjectIds.size > 0 && (
@@ -495,20 +494,12 @@ export function ProjectMap({
                 <span className="font-medium">{radiusLabel}</span> (proximity)
               </p>
             )}
-            {overlay.connections.length > 0 && (
-              <p
-                className={cn(
-                  "map-notice-secondary text-pretty",
-                  showCircles && "mt-1",
-                )}
-              >
-                Measurement, not a route.
-              </p>
-            )}
             {mode === "heat" && heatReady && (
               <div
                 className={cn(
-                  (showCircles || overlay.connections.length > 0) && "mt-2",
+                  (overlay.matchedProjectIds.size > 0 ||
+                    (showCircles && radiusLabel)) &&
+                    "mt-2",
                 )}
                 data-heat-legend
               >

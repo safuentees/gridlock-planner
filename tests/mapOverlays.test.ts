@@ -8,6 +8,7 @@ import {
   HEAT_POINT_LIMIT,
 } from "../src/lib/mapPresentation";
 import {
+  connectionLabelPoint,
   connectionSegments,
   mapConnections,
   MAP_CONNECTOR_LIMIT,
@@ -51,10 +52,24 @@ describe("map proximity overlays", () => {
     );
   });
 
-  it("shows the six supplied demo matches, excludes exact boundaries, and preserves source names", () => {
+  it("counts the six supplied demo matches while drawing only the selected measurement", () => {
     const original = JSON.stringify(projects);
     const result = mapConnections(pairs, nearby[0], projects, centers, 25);
-    expect(result.shownMatchCount).toBe(6);
+    expect(result.providedMatchCount).toBe(6);
+    expect(result.connections).toHaveLength(1);
+    expect(Object.fromEntries(result.matchCounts)).toEqual({
+      DESC_1: 1,
+      DESC_2: 1,
+      DESC_3: 2,
+      DESC_5: 2,
+      GPC_1: 2,
+      GPC_2: 2,
+      GPC_3: 2,
+    });
+    expect([...result.matchUtilities.get("DESC_3")!]).toEqual(["GPC"]);
+    expect(
+      mapConnections(pairs, null, projects, centers, 25).connections,
+    ).toEqual([]);
     expect(result.connections[0].comparison.id).toBe(nearby[0].id);
     expect(result.connections[0].selected).toBe(true);
     expect(
@@ -73,8 +88,9 @@ describe("map proximity overlays", () => {
   it("drops missing, stale, same-utility and duplicate pair results", () => {
     const pair = nearby[0];
     expect(
-      mapConnections([pair, pair], null, projects, centers, 25).connections,
-    ).toHaveLength(1);
+      mapConnections([pair, pair], pair, projects, centers, 25)
+        .providedMatchCount,
+    ).toBe(1);
     expect(
       mapConnections(
         [pair],
@@ -99,11 +115,11 @@ describe("map proximity overlays", () => {
     ).toEqual([]);
   });
 
-  it("bounds connectors and pins a selected pair while keeping sampling and heat bounded", () => {
+  it("bounds measurements and pins a selected pair while keeping sampling and heat bounded", () => {
     const many = Array.from({ length: 10000 }, (_, i) => ({
       ...projects[i % 10],
       id: `p-${i}`,
-      company: i % 2 ? "GPC" : "DESC",
+      company: i === 0 ? "DESC" : "GPC",
     }));
     const points = new Map(
       many.map((p, i) => [p.id, [32 + i / 100000, -81] as Coordinate]),
@@ -122,6 +138,7 @@ describe("map proximity overlays", () => {
     expect(result.connections).toHaveLength(MAP_CONNECTOR_LIMIT);
     expect(result.connections[0].comparison.id).toBe(selected.id);
     expect(result.providedMatchCount).toBe(500);
+    expect(result.matchCounts.get(many[0].id)).toBe(500);
     const display = mapPresentation(many, points, [
       selected.a.id,
       selected.b.id,
@@ -135,6 +152,58 @@ describe("map proximity overlays", () => {
     ).toHaveLength(3);
     expect(display.heat.length).toBeLessThanOrEqual(HEAT_POINT_LIMIT);
     expect(display.heat.reduce((sum, point) => sum + point[2], 0)).toBe(10000);
+  });
+
+  it("deduplicates counterparts across reversed or repeated pair IDs and rejects stale utility membership", () => {
+    const pair = nearby[0];
+    const reverse: Comparison = {
+      ...pair,
+      id: "reverse-copy",
+      a: pair.b,
+      b: pair.a,
+      aCenter: pair.bCenter,
+      bCenter: pair.aCenter,
+    };
+    const result = mapConnections(
+      [pair, reverse, { ...pair, id: "another-copy" }],
+      reverse,
+      projects,
+      centers,
+      25,
+    );
+    expect(result.providedMatchCount).toBe(1);
+    expect(result.matchCounts.get(pair.a.id)).toBe(1);
+    expect(result.matchCounts.get(pair.b.id)).toBe(1);
+    expect(result.connections[0].matched).toBe(true);
+    const changed = projects.map((p) =>
+      p.id === pair.a.id ? { ...p, company: "Updated utility" } : p,
+    );
+    expect(
+      mapConnections([pair], pair, changed, centers, 25).matchedProjectIds.size,
+    ).toBe(0);
+    expect(
+      mapConnections([pair], pair, changed, centers, 25).connections,
+    ).toEqual([]);
+  });
+
+  it("measures a selected outside-limit pair without giving either endpoint a match", () => {
+    const pair = pairs.find(
+      (p) => !isNearby(p, 25) && p.distanceMiles !== null,
+    )!;
+    const result = mapConnections([pair], pair, projects, centers, 25);
+    expect(result.connections).toHaveLength(1);
+    expect(result.connections[0].matched).toBe(false);
+    expect(result.matchCounts.size).toBe(0);
+  });
+
+  it("positions separation labels between displayed points, including the dateline", () => {
+    expect(connectionLabelPoint([32, -81], [34, -83])).toEqual([33, -82]);
+    expect(connectionLabelPoint([10, 179.5], [11, -179.5])).toEqual([
+      10.5, -180,
+    ]);
+    expect(connectionLabelPoint([11, -179.5], [10, 179.5])).toEqual([
+      10.5, -180,
+    ]);
   });
 
   it("splits dateline connectors without moving or mutating either source center", () => {

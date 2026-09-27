@@ -7,12 +7,18 @@ import { cn } from "../lib/cn";
 import { milesToUnit } from "../lib/comparisons";
 import { mapPresentation } from "../lib/mapPresentation";
 import {
+  connectionLabelPoint,
   connectionSegments,
   mapConnections,
   proximityRadiusLabel,
   proximityRadiusMeters,
 } from "../lib/mapOverlays";
 import { UtilityIcon, utilityKind, utilityLabel } from "./UtilityIcon";
+import {
+  HEAT_BLUR,
+  HEAT_RADIUS,
+  relativeHeatMaximum,
+} from "../lib/heatPresentation";
 
 interface Props {
   projects: Project[];
@@ -25,6 +31,7 @@ interface Props {
   thresholdMiles?: number;
   unit?: "mi" | "km";
   matches?: Comparison[];
+  matchesIncomplete?: boolean;
   fitRequest: number;
   fitAll?: boolean;
   onProjectSelect: (id: string) => void;
@@ -44,13 +51,13 @@ function markerIcon(
   company: string,
   spriteId: string,
   selected: boolean,
-  matched: boolean,
+  matchCount: number,
 ) {
   const pin = document.createElement("span");
   pin.className = "utility-map-pin";
   pin.dataset.utility = utilityKind(company);
   pin.dataset.selected = String(selected);
-  pin.dataset.matched = String(matched);
+  pin.dataset.matched = String(matchCount > 0);
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 24 24");
   svg.setAttribute("aria-hidden", "true");
@@ -58,6 +65,13 @@ function markerIcon(
   use.setAttribute("href", `#${spriteId}-${utilityKind(company)}`);
   svg.append(use);
   pin.append(svg);
+  if (matchCount > 0) {
+    const badge = document.createElement("span");
+    badge.className = "map-match-badge";
+    badge.textContent = matchCount.toLocaleString("en-US");
+    badge.setAttribute("aria-hidden", "true");
+    pin.append(badge);
+  }
   return L.divIcon({
     className: "gridlock-marker",
     html: pin,
@@ -73,10 +87,11 @@ export function ProjectMap({
   selectedProjectId,
   mode,
   appearance = "light",
-  showCircles = false,
+  showCircles = true,
   thresholdMiles = 25,
   unit = "mi",
   matches = NO_MATCHES,
+  matchesIncomplete = false,
   fitRequest,
   fitAll,
   onProjectSelect,
@@ -175,13 +190,25 @@ export function ProjectMap({
       heat.current.remove();
       heat.current = null;
     }
+    const updateHeatScale = () => {
+      if (!heat.current) return;
+      const zoom = view.getZoom();
+      const projected = presentation.heat.map(([lat, lon, weight]) => {
+        const point = view.project([lat, lon], zoom);
+        return [point.x, point.y, weight] as const;
+      });
+      heat.current.setOptions({
+        max: relativeHeatMaximum(projected),
+        maxZoom: zoom,
+      });
+    };
     if (mode === "heat" && heatReady) {
       heat.current = L.heatLayer(presentation.heat, {
-        radius: 40,
-        blur: 25,
-        maxZoom: 9,
-        minOpacity: 0.28,
-        max: Math.max(3, ...presentation.heat.map((p) => p[2])),
+        radius: HEAT_RADIUS,
+        blur: HEAT_BLUR,
+        maxZoom: view.getZoom(),
+        minOpacity: 0.06,
+        max: 3,
         gradient: {
           0.15: "#22c55e",
           0.45: "#facc15",
@@ -189,28 +216,46 @@ export function ProjectMap({
           1: "#dc2626",
         },
       }).addTo(view);
+      updateHeatScale();
+      view.on("zoomend", updateHeatScale);
     }
+    const matchSummary = (id: string) => {
+      const count = overlay.matchCounts.get(id) ?? 0;
+      if (!count) return "No matches in the displayed comparisons";
+      const utilities = [...(overlay.matchUtilities.get(id) ?? [])]
+        .map(utilityLabel)
+        .join(", ");
+      return `${count.toLocaleString("en-US")} ${matchesIncomplete ? "displayed " : ""}${count === 1 ? "match" : "matches"} with ${utilities}`;
+    };
     if (showCircles && radius !== null) {
       for (const { project: p, center } of presentation.markers) {
         const circle = L.circle(center, {
           radius,
           className: cn(
             "proximity-circle",
-            `utility-${utilityKind(p.company)}`,
+            overlay.matchedProjectIds.has(p.id) && "is-matched",
           ),
-          weight: 1.5,
-          opacity: 0.7,
-          fill: false,
+          weight: overlay.matchedProjectIds.has(p.id) ? 2.5 : 1,
+          opacity: overlay.matchedProjectIds.has(p.id) ? 0.9 : 0.45,
+          fill: mode !== "heat" && overlay.matchedProjectIds.has(p.id),
+          fillOpacity: 0.08,
           bubblingMouseEvents: false,
         });
         circle.bindTooltip(
           tooltip(
-            `${p.shortName} · ${utilityLabel(p.company)} · ${radiusLabel} for proximity, not a work footprint`,
+            `${p.shortName}. ${utilityLabel(p.company)}. ${matchSummary(p.id)}. ${radiusLabel} for proximity, not a work footprint.`,
           ),
           { sticky: true },
         );
         circle.on("click", () => callback.current(p.id));
         circle.addTo(group);
+        circle.getElement()?.setAttribute("data-circle-project-id", p.id);
+        circle
+          .getElement()
+          ?.setAttribute(
+            "data-matched",
+            String(overlay.matchedProjectIds.has(p.id)),
+          );
         // The matching marker provides the same action through Leaflet's keyboard control.
         circle.getElement()?.setAttribute("aria-hidden", "true");
       }
@@ -223,18 +268,30 @@ export function ProjectMap({
         matched,
         selected: active,
       } = connection;
-      const label = `${active ? "Selected comparison" : "Nearby comparison"}: ${pair.a.shortName} / ${pair.b.shortName}${pair.distanceMiles === null ? "" : ` · ${milesToUnit(pair.distanceMiles, unit).toLocaleString("en-US", { maximumFractionDigits: 2 })} ${unit}`} between approximate locations`;
+      const distanceLabel =
+        pair.distanceMiles === null
+          ? "Distance unavailable"
+          : `Approx. ${milesToUnit(pair.distanceMiles, unit).toLocaleString("en-US", { maximumFractionDigits: 2 })} ${unit} apart`;
+      const label = `Selected comparison: ${pair.a.shortName} and ${pair.b.shortName}. ${distanceLabel}. Representative-point separation, not a route.`;
       const points = connectionSegments(aCenter, bCenter);
       const path = L.polyline(points, {
         className: cn("map-connection", active && "is-selected"),
-        weight: active ? 3 : 2,
-        opacity: active ? 0.95 : 0.7,
-        dashArray: matched ? "6 5" : "3 7",
+        weight: 3,
+        opacity: 0.95,
         interactive: false,
       }).addTo(group);
       path.getElement()?.setAttribute("data-pair-id", pair.id);
       path.getElement()?.setAttribute("data-matched", String(matched));
-      // A wider transparent target is easier to select than a thin dashed line.
+      L.tooltip({
+        permanent: true,
+        direction: "center",
+        className: "map-distance-label",
+        interactive: false,
+      })
+        .setLatLng(connectionLabelPoint(aCenter, bCenter))
+        .setContent(tooltip(distanceLabel))
+        .addTo(group);
+      // A wider transparent target keeps the separation easy to inspect.
       const target = L.polyline(points, {
         className: "map-connection-hit",
         weight: 14,
@@ -259,15 +316,17 @@ export function ProjectMap({
           p.company,
           spriteId,
           active,
-          overlay.matchedProjectIds.has(p.id),
+          overlay.matchCounts.get(p.id) ?? 0,
         ),
         keyboard: true,
-        title: `${p.shortName}, ${utilityLabel(p.company)}, approximate location`,
+        title: `${p.shortName}, ${utilityLabel(p.company)}, ${matchSummary(p.id)}, approximate location`,
         zIndexOffset: active ? 1000 : 0,
       });
       marker.bindTooltip(
-        tooltip(`${p.shortName} · ${utilityLabel(p.company)}`),
-        { direction: "top", offset: [0, -12] },
+        tooltip(
+          `${p.shortName}. ${utilityLabel(p.company)}. ${matchSummary(p.id)}.`,
+        ),
+        { direction: "top", offset: [0, -20] },
       );
       marker.on("click", () => callback.current(p.id));
       marker.addTo(group);
@@ -275,13 +334,23 @@ export function ProjectMap({
       marker
         .getElement()
         ?.setAttribute(
+          "data-match-count",
+          String(overlay.matchCounts.get(p.id) ?? 0),
+        );
+      marker
+        .getElement()
+        ?.setAttribute(
           "aria-label",
-          `${p.shortName}, ${utilityLabel(p.company)}, select project`,
+          `${p.shortName}, ${utilityLabel(p.company)}, ${matchSummary(p.id)}, select project`,
         );
     }
+    return () => {
+      view.off("zoomend", updateHeatScale);
+    };
   }, [
     presentation,
     overlay,
+    matchesIncomplete,
     selected,
     selectedProjectId,
     mode,
@@ -349,6 +418,7 @@ export function ProjectMap({
         showCircles && radius !== null ? presentation.markers.length : 0
       }
       data-connector-count={overlay.connections.length}
+      data-matched-project-count={overlay.matchedProjectIds.size}
       data-heat-point-count={
         mode === "heat" && heatReady ? presentation.heat.length : 0
       }
@@ -379,18 +449,37 @@ export function ProjectMap({
         className="pointer-events-none absolute z-20 w-64 max-w-[calc(100%-7rem)] space-y-2"
         data-map-notices
       >
-        {(showCircles || (mode === "heat" && heatReady)) && (
+        {((showCircles && radiusLabel) ||
+          overlay.connections.length > 0 ||
+          (mode === "heat" && heatReady)) && (
           <div className="map-notice rounded-md border px-3 py-2 text-xs shadow-sm">
             {showCircles && radiusLabel && (
               <p className="text-pretty tabular-nums">
-                <span className="font-medium">{radiusLabel}</span> · proximity
-                circles, not work footprints
+                <span className="font-medium">{radiusLabel} circles</span>
+                <span className="map-notice-secondary block">
+                  Proximity only, not work footprints.
+                </span>
+              </p>
+            )}
+            {overlay.connections.length > 0 && (
+              <p
+                className={cn(
+                  "map-notice-secondary text-pretty",
+                  showCircles && "mt-1",
+                )}
+              >
+                Solid line: selected separation, not a route.
               </p>
             )}
             {mode === "heat" && heatReady && (
-              <div className={cn(showCircles && "mt-2")} data-heat-legend>
+              <div
+                className={cn(
+                  (showCircles || overlay.connections.length > 0) && "mt-2",
+                )}
+                data-heat-legend
+              >
                 <div className="mb-1 flex flex-wrap items-center gap-2">
-                  <span className="font-medium">Planning density</span>
+                  <span className="font-medium">Project density</span>
                   <span className="flex gap-0.5" aria-hidden="true">
                     {[
                       "bg-green-500",
@@ -404,7 +493,7 @@ export function ProjectMap({
                   <span>Low → high</span>
                 </div>
                 <p className="map-notice-secondary text-pretty">
-                  Equal record weights; relative to zoom.
+                  Equal project weights. Colors rescale with zoom.
                   {presentation.cellDegrees > 0
                     ? ` Combined in ${presentation.cellDegrees}° cells.`
                     : ""}
@@ -422,12 +511,6 @@ export function ProjectMap({
             {presentation.locatedCount.toLocaleString()} locations shown
             {showCircles ? " with circles" : ""}. Selection stays visible.
             {mode === "heat" ? " Heat includes every location." : ""}
-          </p>
-        )}
-        {overlay.shownMatchCount < overlay.providedMatchCount && (
-          <p className="map-notice rounded-md border p-2 text-xs text-pretty tabular-nums">
-            Showing {overlay.shownMatchCount} of{" "}
-            {overlay.providedMatchCount.toLocaleString()} supplied matches.
           </p>
         )}
         {tileError && (

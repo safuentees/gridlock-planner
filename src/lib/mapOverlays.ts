@@ -1,7 +1,7 @@
 import type { Comparison, Coordinate, Project } from "../types";
 import { isNearby, milesToUnit } from "./comparisons";
 
-export const MAP_CONNECTOR_LIMIT = 200;
+export const MAP_CONNECTOR_LIMIT = 1;
 
 /** These radii illustrate center-point proximity, never the size of project work. */
 export function proximityRadiusMeters(thresholdMiles: number): number | null {
@@ -40,6 +40,12 @@ export function connectionSegments(
   ];
 }
 
+/** Visual midpoint of the displayed separation, including dateline wrapping. */
+export function connectionLabelPoint(a: Coordinate, b: Coordinate): Coordinate {
+  const longitudeDelta = ((b[1] - a[1] + 540) % 360) - 180;
+  return [(a[0] + b[0]) / 2, ((a[1] + longitudeDelta / 2 + 540) % 360) - 180];
+}
+
 interface MapConnection {
   comparison: Comparison;
   aCenter: Coordinate;
@@ -61,41 +67,56 @@ export function mapConnections(
   centers: ReadonlyMap<string, Coordinate | null>,
   thresholdMiles: number,
 ) {
-  const ids = new Set(projects.map((p) => p.id));
+  const byId = new Map(projects.map((p) => [p.id, p]));
   const current = (pair: Comparison) =>
     pair.a.id !== pair.b.id &&
     pair.a.company !== pair.b.company &&
-    ids.has(pair.a.id) &&
-    ids.has(pair.b.id) &&
+    byId.get(pair.a.id)?.company === pair.a.company &&
+    byId.get(pair.b.id)?.company === pair.b.company &&
     sameCenter(pair.aCenter, centers.get(pair.a.id)) &&
     sameCenter(pair.bCenter, centers.get(pair.b.id));
+  const key = (pair: Comparison) =>
+    JSON.stringify([pair.a.id, pair.b.id].sort());
   const valid = new Map<string, Comparison>();
   for (const pair of matches) {
     if (current(pair) && isNearby(pair, thresholdMiles))
-      valid.set(pair.id, pair);
+      valid.set(key(pair), pair);
   }
-  const ordered: Comparison[] = [];
-  if (selected && current(selected)) ordered.push(selected);
+  // A single labeled measurement is easier to interpret than an unlabelled web.
+  const connections: MapConnection[] =
+    selected && current(selected)
+      ? [
+          {
+            comparison: selected,
+            aCenter: centers.get(selected.a.id)!,
+            bCenter: centers.get(selected.b.id)!,
+            matched: valid.has(key(selected)),
+            selected: true,
+          },
+        ]
+      : [];
+  const counterpartIds = new Map<string, Set<string>>();
+  const matchUtilities = new Map<string, Set<string>>();
   for (const pair of valid.values()) {
-    if (pair.id !== selected?.id && ordered.length < MAP_CONNECTOR_LIMIT)
-      ordered.push(pair);
-  }
-  const connections: MapConnection[] = ordered.map((comparison) => ({
-    comparison,
-    aCenter: centers.get(comparison.a.id)!,
-    bCenter: centers.get(comparison.b.id)!,
-    matched: valid.has(comparison.id),
-    selected: comparison.id === selected?.id,
-  }));
-  const matchedProjectIds = new Set<string>();
-  for (const pair of valid.values()) {
-    matchedProjectIds.add(pair.a.id);
-    matchedProjectIds.add(pair.b.id);
+    for (const [project, counterpart] of [
+      [pair.a, pair.b],
+      [pair.b, pair.a],
+    ]) {
+      const ids = counterpartIds.get(project.id) ?? new Set<string>();
+      ids.add(counterpart.id);
+      counterpartIds.set(project.id, ids);
+      const companies = matchUtilities.get(project.id) ?? new Set<string>();
+      companies.add(counterpart.company);
+      matchUtilities.set(project.id, companies);
+    }
   }
   return {
     connections,
-    matchedProjectIds,
+    matchedProjectIds: new Set(counterpartIds.keys()),
+    matchCounts: new Map(
+      [...counterpartIds].map(([id, ids]) => [id, ids.size]),
+    ),
+    matchUtilities,
     providedMatchCount: valid.size,
-    shownMatchCount: connections.filter((pair) => pair.matched).length,
   };
 }

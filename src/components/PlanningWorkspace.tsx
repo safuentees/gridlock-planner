@@ -496,12 +496,6 @@ export function PlanningWorkspace({
           !selected && reference ? (originals.get(reference.id) ?? null) : null
         }
       />
-      <p className="text-xs text-stone-500">
-        {source.kind === "demo"
-          ? "Historical sample; current opportunities are unverified. "
-          : "Uploaded planning records. "}
-        All locations are approximate. Dates retain their source meanings.
-      </p>
     </section>
   );
 

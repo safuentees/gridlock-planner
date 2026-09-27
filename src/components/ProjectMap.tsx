@@ -449,10 +449,14 @@ export function ProjectMap({
         className="pointer-events-none absolute z-20 w-64 max-w-[calc(100%-7rem)] space-y-2"
         data-map-notices
       >
-        {((showCircles && radiusLabel) ||
+        {(overlay.matchedProjectIds.size > 0 ||
+          (showCircles && radiusLabel) ||
           overlay.connections.length > 0 ||
           (mode === "heat" && heatReady)) && (
           <div className="map-notice rounded-md border px-3 py-2 text-xs shadow-sm">
+            {overlay.matchedProjectIds.size > 0 && (
+              <p className="text-pretty">Numbers: other-utility partners</p>
+            )}
             {showCircles && radiusLabel && (
               <p className="text-pretty tabular-nums">
                 <span className="font-medium">{radiusLabel}</span> (proximity)

@@ -115,7 +115,12 @@
 }
 .gridlock-map .proximity-circle.is-matched {
   stroke: var(--map-match);
+}
+.gridlock-map[data-map-mode="points"] .proximity-circle.is-matched {
   fill: var(--map-match);
+}
+.gridlock-map[data-map-mode="heat"] .proximity-circle {
+  fill: none;
 }
 .gridlock-map .map-distance-label {
   padding: 5px 8px;

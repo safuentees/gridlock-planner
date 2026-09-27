@@ -1260,10 +1260,10 @@ export function PlanningWorkspace({
                           <Accordion.Header render={<h3 />}>
                             <Accordion.Trigger
                               className={cn(
-                                "flex w-full items-start gap-2 border-l-4 py-3 pl-3 pr-4 text-left",
+                                "flex w-full items-start gap-2 px-4 py-3 text-left",
                                 selectedId === p.id
-                                  ? "border-emerald-700 bg-emerald-100 hover:bg-emerald-100"
-                                  : "border-transparent hover:bg-stone-50",
+                                  ? "bg-emerald-100 hover:bg-emerald-100"
+                                  : "hover:bg-stone-50",
                               )}
                             >
                               <span className="min-w-0 flex-1">

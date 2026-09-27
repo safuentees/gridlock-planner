@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@base-ui/react/button";
 import { Dialog } from "@base-ui/react/dialog";
 import { Accordion } from "@base-ui/react/accordion";
+import { Menu as ExportMenu } from "@base-ui/react/menu";
 import { Switch } from "@base-ui/react/switch";
 import {
   ArrowDownToLine,
@@ -418,24 +419,6 @@ export function PlanningWorkspace({
               Nearby points and planned dates do not establish simultaneous
               construction, shared routes or savings.
             </p>
-            <Button
-              className={cn(
-                control,
-                results &&
-                  search.status === "loading" &&
-                  "disabled:opacity-100",
-              )}
-              disabled={search.status === "loading"}
-              onClick={() =>
-                exportPairs(
-                  [selected],
-                  "selected comparison from displayed results",
-                )
-              }
-            >
-              <ArrowDownToLine size={14} />
-              Export selected pair
-            </Button>
             {results && !results.complete && (
               <p className="text-xs text-stone-600">
                 This pair comes from a partial search. Export records that
@@ -1019,26 +1002,78 @@ export function PlanningWorkspace({
                   <Dialog.Title className="text-base font-semibold">
                     Comparisons
                   </Dialog.Title>
-                  <Button
-                    disabled={!pairs.length || search.status === "loading"}
-                    onClick={() =>
-                      exportPairs(
-                        pairs,
-                        allPairs
-                          ? "all eligible dataset pairs"
-                          : "displayed bounded nearby results",
-                      )
-                    }
-                    className={cn(
-                      control,
-                      results &&
-                        search.status === "loading" &&
-                        "disabled:opacity-100",
-                    )}
-                  >
-                    <ArrowDownToLine size={13} />
-                    Export {pairs.length} pairs
-                  </Button>
+                  <ExportMenu.Root>
+                    <ExportMenu.Trigger
+                      aria-label="Export options"
+                      title="Export CSV"
+                      className="ml-auto inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-stone-700 hover:bg-stone-100"
+                    >
+                      <ArrowDownToLine size={18} aria-hidden="true" />
+                    </ExportMenu.Trigger>
+                    <ExportMenu.Portal>
+                      <ExportMenu.Positioner
+                        align="end"
+                        sideOffset={8}
+                        collisionPadding={12}
+                        className="z-50"
+                      >
+                        <ExportMenu.Popup className="w-64 max-w-full rounded-lg border border-stone-200 bg-white p-1 shadow-lg outline-none">
+                          <ExportMenu.Group>
+                            <ExportMenu.GroupLabel className="px-3 py-2 text-xs font-medium text-stone-500">
+                              Export CSV
+                            </ExportMenu.GroupLabel>
+                            <ExportMenu.Item
+                              disabled={
+                                !pairs.length || search.status === "loading"
+                              }
+                              onClick={() =>
+                                exportPairs(
+                                  pairs,
+                                  allPairs
+                                    ? "all eligible dataset pairs"
+                                    : "displayed bounded nearby results",
+                                )
+                              }
+                              className="flex cursor-default items-center justify-between gap-3 rounded-md px-3 py-2 text-sm text-stone-800 outline-none data-[highlighted]:bg-stone-100 data-[disabled]:text-stone-400"
+                            >
+                              <span>Displayed comparisons</span>
+                              <span className="tabular-nums">
+                                {pairs.length}
+                              </span>
+                            </ExportMenu.Item>
+                            <ExportMenu.Item
+                              disabled={
+                                !selected || search.status === "loading"
+                              }
+                              onClick={() => {
+                                if (selected)
+                                  exportPairs(
+                                    [selected],
+                                    "selected comparison from displayed results",
+                                  );
+                              }}
+                              className="cursor-default rounded-md px-3 py-2 text-sm text-stone-800 outline-none data-[highlighted]:bg-stone-100 data-[disabled]:text-stone-400"
+                            >
+                              <span className="block">Selected comparison</span>
+                              {!selected && (
+                                <span className="mt-0.5 block text-xs">
+                                  Expand a comparison first
+                                </span>
+                              )}
+                            </ExportMenu.Item>
+                          </ExportMenu.Group>
+                          {search.status === "loading" && (
+                            <p
+                              role="status"
+                              className="px-3 py-2 text-xs text-stone-500"
+                            >
+                              Updating comparisons…
+                            </p>
+                          )}
+                        </ExportMenu.Popup>
+                      </ExportMenu.Positioner>
+                    </ExportMenu.Portal>
+                  </ExportMenu.Root>
                   <Dialog.Close
                     aria-label="Close comparisons"
                     className="rounded-lg p-2 hover:bg-stone-100"

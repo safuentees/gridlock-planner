@@ -22,7 +22,7 @@ The preview uses the same URL. Core app operation needs no API key, backend, Pyt
 
 ## Explore the workspace
 
-The map fills the workspace. Its large count shows nearby cross-utility pairs; green circles and numbered utility markers identify participating projects. Enable utilities at the top left, adjust distance at the bottom left, then open **Comparisons** and expand a row to inspect its timing and source evidence in place. Click it again to collapse; opening a row does not scroll to a separate details section. Location checkboxes remain under **Filters → Locations**. Export the displayed pairs or the selected pair from the same panel.
+The map fills the workspace. Its large count shows nearby cross-utility pairs; green circles and numbered utility markers identify participating projects. Enable utilities at the top left, adjust distance at the bottom left, then open **Comparisons** and expand a row to inspect its timing and source evidence in place. Click it again to collapse; opening a row does not scroll to a separate details section. Location checkboxes remain under **Filters → Locations**. Use the export icon in the panel header to choose displayed comparisons or the selected comparison as CSV.
 
 - Utility toggles preserve each location's saved checkbox. Participation requires both controls and the date filters to allow the record. Unchecked locations remain searchable in **Locations**.
 - Selecting a location makes it the explicit reference for nearby cross-utility comparisons. **Compare all locations** returns to all eligible pairs. **Focus** and **Show all** are distinct actions under **Map settings**. Selecting a pair draws one solid, labeled separation line; it does not depict a route.

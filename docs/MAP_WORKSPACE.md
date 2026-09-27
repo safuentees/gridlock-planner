@@ -22,7 +22,7 @@ September 26, 2026 refinement. This supersedes the layout described in [the earl
 | Map settings | Heatmap and radius-circle switches plus Light/Dark basemap appearance. Circles start on. Settings do not change eligibility or selection. |
 | Map help | Utility shapes/colors, selection, half-threshold circles, exact match treatment, density colors, units, approximation and historical planning limitations. |
 | Data tools | Corrections, source files and extraction review remain available; mounted content preserves drafts/checks on ordinary close. Upload dataset owns the shared compact import form and preserves its draft on close; explicit acceptance resets the workspace. |
-| Exports | Selected pair and displayed rows remain separate actions. Scope now also records the active reference, unrounded miles threshold and presentation unit; existing provenance/precision/completeness fields remain intact. |
+| Exports | One export icon opens a Base UI menu with selected-comparison and displayed-comparisons CSV options. Scope now also records the active reference, unrounded miles threshold and presentation unit; existing provenance/precision/completeness fields remain intact. |
 | Engineering explanations | Remain in documentation. Sampling, incomplete-result warnings and source limitations remain beside affected claims. |
 
 ## Confirmed and chosen behavior
@@ -119,3 +119,12 @@ September 27, 2026: the default Comparisons panel contains its export header and
 Functional Chromium checks passed at 1440×1000, 390×844 and 320×740: inline expansion, unchanged panel scroll position and trigger focus, Enter/Space toggling, one expanded pair, preserved selection on panel reopen, linked map selection, responsive bounds, retained location exclusions, reference evidence and map actions. All 81 tests, formatting, notices, production build and whitespace checks passed. No screenshot review was performed. Local verification scripts/logs are ignored under `output/playwright/accordion-*`.
 
 These checks were repeated after integrating the concurrent header-icon update. Selected CSV export retained the exact 7.548090711868766-mile / 517-day pair; zero-distance empty state and reset also passed.
+
+
+## Comparison export menu
+
+September 27, 2026: the Comparisons header now has one export icon. The existing Base UI Menu provides displayed-comparisons and selected-comparison CSV actions, keyboard navigation, dismissal and focus return. Selected export is disabled until a pair is expanded; both options are disabled during pending searches or when unavailable. CSV contents and scope/provenance remain unchanged. This supersedes the separate export actions described in earlier verification notes.
+
+Functional Chromium checks passed at 1440×1000, 390×844 and 320×740: both downloads, disabled selection/empty states, viewport bounds, Escape returning focus without closing the parent sheet, and retained accordion selection. Download inspection confirmed six displayed rows and the selected DESC_3::GPC_3 row with its exact distance, milestone meanings and provenance. No screenshot review was performed. Local verification scripts/logs are ignored under `output/playwright/export-menu-*`.
+
+A delayed-worker check confirmed both exports are disabled while updating; ArrowDown/Enter exports through the menu. All 81 tests, formatting, notices, production build and whitespace checks passed. Vite reports a nonfatal main-chunk size warning (532 kB after adding the library menu).

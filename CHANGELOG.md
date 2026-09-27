@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Consolidate comparison CSV exports into one Base UI icon menu, with displayed and selected comparison options and disabled states for unavailable exports.
+
 - Make Comparisons an inline accordion list with no scroll-to-details jump. Keep export in its header, location controls in Filters and map navigation in Map settings.
 
 - Move Filters, Map settings and Map help into labeled icon buttons beside Data tools in the header. Preserve mounted dialogs and state, with a wrapped header on narrow screens.

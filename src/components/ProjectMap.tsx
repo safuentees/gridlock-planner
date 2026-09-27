@@ -482,13 +482,8 @@ export function ProjectMap({
         className="pointer-events-none absolute z-20 w-64 max-w-[calc(100%-7rem)] space-y-2"
         data-map-notices
       >
-        {(overlay.matchedProjectIds.size > 0 ||
-          (showCircles && radiusLabel) ||
-          (mode === "heat" && heatReady)) && (
+        {((showCircles && radiusLabel) || (mode === "heat" && heatReady)) && (
           <div className="map-notice rounded-md border px-3 py-2 text-xs shadow-sm">
-            {overlay.matchedProjectIds.size > 0 && (
-              <p className="text-pretty">Numbers: other-utility partners</p>
-            )}
             {showCircles && radiusLabel && (
               <p className="text-pretty tabular-nums">
                 <span className="font-medium">{radiusLabel}</span> (proximity)
@@ -496,11 +491,7 @@ export function ProjectMap({
             )}
             {mode === "heat" && heatReady && (
               <div
-                className={cn(
-                  (overlay.matchedProjectIds.size > 0 ||
-                    (showCircles && radiusLabel)) &&
-                    "mt-2",
-                )}
+                className={cn(showCircles && radiusLabel && "mt-2")}
                 data-heat-legend
               >
                 <div className="mb-1 flex flex-wrap items-center gap-2">

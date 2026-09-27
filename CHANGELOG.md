@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reduce the map pair summary to its count, label and distance limit; keep its position stable when Comparisons toggles. Move Focus/Show all into Comparisons and remove the partner-number legend sentence.
+
 - Remove the explanatory footer from the distance control for a quieter interface.
 
 - Add a header Upload dataset window with the default ten-project sample, local CSV/Excel selection, compact validation and honest mapped-record counts. Reuse one importer and preserve drafts and replacement checks.

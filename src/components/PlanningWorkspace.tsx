@@ -316,17 +316,6 @@ export function PlanningWorkspace({
   const originalSelection = selected
     ? originalComparison(selected, originals)
     : null;
-  const represented = useMemo(() => {
-    const ids = new Set<string>();
-    const counts = new Map<string, number>();
-    for (const pair of qualifying)
-      for (const p of [pair.a, pair.b]) {
-        if (ids.has(p.id)) continue;
-        ids.add(p.id);
-        counts.set(p.company, (counts.get(p.company) ?? 0) + 1);
-      }
-    return [...counts];
-  }, [qualifying]);
   const matchCount = allPairs
     ? qualifying.length
     : (results?.matchedCount ?? null);
@@ -335,10 +324,6 @@ export function PlanningWorkspace({
     !allPairs &&
     !!results &&
     (!results.complete || results.matchedCount > qualifying.length);
-  const matchedProjects = represented.reduce(
-    (sum, [, count]) => sum + count,
-    0,
-  );
   const toggleCompany = (company: string) =>
     setCompanies((old) =>
       old.includes(company)
@@ -783,6 +768,53 @@ export function PlanningWorkspace({
                       Select a pair to inspect planned timing and source
                       evidence.
                     </Dialog.Description>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        className={control}
+                        disabled={
+                          selected
+                            ? !selected.aCenter && !selected.bCenter
+                            : !reference ||
+                              !eligibleIds.has(reference.id) ||
+                              !centers.get(reference.id)
+                        }
+                        onClick={focus}
+                        aria-label="Focus selection"
+                      >
+                        <Focus size={14} />
+                        Focus
+                      </Button>
+                      <Button
+                        className={control}
+                        disabled={!filtered.some((p) => centers.get(p.id))}
+                        aria-label="Show all locations"
+                        onClick={() => {
+                          setFitAll(true);
+                          setFitRequest((n) => n + 1);
+                          if (narrow) setPanelOpen(false);
+                        }}
+                      >
+                        <Expand size={14} />
+                        Show all
+                      </Button>
+                    </div>
+                    {mode === "what_if" && (
+                      <strong className="mb-2 block text-xs text-emerald-900">
+                        {invalidAssumptions
+                          ? "Results paused: a retained year shift exceeds the corrected date range. Update or reset assumptions in Filters. "
+                          : "What-if active: "}
+                        {Object.entries(shifts)
+                          .filter(([, n]) => n !== 0)
+                          .map(
+                            ([c, n]) =>
+                              `${utilityShortLabel(c)} ${n > 0 ? "+" : ""}${n}y`,
+                          )
+                          .join("; ") || "no year shifts"}
+                        {invalidAssumptions
+                          ? ". Not applied."
+                          : ". Assumed milestones only."}
+                      </strong>
+                    )}
                     {reference && (
                       <div
                         ref={referenceSummary}
@@ -1248,39 +1280,21 @@ export function PlanningWorkspace({
             </Dialog.Portal>
           </Dialog.Root>
         </div>
-        <div
-          className="map-match-overview-row flex w-full justify-center"
-          data-panel-open={panelOpen}
-        >
+        <div className="flex w-full justify-center">
           <section
             aria-label="Nearby match overview"
             className="map-match-overview pointer-events-auto rounded-xl border border-stone-200 bg-white p-3 shadow-sm"
           >
             <div role="status" aria-live="polite" aria-atomic="true">
-              {mode === "what_if" && (
-                <strong className="mb-2 block text-xs text-emerald-900">
-                  {invalidAssumptions
-                    ? "Results paused: a retained year shift exceeds the corrected date range. Update or reset assumptions in Filters. "
-                    : "What-if active: "}
-                  {Object.entries(shifts)
-                    .filter(([, n]) => n !== 0)
-                    .map(
-                      ([c, n]) =>
-                        `${utilityShortLabel(c)} ${n > 0 ? "+" : ""}${n}y`,
-                    )
-                    .join("; ") || "no year shifts"}
-                  {invalidAssumptions
-                    ? ". Not applied."
-                    : ". Assumed milestones only."}
-                </strong>
-              )}
-              {search.error ? (
+              {invalidAssumptions ? (
+                <p className="text-sm font-medium">Results paused</p>
+              ) : search.error ? (
                 <p className="text-sm font-medium">Search unavailable</p>
               ) : matchCount === null ? (
                 <p className="text-sm text-stone-600">Finding nearby pairs…</p>
               ) : (
                 <>
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center justify-center gap-3">
                     <strong
                       className={cn(
                         "text-4xl font-semibold tabular-nums",
@@ -1296,84 +1310,17 @@ export function PlanningWorkspace({
                     </strong>
                     <div>
                       <h2 className="text-sm font-semibold">
-                        Nearby {matchCount === 1 ? "pair" : "pairs"}
+                        {mode === "what_if" ? "What-if" : "Nearby"}{" "}
+                        {reference ? "reference " : ""}
+                        {matchCount === 1 ? "pair" : "pairs"}
                       </h2>
                       <p className="text-xs text-stone-600">
                         Under {distanceLabel(thresholdMiles, unit)} {unit}
                       </p>
                     </div>
                   </div>
-                  <p className="mt-2 text-xs tabular-nums text-stone-600">
-                    {matchedProjects} projects across {represented.length}{" "}
-                    utilities
-                    {partialMatchDisplay ? " in displayed pairs" : ""}
-                  </p>
-                  {partialMatchDisplay && (
-                    <p className="mt-1 text-xs font-medium text-stone-700">
-                      {partialSearch
-                        ? "Partial search. Map badges count displayed pairs only."
-                        : `Map badges cover ${qualifying.length} displayed pairs only.`}
-                    </p>
-                  )}
                 </>
               )}
-            </div>
-            {reference && (
-              <p
-                className="mt-1 truncate text-xs text-stone-600"
-                title={reference.name}
-              >
-                For {displayName(reference)}
-              </p>
-            )}
-            <Button
-              className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 underline underline-offset-2"
-              onClick={() => {
-                setPanelOpen(true);
-                requestAnimationFrame(() => {
-                  const heading = document.getElementById(
-                    "nearby-comparisons-title",
-                  );
-                  heading?.scrollIntoView({ block: "start" });
-                  heading?.focus({ preventScroll: true });
-                });
-              }}
-            >
-              {search.error ? "Review search" : "Inspect comparisons"}
-              <ChevronRight size={14} />
-            </Button>
-            <p className="mt-2 text-xs text-stone-500">
-              Proximity does not establish simultaneous work.
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2 border-t border-stone-100 pt-2">
-              <Button
-                className={control}
-                disabled={
-                  selected
-                    ? !selected.aCenter && !selected.bCenter
-                    : !reference ||
-                      !eligibleIds.has(reference.id) ||
-                      !centers.get(reference.id)
-                }
-                onClick={focus}
-                aria-label="Focus selection"
-              >
-                <Focus size={14} />
-                Focus
-              </Button>
-              <Button
-                className={control}
-                disabled={!filtered.some((p) => centers.get(p.id))}
-                aria-label="Show all locations"
-                onClick={() => {
-                  setFitAll(true);
-                  setFitRequest((n) => n + 1);
-                  if (narrow) setPanelOpen(false);
-                }}
-              >
-                <Expand size={14} />
-                Show all
-              </Button>
             </div>
           </section>
         </div>

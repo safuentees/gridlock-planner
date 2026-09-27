@@ -169,13 +169,8 @@
 
 /* The overview follows the toolbar's natural wrapping on small screens. */
 .map-match-overview {
-  width: 19rem;
+  width: 14rem;
   max-width: 100%;
-}
-@media (min-width: 1024px) {
-  .map-match-overview-row[data-panel-open="true"] {
-    padding-right: 25.5rem;
-  }
 }
 @media (max-width: 1023px) {
   .map-match-overview {

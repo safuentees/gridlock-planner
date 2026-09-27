@@ -1,7 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Collapsible } from "@base-ui/react/collapsible";
 import { LazyMotion, m as motion, useReducedMotion } from "motion/react";
-import { ChevronDown } from "lucide-react";
 import { DistanceControl } from "./DistanceControl";
 import type { DistanceUnit } from "../lib/distanceControl";
 
@@ -36,6 +35,7 @@ export function NearbyDistanceCard({
         open={open}
         onOpenChange={setOpen}
         aria-label="Nearby match overview"
+        data-expanded={open}
         render={
           <motion.section
             layout={!reduceMotion}
@@ -49,24 +49,20 @@ export function NearbyDistanceCard({
         <Collapsible.Trigger
           aria-label="Adjust comparison distance"
           title="Adjust comparison distance"
-          render={<motion.button layout="position" transition={transition} />}
-          className="flex w-full items-center justify-center gap-3 rounded-xl p-4 text-left hover:bg-stone-50 focus-visible:outline-offset-[-3px]"
+          render={
+            <motion.button layout={!reduceMotion} transition={transition} />
+          }
+          className="flex w-full items-center justify-center rounded-xl p-4 text-left hover:bg-stone-50 focus-visible:outline-offset-[-3px]"
         >
-          <span
+          <motion.span
+            layout={reduceMotion ? false : "position"}
+            transition={transition}
             aria-busy={busy}
             role="status"
             aria-live="polite"
             aria-atomic="true"
           >
             {children}
-          </span>
-          <motion.span
-            aria-hidden="true"
-            animate={{ rotate: open ? 180 : 0 }}
-            transition={transition}
-            className="shrink-0 text-stone-500"
-          >
-            <ChevronDown size={16} />
           </motion.span>
         </Collapsible.Trigger>
         <Collapsible.Panel

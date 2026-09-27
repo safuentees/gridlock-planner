@@ -163,10 +163,13 @@
   translate: none;
 }
 
-/* Reserve the editor's width so expansion only grows downward. */
+/* Hug the summary while closed; grow evenly around the fixed center. */
 .map-match-overview {
-  width: 20rem;
+  width: max-content;
   max-width: 100%;
+}
+.map-match-overview[data-expanded="true"] {
+  width: 20rem;
 }
 @media (min-width: 1024px) and (max-width: 1279px) {
   .comparison-panel {

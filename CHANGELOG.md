@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Restore a content-sized closed nearby-pair card, remove its chevron and expand evenly around a stable center while keeping the summary in place.
+
 - Keep the nearby-pair card at a responsive fixed width and anchor its animation at the top, so opening the distance editor grows only downward without moving the summary.
 
 - Put distance controls inside the expandable nearby-pair card and remove the bottom-left slider. Use Motion with Base UI for a short, reduced-motion-aware expansion while preserving the mounted editor and stable query presentation.

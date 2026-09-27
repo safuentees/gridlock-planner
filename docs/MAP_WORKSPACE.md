@@ -140,3 +140,7 @@ All 81 tests, format, notice, TypeScript/Vite build and whitespace checks pass. 
 ### Stationary distance expansion
 
 September 27, 2026: reserve a responsive 20rem card width in both states and set the Motion transform origin at the top center. Expansion changes only height; the summary and card edges remain stationary. This supersedes the earlier content-sized card width. Functional Chromium frame sampling verified opening and closing at 1440, 1024, 390 and 320px widths: no horizontal or top-edge movement, with summary movement below 0.001px. Keyboard toggling and hidden-slider exclusion passed. All 81 tests, notices, formatting, production build and whitespace checks passed; the existing bundle-size advisory remains. Screenshot review remains skipped as requested. Local evidence: `output/playwright/stationary-distance-check.{js,log}`.
+
+### Content-sized centered expansion
+
+September 27, 2026 clarification: the closed card hugs its summary again, with no chevron. Opening widens it evenly to 20rem (bounded by the viewport) and grows downward. Nested Motion layout correction keeps the summary stationary instead of sliding with the changing card width. This supersedes the fixed closed width above. Frame sampling at 1440, 1024, 390 and 320px verified stable center/top and summary positions (under 0.01px variation) while width increased from about 187px to 320px, or 296px on the narrowest screen. Keyboard toggling and hidden-control exclusion passed. Local evidence: `output/playwright/centered-distance-check.{js,log}`.

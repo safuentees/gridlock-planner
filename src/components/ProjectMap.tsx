@@ -113,10 +113,10 @@ export function ProjectMap({
           minOpacity: 0.28,
           max: 3,
           gradient: {
-            0.1: "#d1fae5",
-            0.4: "#6ee7b7",
-            0.7: "#10b981",
-            1: "#065f46",
+            0.1: "#dbeafe",
+            0.4: "#93c5fd",
+            0.7: "#3b82f6",
+            1: "#1e40af",
           },
         },
       ).addTo(view);
@@ -151,7 +151,7 @@ export function ProjectMap({
       projects.some((p) => p.id === selected.b.id)
     ) {
       L.polyline([selected.aCenter, selected.bCenter], {
-        color: "#047857",
+        color: "#1e40af",
         weight: 2,
         opacity: 0.75,
         dashArray: "5 7",
@@ -212,14 +212,11 @@ export function ProjectMap({
           <div className="mb-1 flex items-center gap-2">
             <span className="font-medium">Planning density</span>
             <span className="flex gap-0.5" aria-hidden="true">
-              {[
-                "bg-emerald-100",
-                "bg-emerald-300",
-                "bg-emerald-500",
-                "bg-emerald-800",
-              ].map((x) => (
-                <span key={x} className={`h-2 w-5 ${x}`} />
-              ))}
+              {["bg-blue-100", "bg-blue-300", "bg-blue-500", "bg-blue-800"].map(
+                (x) => (
+                  <span key={x} className={`h-2 w-5 ${x}`} />
+                ),
+              )}
             </span>
             <span>Low → high</span>
           </div>

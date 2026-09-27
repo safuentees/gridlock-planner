@@ -22,7 +22,7 @@ export function DataReadiness({ compact = false }: { compact?: boolean }) {
             id={compact ? "readiness-compact" : "readiness-full"}
             className="flex items-center gap-2 text-lg font-semibold"
           >
-            <Database size={19} className="text-emerald-800" />
+            <Database size={19} className="text-blue-800" />
             What the full reports support
           </h2>
           <p className="mt-1 text-xs text-stone-500">
@@ -59,7 +59,7 @@ export function DataReadiness({ compact = false }: { compact?: boolean }) {
         are insufficient to evaluate future construction probabilities.
       </p>
       <p className="mt-3 flex items-start gap-2 text-sm leading-relaxed text-stone-600">
-        <Info size={16} className="mt-0.5 shrink-0 text-emerald-800" />
+        <Info size={16} className="mt-0.5 shrink-0 text-blue-800" />
         <span>
           <strong className="font-semibold text-stone-800">
             Decision: scenario exploration.
@@ -92,7 +92,7 @@ export function DataReadiness({ compact = false }: { compact?: boolean }) {
                     <span className="w-9 text-stone-500">{year}</span>
                     <div className="h-3 flex-1 rounded-sm bg-stone-100">
                       <div
-                        className="h-full rounded-sm bg-emerald-600"
+                        className="h-full rounded-sm bg-blue-800"
                         style={{ width: `${(count / peak) * 100}%` }}
                       />
                     </div>
@@ -111,7 +111,7 @@ export function DataReadiness({ compact = false }: { compact?: boolean }) {
                 <li className="flex gap-2">
                   <FileCheck2
                     size={16}
-                    className="mt-0.5 shrink-0 text-emerald-800"
+                    className="mt-0.5 shrink-0 text-blue-800"
                   />
                   <span>
                     <strong>3 conflicting need dates</strong> between summary
@@ -121,7 +121,7 @@ export function DataReadiness({ compact = false }: { compact?: boolean }) {
                 <li className="flex gap-2">
                   <FileCheck2
                     size={16}
-                    className="mt-0.5 shrink-0 text-emerald-800"
+                    className="mt-0.5 shrink-0 text-blue-800"
                   />
                   <span>
                     <strong>1 ID is both active and removed.</strong> Both
@@ -131,7 +131,7 @@ export function DataReadiness({ compact = false }: { compact?: boolean }) {
                 <li className="flex gap-2">
                   <FileCheck2
                     size={16}
-                    className="mt-0.5 shrink-0 text-emerald-800"
+                    className="mt-0.5 shrink-0 text-blue-800"
                   />
                   <span>
                     <strong>1 planned start follows its need date.</strong> It
@@ -141,7 +141,7 @@ export function DataReadiness({ compact = false }: { compact?: boolean }) {
                 <li className="flex gap-2">
                   <FileCheck2
                     size={16}
-                    className="mt-0.5 shrink-0 text-emerald-800"
+                    className="mt-0.5 shrink-0 text-blue-800"
                   />
                   <span>
                     <strong>77 distribution rows lack stable IDs.</strong> They
@@ -160,7 +160,7 @@ export function DataReadiness({ compact = false }: { compact?: boolean }) {
           </p>
         </>
       )}
-      <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-emerald-800">
+      <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-blue-800">
         <a
           href="/data/full_report_catalog.json"
           download

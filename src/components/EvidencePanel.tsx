@@ -20,11 +20,11 @@ export const formatDate = (date: string | null) =>
     : "Date not supplied";
 export const sourceLink = (url: string, page: number) => `${url}#page=${page}`;
 
-function ProjectRecord({ project }: { project: Project }) {
+export function ProjectRecord({ project }: { project: Project }) {
   const center = centerPoint(project);
   const located = project.endpoints.filter((x) => x.coordinate).length;
   return (
-    <article className="min-w-0 rounded-xl border border-stone-200 bg-white p-4">
+    <article className="evidence-record min-w-0 rounded-xl border border-blue-200 bg-white p-5">
       <div className="mb-3 flex items-center justify-between gap-3">
         <span className="text-xs font-semibold text-stone-500">
           {project.company} · {project.id}
@@ -36,10 +36,17 @@ function ProjectRecord({ project }: { project: Project }) {
       <h3 className="mb-3 text-base font-semibold leading-snug">
         {project.name}
       </h3>
+      <p className="mb-4 text-xs text-blue-800">
+        {project.utility} · Workbook record ID: {project.id}
+      </p>
+      <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50/40 p-4 text-sm leading-relaxed text-blue-950">
+        <strong className="block mb-1">Identity and scope</strong>
+        {project.review.scope}
+      </div>
       <dl className="space-y-3 text-sm">
-        <div>
+        <div className="rounded-xl border border-slate-200 p-4">
           <dt className="mb-1 flex items-center gap-1.5 text-xs text-stone-500">
-            <CalendarDays size={13} />
+            <CalendarDays size={13} className="text-blue-800" />
             {project.dateMeaning === "need_date"
               ? "Original need date"
               : "Original planned in-service date"}
@@ -50,10 +57,13 @@ function ProjectRecord({ project }: { project: Project }) {
           <dd className="mt-0.5 text-xs text-stone-500">
             Construction start / end: not supplied in this workbook
           </dd>
+          <dd className="mt-1 text-xs text-stone-500">
+            Workbook value: {project.originalDateRaw || "Not supplied"}
+          </dd>
         </div>
-        <div>
+        <div className="rounded-xl border border-slate-200 p-4">
           <dt className="mb-1 flex items-center gap-1.5 text-xs text-stone-500">
-            <MapPin size={13} />
+            <MapPin size={13} className="text-blue-800" />
             Representative point · approximate
           </dt>
           <dd className="tabular-nums">
@@ -68,9 +78,22 @@ function ProjectRecord({ project }: { project: Project }) {
                 ? "One located endpoint used as the proxy"
                 : "No usable endpoint coordinates"}
           </dd>
+          <dd className="mt-3 text-sm leading-relaxed text-stone-600">
+            {project.review.locationNote}
+          </dd>
         </div>
       </dl>
-      <details className="mt-4 border-t border-stone-100 pt-3">
+      {project.review.warnings.length > 0 && (
+        <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950">
+          <strong>Review attention</strong>
+          <ul className="mt-2 list-disc space-y-2 pl-4">
+            {project.review.warnings.map((warning, i) => (
+              <li key={i}>{warning}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <details className="mt-4 rounded-xl border border-slate-200 p-4">
         <summary className="cursor-pointer text-xs font-medium text-stone-600">
           Inspect supplied endpoints
         </summary>
@@ -88,25 +111,31 @@ function ProjectRecord({ project }: { project: Project }) {
           ))}
         </ul>
       </details>
-      <a
-        href={sourceLink(
-          project.originalSource.url,
-          project.originalSource.page,
-        )}
-        target="_blank"
-        rel="noreferrer"
-        className="mt-4 flex items-start gap-1.5 text-xs font-medium text-emerald-800 underline"
-      >
-        <BookOpen size={13} className="mt-0.5 shrink-0" />
-        <span>
-          {project.originalSource.title} · PDF p. {project.originalSource.page}
-        </span>
-        <ArrowUpRight size={13} className="shrink-0" />
-      </a>
-      <p className="mt-2 text-xs text-stone-500">
-        {project.originalSource.asOf}. {project.originalSource.dateNote}
-      </p>
-      <details className="mt-4 rounded-lg bg-stone-50 p-3">
+      <div className="mt-4 rounded-xl border border-blue-200 bg-blue-50/40 p-4">
+        <p className="mb-2 text-sm font-semibold text-blue-950">
+          Original source
+        </p>
+        <a
+          href={sourceLink(
+            project.originalSource.url,
+            project.originalSource.page,
+          )}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-start gap-1.5 text-sm font-medium text-blue-800 underline"
+        >
+          <BookOpen size={13} className="mt-0.5 shrink-0" />
+          <span>
+            {project.originalSource.title} · PDF p.{" "}
+            {project.originalSource.page}
+          </span>
+          <ArrowUpRight size={13} className="shrink-0" />
+        </a>
+        <p className="mt-2 text-xs text-stone-500">
+          {project.originalSource.asOf}. {project.originalSource.dateNote}
+        </p>
+      </div>
+      <details className="mt-4 rounded-xl border border-slate-200 bg-slate-50/50 p-4">
         <summary className="cursor-pointer text-xs font-semibold text-stone-700">
           Research notes · originals unchanged
         </summary>
@@ -131,7 +160,7 @@ function ProjectRecord({ project }: { project: Project }) {
           </p>
           {project.review.statusSourceUrl && (
             <a
-              className="inline-flex items-center gap-1 font-medium text-emerald-800 underline"
+              className="inline-flex items-center gap-1 font-medium text-blue-800 underline"
               href={
                 project.review.statusSourcePage
                   ? sourceLink(
@@ -156,12 +185,9 @@ function ProjectRecord({ project }: { project: Project }) {
             {project.review.latestDatePrecision} precision).{" "}
             {project.review.dateNote}
           </p>
-          {project.review.warnings.map((w, i) => (
-            <p key={i}>{w}</p>
-          ))}
           {project.review.sourceUrl && (
             <a
-              className="inline-flex items-center gap-1 font-medium text-emerald-800 underline"
+              className="inline-flex items-center gap-1 font-medium text-blue-800 underline"
               href={sourceLink(
                 project.review.sourceUrl,
                 project.review.sourcePage,
@@ -206,13 +232,11 @@ export function EvidencePanel({
   return (
     <section
       aria-labelledby="evidence-title"
-      className="border-t border-stone-200 bg-stone-50 p-5 lg:p-6"
+      className="border-t border-blue-200 bg-blue-50/50 p-5 lg:p-6"
     >
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="mb-1 text-xs font-semibold text-emerald-800">
-            EVIDENCE
-          </p>
+          <p className="mb-1 text-xs font-semibold text-blue-800">EVIDENCE</p>
           <h2 id="evidence-title" className="text-xl font-semibold">
             {comparison
               ? "Why these projects appear together"

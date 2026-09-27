@@ -45,6 +45,69 @@
   }
 }
 
+.gridlock-app .lucide {
+  color: var(--color-blue-800);
+}
+
+.evidence-page {
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  color: #000;
+  line-height: 1.6;
+}
+.evidence-page h1 {
+  font-size: clamp(1.875rem, 3vw, 2.5rem);
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+.evidence-page h2 {
+  letter-spacing: -0.015em;
+  line-height: 1.35;
+}
+.evidence-page h3 {
+  font-size: 1.125rem;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+}
+.evidence-page .text-xs {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+.evidence-page dt,
+.evidence-page summary {
+  font-weight: 600;
+}
+.evidence-page .evidence-record {
+  border-radius: 1rem;
+  padding: clamp(1rem, 2vw, 1.5rem);
+}
+.evidence-page summary {
+  border-radius: 0.25rem;
+}
+.evidence-page
+  :where(
+    h1,
+    h2,
+    h3,
+    p,
+    span,
+    strong,
+    a,
+    label,
+    input,
+    summary,
+    dt,
+    dd,
+    li,
+    div
+  ) {
+  color: #000;
+}
+.evidence-page :focus-visible {
+  outline-color: var(--color-blue-800);
+}
+.evidence-page .evidence-record svg {
+  flex-shrink: 0;
+}
 .leaflet-container {
   font-family: inherit;
   background: var(--color-stone-100);
@@ -81,7 +144,7 @@
 }
 .pin-circle {
   border-radius: 50%;
-  background: var(--color-emerald-700);
+  background: var(--color-blue-800);
 }
 .pin-square {
   border-radius: 5px;
@@ -93,7 +156,7 @@
   background: white;
 }
 .pin-selected {
-  outline: 3px solid var(--color-emerald-200);
+  outline: 3px solid var(--color-blue-200);
 }
 .leaflet-tooltip {
   font-family: inherit;

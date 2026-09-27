@@ -34,7 +34,8 @@ import {
 } from "./lib/comparisons";
 import { cn } from "./lib/cn";
 import { ProjectMap } from "./components/ProjectMap";
-import { EvidencePanel, formatDate } from "./components/EvidencePanel";
+import { formatDate } from "./components/EvidencePanel";
+import { EvidenceWorkspace } from "./components/EvidenceWorkspace";
 import { DataReadiness } from "./components/DataReadiness";
 
 const PROJECTS = projectData as Project[];
@@ -224,10 +225,10 @@ function ThresholdControl({
       >
         <Slider.Control className="flex h-5 w-full cursor-pointer items-center">
           <Slider.Track className="h-1.5 w-full rounded-full bg-stone-200">
-            <Slider.Indicator className="rounded-full bg-emerald-700" />
+            <Slider.Indicator className="rounded-full bg-blue-800" />
             <Slider.Thumb
               aria-labelledby="threshold-label"
-              className="size-4 rounded-full border-2 border-emerald-700 bg-white shadow-sm"
+              className="size-4 rounded-full border-2 border-blue-800 bg-white shadow-sm"
             />
           </Slider.Track>
         </Slider.Control>
@@ -240,7 +241,7 @@ function ThresholdControl({
             className={cn(
               "rounded-md border px-2.5 py-1 text-xs tabular-nums",
               Math.abs(shown - v) < 0.001
-                ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                ? "border-blue-200 bg-blue-50 text-blue-800"
                 : "border-stone-200 text-stone-500",
             )}
           >
@@ -320,15 +321,14 @@ function PairList({
               aria-pressed={selected?.id === pair.id}
               className={cn(
                 "flex w-full items-start gap-3 border-b border-stone-100 p-4 text-left last:border-b-0 hover:bg-stone-50",
-                selected?.id === pair.id &&
-                  "bg-emerald-50/70 hover:bg-emerald-50",
+                selected?.id === pair.id && "bg-blue-50/70 hover:bg-blue-50",
               )}
             >
               <span
                 className={cn(
                   "mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md text-xs font-semibold tabular-nums",
                   selected?.id === pair.id
-                    ? "bg-emerald-700 text-white"
+                    ? "bg-blue-800 text-white"
                     : "bg-stone-100 text-stone-500",
                 )}
               >
@@ -424,9 +424,6 @@ export default function App() {
   const selected = projectId
     ? null
     : (shownPairs.find((p) => p.id === selectedId) ?? shownPairs[0] ?? null);
-  const selectedProject = projectId
-    ? (filtered.find((p) => p.id === projectId) ?? null)
-    : null;
   const scenarioResult = useMemo(
     () => buildScenarioSummary(PROJECTS, scenario, threshold),
     [scenario, threshold],
@@ -476,7 +473,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-dvh">
+    <div className="gridlock-app min-h-dvh">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:p-4"
@@ -485,7 +482,7 @@ export default function App() {
       </a>
       <header className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 bg-white px-5 py-4 lg:px-8">
         <div className="flex items-center gap-3">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-emerald-800 text-white">
+          <div className="flex size-9 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 text-blue-800">
             <Network size={21} strokeWidth={1.8} />
           </div>
           <span className="text-xl font-semibold">GridLock</span>
@@ -497,8 +494,8 @@ export default function App() {
           {(
             [
               { id: "explore", label: "Explore", icon: Compass },
-              { id: "scenarios", label: "Scenarios", icon: FlaskConical },
-              { id: "methods", label: "Data & methods", icon: FileText },
+              { id: "scenarios", label: "Schedule shifts", icon: FlaskConical },
+              { id: "methods", label: "Data & evidence", icon: FileText },
             ] as const
           ).map((item) => (
             <Button
@@ -508,7 +505,7 @@ export default function App() {
               className={cn(
                 "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium",
                 page === item.id
-                  ? "bg-emerald-50 text-emerald-800"
+                  ? "bg-blue-50 text-blue-800"
                   : "text-stone-500 hover:bg-stone-50",
               )}
             >
@@ -567,10 +564,10 @@ export default function App() {
                             : x.filter((v) => v !== c.id),
                         )
                       }
-                      className="flex size-4 items-center justify-center rounded border border-stone-300 bg-white data-[checked]:border-emerald-700 data-[checked]:bg-emerald-700"
+                      className="flex size-4 items-center justify-center rounded border border-stone-300 bg-white data-[checked]:border-blue-800 data-[checked]:bg-blue-50"
                     >
                       <Checkbox.Indicator>
-                        <Check size={12} className="text-white" />
+                        <Check size={12} />
                       </Checkbox.Indicator>
                     </Checkbox.Root>
                     <span>{c.label}</span>
@@ -578,7 +575,7 @@ export default function App() {
                       className={cn(
                         "ml-auto size-2.5",
                         c.id === "DESC"
-                          ? "rounded-full bg-emerald-700"
+                          ? "rounded-full bg-blue-800"
                           : "rounded-sm bg-stone-600",
                       )}
                     />
@@ -625,10 +622,10 @@ export default function App() {
                 <Checkbox.Root
                   checked={includeUndated}
                   onCheckedChange={setIncludeUndated}
-                  className="flex size-4 items-center justify-center rounded border border-stone-300 data-[checked]:border-emerald-700 data-[checked]:bg-emerald-700"
+                  className="flex size-4 items-center justify-center rounded border border-stone-300 data-[checked]:border-blue-800 data-[checked]:bg-blue-50"
                 >
                   <Checkbox.Indicator>
-                    <Check size={12} className="text-white" />
+                    <Check size={12} />
                   </Checkbox.Indicator>
                 </Checkbox.Root>
                 Include records without a date
@@ -645,7 +642,7 @@ export default function App() {
               <Button
                 onClick={openCase}
                 aria-label="Inspect Jasper–Okatie and Goshen–Georgia Pacific case"
-                className="flex w-full items-start justify-between gap-2 text-left text-sm font-medium text-emerald-800"
+                className="flex w-full items-start justify-between gap-2 text-left text-sm font-medium text-blue-800"
               >
                 <span>
                   Jasper–Okatie
@@ -666,7 +663,7 @@ export default function App() {
             <div className="p-5 lg:p-6">
               <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
                 <div>
-                  <p className="mb-2 text-xs font-semibold text-emerald-800">
+                  <p className="mb-2 text-xs font-semibold text-blue-800">
                     GEORGIA & SOUTH CAROLINA
                   </p>
                   <h1 className="text-3xl font-semibold">
@@ -751,7 +748,7 @@ export default function App() {
                   </div>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-stone-100 px-4 py-3 text-xs text-stone-500">
                     <span className="flex items-center gap-1.5">
-                      <i className="size-2 rounded-full bg-emerald-700" />
+                      <i className="size-2 rounded-full bg-blue-800" />
                       Dominion
                     </span>
                     <span className="flex items-center gap-1.5">
@@ -776,11 +773,6 @@ export default function App() {
                 />
               </div>
             </div>
-            <EvidencePanel
-              comparison={selected}
-              project={selectedProject}
-              onFocus={() => focusMap()}
-            />
           </main>
         </div>
       )}
@@ -789,11 +781,11 @@ export default function App() {
         <main id="main-content" className="mx-auto max-w-7xl p-5 lg:p-8">
           <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="mb-2 text-xs font-semibold text-emerald-800">
+              <p className="mb-2 text-xs font-semibold text-blue-800">
                 EXPLICIT ASSUMPTIONS
               </p>
               <h1 className="text-3xl font-semibold">
-                What if the schedules moved?
+                Changes in schedule
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-500">
                 Shift the supplied milestones and explore a target year. This is
@@ -965,9 +957,9 @@ export default function App() {
                           </p>
                           <Button
                             onClick={() => inspectScenario(pair)}
-                            className="mt-2 text-xs font-medium text-emerald-800 underline"
+                            className="mt-2 text-xs font-medium text-blue-800 underline"
                           >
-                            Inspect original evidence
+                            View on map
                           </Button>
                         </div>
                       </div>
@@ -996,11 +988,14 @@ export default function App() {
       )}
 
       {page === "methods" && (
-        <main id="main-content" className="mx-auto max-w-6xl p-5 lg:p-8">
-          <p className="mb-2 text-xs font-semibold text-emerald-800">
+        <main
+          id="main-content"
+          className="evidence-page mx-auto max-w-6xl p-5 lg:p-8"
+        >
+          <p className="mb-2 text-xs font-semibold text-blue-800">
             TRACEABLE BY DESIGN
           </p>
-          <h1 className="text-3xl font-semibold">Data and methods</h1>
+          <h1 className="text-3xl font-semibold">Data and evidence</h1>
           <p className="mt-2 max-w-3xl text-sm leading-relaxed text-stone-500">
             The working map starts with ten supplied examples. The full reports
             were also assessed for additional records and whether they support a
@@ -1009,7 +1004,7 @@ export default function App() {
           <section className="my-6 grid gap-5 md:grid-cols-2">
             <article className="rounded-xl border border-stone-200 bg-white p-5">
               <h2 className="mb-3 flex items-center gap-2 font-semibold">
-                <Compass size={18} className="text-emerald-800" />
+                <Compass size={18} className="text-blue-800" />
                 Explainable proximity
               </h2>
               <p className="text-sm leading-relaxed text-stone-600">
@@ -1032,7 +1027,7 @@ export default function App() {
             </article>
             <article className="rounded-xl border border-stone-200 bg-white p-5">
               <h2 className="mb-3 flex items-center gap-2 font-semibold">
-                <CircleHelp size={18} className="text-emerald-800" />
+                <CircleHelp size={18} className="text-blue-800" />
                 What the dates mean
               </h2>
               <p className="text-sm leading-relaxed text-stone-600">
@@ -1048,7 +1043,7 @@ export default function App() {
                 stay unknown.
               </p>
               <a
-                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-emerald-800 underline"
+                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-blue-800 underline"
                 href="/sources/Projects_Overlaps.xlsx"
               >
                 <ArrowDownToLine size={14} />
@@ -1057,54 +1052,7 @@ export default function App() {
             </article>
           </section>
           <DataReadiness />
-          <section className="mt-6 rounded-xl border border-stone-200 bg-white p-5">
-            <h2 className="mb-3 font-semibold">
-              Inspect every starting record
-            </h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="border-b border-stone-200 text-stone-500">
-                  <tr>
-                    <th className="py-2 pr-4">Project</th>
-                    <th className="pr-4">Original date</th>
-                    <th className="pr-4">Field meaning</th>
-                    <th>Source</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-stone-100">
-                  {PROJECTS.map((p) => (
-                    <tr key={p.id}>
-                      <td className="py-3 pr-4">
-                        <span className="font-medium">{p.shortName}</span>
-                        <span className="mt-1 block text-stone-400">
-                          {p.id}
-                        </span>
-                      </td>
-                      <td className="pr-4 whitespace-nowrap tabular-nums">
-                        {p.originalDate}
-                      </td>
-                      <td className="pr-4">
-                        {p.dateMeaning === "need_date"
-                          ? "Need date"
-                          : "Planned in-service"}
-                      </td>
-                      <td>
-                        <a
-                          href={`${p.originalSource.url}#page=${p.originalSource.page}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-emerald-800 underline"
-                        >
-                          PDF p. {p.originalSource.page}
-                          <ArrowUpRight size={12} />
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+          <EvidenceWorkspace projects={PROJECTS} />
         </main>
       )}
       <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-stone-200 bg-white px-6 py-4 text-xs text-stone-400">

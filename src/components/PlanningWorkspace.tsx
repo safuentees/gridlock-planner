@@ -388,18 +388,17 @@ export function PlanningWorkspace({
   );
   const filterSummary = `${filtered.length.toLocaleString()} ${filtered.length === 1 ? "project" : "projects"}`;
   const selectedEvidence = selectedRecords.length > 0 && (
-    <section aria-label="Selected timing and evidence">
-      <div className="space-y-3 p-4">
-        <h2 tabIndex={-1} className="text-base font-semibold">
+    <section
+      aria-label="Selected timing and evidence"
+      className="space-y-2 px-4 pb-3 text-xs leading-relaxed text-stone-600"
+    >
+      <div className="space-y-2">
+        <h2 className="sr-only">
           {selected ? "Selected comparison" : "Reference evidence"}
         </h2>
         {selected && (
           <>
-            <p className="text-sm">
-              {utilityLabel(selected.a.company)} ↔{" "}
-              {utilityLabel(selected.b.company)}
-            </p>
-            <p className="text-sm tabular-nums">
+            <p className="tabular-nums">
               Approximate separation:{" "}
               {selected.distanceMiles === null
                 ? "unknown"
@@ -429,10 +428,8 @@ export function PlanningWorkspace({
         )}
         {(mode === "what_if" ||
           selectedRecords.some((p) => changedRecordIds.has(p.id))) && (
-          <section className="space-y-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
-            <h3 className="text-sm font-semibold">
-              Corrections and assumptions
-            </h3>
+          <section className="space-y-2 border-l-2 border-emerald-200 pl-2">
+            <h3 className="text-xs font-medium">Corrections and assumptions</h3>
             {selectedRecords.map((p) => (
               <div key={p.id} className="text-xs">
                 <strong>{displayName(p)}</strong>
@@ -481,7 +478,7 @@ export function PlanningWorkspace({
           !selected && reference ? (originals.get(reference.id) ?? null) : null
         }
       />
-      <p className="p-4 text-xs text-stone-500">
+      <p className="text-xs text-stone-500">
         {source.kind === "demo"
           ? "Historical sample; current opportunities are unverified. "
           : "Uploaded planning records. "}

@@ -1,4 +1,4 @@
-import { ArrowUpRight, BookOpen, CalendarDays, MapPin } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import type { Comparison, Project } from "../types";
 import { centerPoint } from "../lib/comparisons";
 
@@ -27,17 +27,16 @@ function ProjectRecord({ project }: { project: Project }) {
     (endpoint) => endpoint.coordinate,
   ).length;
   return (
-    <article className="min-w-0 rounded-xl border border-stone-200 bg-white p-4">
-      <p className="mb-2 break-words text-pretty text-xs font-medium text-stone-500">
+    <article className="min-w-0 space-y-1.5 py-2">
+      <p className="break-words text-pretty text-xs text-stone-500">
         {project.company}
         {project.state ? ` · ${project.state}` : ""}
       </p>
-      <h3 className="text-balance break-words text-base font-semibold leading-snug">
+      <h3 className="text-balance break-words text-xs font-medium leading-relaxed">
         {project.name}
       </h3>
-      <dl className="mt-4 text-sm">
-        <dt className="mb-1 flex items-center gap-1.5 text-xs text-stone-500">
-          <CalendarDays size={13} aria-hidden="true" />
+      <dl className="flex flex-wrap gap-x-1 text-xs leading-relaxed">
+        <dt className="text-stone-600">
           {
             {
               need_date: "Source need date",
@@ -46,8 +45,9 @@ function ProjectRecord({ project }: { project: Project }) {
               unknown: "Source date · meaning unknown",
             }[project.dateMeaning]
           }
+          :
         </dt>
-        <dd className="font-semibold tabular-nums">
+        <dd className="font-medium tabular-nums">
           {formatDate(project.originalDate)}
         </dd>
       </dl>
@@ -59,26 +59,24 @@ function ProjectRecord({ project }: { project: Project }) {
           )}
           target="_blank"
           rel="noreferrer"
-          className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-emerald-800 underline underline-offset-2"
+          className="inline-flex items-center gap-1 text-xs text-emerald-800 underline underline-offset-2"
         >
-          <BookOpen size={14} aria-hidden="true" />
-          Open original source · p. {project.originalSource.page}
+          Original source · p. {project.originalSource.page}
           <ArrowUpRight size={13} aria-hidden="true" />
         </a>
       ) : (
-        <p className="mt-3 break-words text-pretty text-xs text-stone-600">
+        <p className="break-words text-pretty text-xs text-stone-600">
           Imported source: {project.originalSource.title}
         </p>
       )}
-      <p className="mt-3 flex items-center gap-1.5 text-pretty text-xs text-stone-500">
-        <MapPin size={13} aria-hidden="true" />
+      <p className="text-pretty text-xs text-stone-500">
         {center ? "Approximate location" : "Location not supplied"}
       </p>
-      <details className="mt-4 border-t border-stone-100 pt-3">
+      <details className="pt-1">
         <summary className="cursor-pointer text-xs font-medium text-stone-600">
           Source and location details
         </summary>
-        <div className="mt-3 space-y-3 text-xs leading-relaxed text-stone-600">
+        <div className="mt-2 space-y-2 text-xs leading-relaxed text-stone-600">
           <p className="break-words text-pretty font-medium">
             {project.originalSource.title}
           </p>
@@ -152,11 +150,11 @@ function ProjectRecord({ project }: { project: Project }) {
           </ul>
         </div>
       </details>
-      <details className="mt-3 border-t border-stone-100 pt-3">
+      <details className="pt-1">
         <summary className="cursor-pointer text-xs font-medium text-stone-600">
           Research notes
         </summary>
-        <div className="mt-3 space-y-3 text-xs leading-relaxed text-stone-600">
+        <div className="mt-2 space-y-2 text-xs leading-relaxed text-stone-600">
           <p className="text-pretty text-stone-500">
             {project.review.reviewedOn
               ? `Review checked ${formatDate(project.review.reviewedOn)}.`
@@ -242,32 +240,22 @@ export function EvidencePanel({
       ? [project]
       : [];
   return (
-    <section
-      aria-labelledby="evidence-title"
-      className="border-t border-stone-200 bg-stone-50 p-3"
-    >
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2
-            id="evidence-title"
-            className="text-balance text-lg font-semibold"
-          >
-            Timing and evidence
-          </h2>
-          <p className="mt-1 text-pretty text-xs text-stone-500">
-            {records.length
-              ? "Construction timing remains unconfirmed."
-              : "Select a project or comparison to see its dates and source reports."}
-          </p>
-        </div>
-      </div>
+    <section aria-labelledby="evidence-title" className="space-y-2">
+      <h2 id="evidence-title" className="sr-only">
+        Timing and evidence
+      </h2>
+      {!records.length && (
+        <p className="text-xs text-stone-500">
+          Select a project or comparison to see its dates and source reports.
+        </p>
+      )}
       {comparison && (
-        <p className="mb-4 text-pretty text-sm text-stone-600">
+        <p className="text-pretty text-xs text-stone-600">
           {comparison.gapDays === null ? (
             "Exact gap between source dates unknown."
           ) : (
             <>
-              <strong className="font-semibold tabular-nums">
+              <strong className="font-medium tabular-nums">
                 {comparison.gapDays.toLocaleString()} days
               </strong>{" "}
               between the source dates.
@@ -275,7 +263,7 @@ export function EvidencePanel({
           )}
         </p>
       )}
-      <div className="grid gap-3">
+      <div className="divide-y divide-stone-100">
         {records.map((record) => (
           <ProjectRecord key={record.id} project={record} />
         ))}

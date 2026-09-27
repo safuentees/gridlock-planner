@@ -184,9 +184,6 @@ export function DistanceControl({
           </span>
         ))}
       </div>
-      <p className="mt-2 text-xs text-stone-600">
-        Strictly less than the limit · approximate points.
-      </p>
     </section>
   );
 }

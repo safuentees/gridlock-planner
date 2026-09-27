@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Remove the explanatory footer from the distance control for a quieter interface.
+
 - Add a header Upload dataset window with the default ten-project sample, local CSV/Excel selection, compact validation and honest mapped-record counts. Reuse one importer and preserve drafts and replacement checks.
 
 - Make nearby matches visible in a map count overview, default-on circles and per-project partner badges; replace the dashed connection web with one selected, labeled measurement. Simplify Comparisons and refine density rendering.

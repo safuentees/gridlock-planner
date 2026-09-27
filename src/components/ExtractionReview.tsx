@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "@base-ui/react/button";
+import { formatDate } from "./EvidencePanel";
 
 type Field = {
   value: unknown;
@@ -29,11 +30,40 @@ interface Evaluation {
   }[];
 }
 
+function fieldText(value: unknown): string {
+  if (value === null || value === undefined) return "Unknown";
+  if (Array.isArray(value))
+    return value.length ? value.map(fieldText).join("\n") : "None supplied";
+  if (typeof value === "object") {
+    const item = value as Record<string, unknown>;
+    if ("value" in item && typeof item.meaning === "string") {
+      const date =
+        typeof item.value === "string"
+          ? formatDate(item.value)
+          : "Date unknown";
+      const meaning = item.meaning.replaceAll("_", " ");
+      const phase = typeof item.phase === "string" ? item.phase : null;
+      const precision =
+        typeof item.precision === "string" &&
+        item.precision !== "day" &&
+        item.precision !== "year"
+          ? `${item.precision} precision`
+          : null;
+      return [date, meaning, phase, precision].filter(Boolean).join(" · ");
+    }
+    return Object.entries(item)
+      .map(([key, entry]) => `${key.replaceAll("_", " ")}: ${fieldText(entry)}`)
+      .join(" · ");
+  }
+  return String(value);
+}
+
 export function ExtractionReview() {
   const [data, setData] = useState<Evaluation | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
   const [reviewed, setReviewed] = useState<Record<string, boolean>>({});
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
     void fetch("/data/extraction-evaluation.json", {
@@ -43,17 +73,44 @@ export function ExtractionReview() {
         if (!r.ok) throw new Error("Evaluation file unavailable");
         return r.json();
       })
-      .then(setData)
+      .then((next: Evaluation) => {
+        if (!Array.isArray(next.pages) || !next.pages.length)
+          throw new Error("No extraction pages are available.");
+        if (!controller.signal.aborted) setData(next);
+      })
       .catch((e) => {
         if (!controller.signal.aborted) setError(String(e));
       });
     return () => controller.abort();
-  }, []);
-  if (error) return <p role="alert">{error}</p>;
+  }, [attempt]);
+  if (error)
+    return (
+      <section
+        className="rounded-xl border border-stone-200 bg-white p-5"
+        aria-label="Document review unavailable"
+      >
+        <p role="alert" className="text-pretty text-sm text-stone-600">
+          Could not load the document review. {error}
+        </p>
+        <Button
+          onClick={() => {
+            setError(null);
+            setAttempt((value) => value + 1);
+          }}
+          className="mt-3 rounded-lg border border-stone-200 px-3 py-2 text-sm font-medium hover:bg-stone-50"
+        >
+          Try again
+        </Button>
+      </section>
+    );
   if (!data)
-    return <p role="status">Loading the document-extraction evaluation…</p>;
-  const page = data.pages[pageIndex];
-  const totals = data.totals.gemini;
+    return (
+      <p role="status" className="text-pretty text-sm text-stone-500">
+        Loading document review…
+      </p>
+    );
+  const selectedIndex = data.pages[pageIndex] ? pageIndex : 0;
+  const page = data.pages[selectedIndex];
   const exportReview = () => {
     const blob = new Blob(
       [
@@ -85,69 +142,27 @@ export function ExtractionReview() {
       aria-labelledby="extraction-title"
       className="rounded-xl border border-stone-200 bg-white p-5"
     >
-      <div className="flex flex-wrap justify-between gap-3">
-        <div>
-          <h2 id="extraction-title" className="text-lg font-semibold">
-            Document extraction · evaluated experiment
-          </h2>
-          <p className="mt-1 text-xs text-stone-500">
-            {data.model} · offline job · source review required
-          </p>
-        </div>
-        <a
-          href="/data/extraction-evaluation.json"
-          download
-          className="text-xs font-medium text-emerald-800 underline"
-        >
-          Download evaluation
-        </a>
-      </div>
-      <div className="my-4 grid grid-cols-2 gap-4 border-y border-stone-100 py-4 md:grid-cols-4">
-        {[
-          [
-            `${totals.correct_fields}/${totals.fields_scored}`,
-            "Fields matched",
-          ],
-          [
-            `${totals.nonmissing_correct}/${totals.nonmissing_fields}`,
-            "Nonmissing fields matched",
-          ],
-          [totals.invented_values, "Unsupported fills observed"],
-          [
-            `${data.latency.median_seconds.toFixed(1)}s`,
-            "Median request latency",
-          ],
-        ].map(([value, label]) => (
-          <div key={label}>
-            <p className="text-2xl font-semibold tabular-nums">{value}</p>
-            <p className="mt-1 text-xs text-stone-500">{label}</p>
-          </div>
-        ))}
-      </div>
-      <p className="text-sm text-stone-600">
-        The task is to extract eight planning fields for the first project on a
-        public PDF page. Six known-layout pages matched the deterministic parser
-        (48/48); four unfamiliar-layout pages yielded 32/32 matched fields where
-        that parser abstains. No custom model was trained.
+      <h2 id="extraction-title" className="text-balance text-lg font-semibold">
+        Review extracted details
+      </h2>
+      <p className="mt-1 text-pretty text-sm text-stone-600">
+        Gemini document-extraction experiment. Verify each field against its
+        source; this does not forecast construction.
       </p>
-      <p className="mt-3 text-xs leading-relaxed text-stone-500">
-        Ten deliberately selected pages, one model run each. Gold was visually
-        checked by Codex, not independently double-annotated by people. The four
-        unfamiliar pages share one report; projects can recur across layouts.
-        These results do not establish general accuracy, forecasting skill or
-        human time saved. All 80 fields still need source review.
+      <p className="mt-2 text-pretty text-xs text-stone-500">
+        Selected-page checks used Codex without independent human double review.
+        Every extracted field still needs source review.
       </p>
       <label className="mt-5 block text-sm font-medium">
-        Inspect an extraction
+        Source page
         <select
-          value={pageIndex}
+          value={selectedIndex}
           onChange={(e) => setPageIndex(Number(e.target.value))}
           className="mt-2 w-full rounded-lg border border-stone-200 bg-white p-2 text-sm"
         >
           {data.pages.map((p, i) => (
             <option key={p.case_id} value={i}>
-              {p.source.title} · p. {p.source.pdf_page} ·{" "}
-              {p.split.replaceAll("_", " ")}
+              {p.source.title} · p. {p.source.pdf_page}
             </option>
           ))}
         </select>
@@ -160,16 +175,32 @@ export function ExtractionReview() {
       >
         Open source page {page.source.pdf_page}
       </a>
-      <p className="mt-2 break-all text-xs text-stone-500">
-        Document SHA-256: {page.source.sha256}
-      </p>
+      <details className="mt-3 text-xs text-stone-500">
+        <summary className="cursor-pointer font-medium">Source details</summary>
+        <div className="mt-2 space-y-2">
+          <p className="break-words text-pretty">
+            {data.model} · {page.split.replaceAll("_", " ")} ·{" "}
+            {page.review_status.replaceAll("_", " ")}
+          </p>
+          <p className="break-all text-pretty">
+            Document SHA-256: {page.source.sha256}
+          </p>
+          <a
+            href="/data/extraction-evaluation.json"
+            download
+            className="inline-block font-medium text-emerald-800 underline"
+          >
+            Download evaluation
+          </a>
+        </div>
+      </details>
       <div className="mt-4 divide-y divide-stone-100">
         {Object.entries(page.fields).map(([name, field]) => {
           const id = `${page.case_id}:${name}`;
           return (
             <article key={id} className="py-3">
-              <div className="flex items-start justify-between gap-4">
-                <h3 className="text-sm font-medium">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <h3 className="text-balance text-sm font-medium">
                   {name.replaceAll("_", " ")}
                 </h3>
                 <label className="flex shrink-0 items-center gap-2 text-xs">
@@ -184,19 +215,15 @@ export function ExtractionReview() {
                   Checked against page
                 </label>
               </div>
-              <p className="mt-1 whitespace-pre-wrap break-words text-sm text-stone-600">
-                {field.value === null
-                  ? "Unknown"
-                  : typeof field.value === "string"
-                    ? field.value
-                    : JSON.stringify(field.value, null, 2)}
+              <p className="mt-1 whitespace-pre-wrap break-words text-pretty text-sm tabular-nums text-stone-600">
+                {fieldText(field.value)}
               </p>
               {field.evidence_quote ? (
-                <blockquote className="mt-2 border-l-2 border-emerald-200 pl-3 text-xs text-stone-500">
+                <blockquote className="mt-2 border-l-2 border-emerald-200 pl-3 text-pretty text-xs text-stone-500">
                   {field.evidence_quote}
                 </blockquote>
               ) : (
-                <p className="mt-2 text-xs text-stone-500">
+                <p className="mt-2 text-pretty text-xs text-stone-500">
                   {field.missing_reason}
                 </p>
               )}
@@ -205,10 +232,9 @@ export function ExtractionReview() {
         })}
       </div>
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="max-w-2xl text-xs text-stone-500">
-          Review acknowledgments are separate from extracted values. They do not
-          supply coordinates, construction outcomes or approval to map/train.
-          Reloading clears these session-only acknowledgments.
+        <p className="max-w-2xl text-pretty text-xs text-stone-500">
+          Checks last for this session and do not approve mapping or model
+          training. Export them before reloading.
         </p>
         <Button
           onClick={exportReview}

@@ -180,16 +180,6 @@ export function DistanceControl({
           </Slider.Track>
         </Slider.Control>
       </Slider.Root>
-      <div
-        aria-hidden="true"
-        className="-mt-1 flex justify-between text-xs tabular-nums text-stone-500"
-      >
-        {[0, Math.floor(Math.ceil(max) / 2), max].map((n) => (
-          <span key={n} className="border-t border-stone-300 pt-1">
-            {n.toLocaleString("en-US", { maximumFractionDigits: 3 })}
-          </span>
-        ))}
-      </div>
     </section>
   );
 }

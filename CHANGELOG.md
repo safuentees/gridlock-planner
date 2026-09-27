@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Remove the distance slider’s bottom numeric labels and tick lines; keep the expanded card free of a section divider.
+
 - Animate only the nearby card surface so text never inherits layout scaling; unify its white background and dark summary text, removing the split hover fill and divider.
 - Make selected comparison rows clearer with a stronger green fill, persistent hover color and a dark selection edge without shifting their contents.
 

@@ -6,5 +6,5 @@
     "allowImportingTsExtensions": true, "resolveJsonModule": true,
     "verbatimModuleSyntax": true, "types": ["vite/client"]
   },
-  "include": ["src", "tests", "vite.config.ts"]
+  "include": ["src", "server", "api", "tests", "vite.config.ts"]
 }

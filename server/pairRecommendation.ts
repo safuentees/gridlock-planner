@@ -148,16 +148,17 @@ export async function recommendPair(
   return answer;
 }
 
-/** Local Vite dev/preview endpoint, not a publicly exposed unauthenticated API. */
+/** Local by default; the Vercel adapter explicitly supplies trusted HTTPS origins. */
 export function createRecommendationMiddleware(config: {
   apiKey: string;
   model: string;
+  allowedOrigins?: readonly string[];
 }) {
   let active = 0;
   let windowStart = 0;
   let requests = 0;
   return async (
-    req: IncomingMessage,
+    req: IncomingMessage & { body?: unknown },
     res: ServerResponse,
     next: () => void,
   ) => {
@@ -167,6 +168,7 @@ export function createRecommendationMiddleware(config: {
       res.writeHead(status, {
         "Content-Type": "application/json",
         "Cache-Control": "no-store",
+        ...(status === 429 ? { "Retry-After": "60" } : {}),
       });
       res.end(JSON.stringify(payload));
     };
@@ -176,25 +178,44 @@ export function createRecommendationMiddleware(config: {
       if (!res.writableEnded) abort.abort();
     };
     try {
-      const host = new URL(`http://${req.headers.host}`).hostname;
-      if (
-        !["localhost", "127.0.0.1", "[::1]"].includes(host) ||
-        !["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(
-          req.socket.remoteAddress ?? "",
-        )
-      )
-        throw new RequestError(
-          403,
-          "AI suggestions are available only on the local app.",
-        );
       const origin = req.headers.origin;
-      if (
-        origin &&
-        ![`http://${req.headers.host}`, `https://${req.headers.host}`].includes(
-          origin,
+      if (config.allowedOrigins) {
+        // Origin checks prevent browser cross-site use; they are not authentication.
+        // Public production traffic is also limited by a Vercel WAF rule.
+        if (
+          !origin ||
+          !config.allowedOrigins.includes(origin) ||
+          origin !== `https://${req.headers.host}` ||
+          req.headers["sec-fetch-site"] === "cross-site"
         )
-      )
-        throw new RequestError(403, "Open this request from the GridLock app.");
+          throw new RequestError(
+            403,
+            "Open this request from the GridLock app.",
+          );
+      } else {
+        const host = new URL(`http://${req.headers.host}`).hostname;
+        if (
+          !["localhost", "127.0.0.1", "[::1]"].includes(host) ||
+          !["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(
+            req.socket.remoteAddress ?? "",
+          )
+        )
+          throw new RequestError(
+            403,
+            "AI suggestions are available only on the local app.",
+          );
+        if (
+          origin &&
+          ![
+            `http://${req.headers.host}`,
+            `https://${req.headers.host}`,
+          ].includes(origin)
+        )
+          throw new RequestError(
+            403,
+            "Open this request from the GridLock app.",
+          );
+      }
       if (req.method !== "POST")
         throw new RequestError(405, "Use the pair's suggestion button.");
       if (!req.headers["content-type"]?.startsWith("application/json"))
@@ -202,7 +223,9 @@ export function createRecommendationMiddleware(config: {
       if (!config.apiKey.trim())
         throw new RequestError(
           503,
-          "Add OPENAI_API_KEY to .env.local and restart the app server.",
+          config.allowedOrigins
+            ? "AI suggestions are not configured on this deployment."
+            : "Add OPENAI_API_KEY to .env.local and restart the app server.",
         );
       if (Date.now() - windowStart >= 60000) {
         windowStart = Date.now();
@@ -217,22 +240,40 @@ export function createRecommendationMiddleware(config: {
       active++;
       counted = true;
       res.on("close", onClose);
-      const chunks: Buffer[] = [];
-      let bytes = 0;
-      for await (const chunk of req.iterator({ destroyOnReturn: false })) {
-        bytes += Buffer.byteLength(chunk);
-        if (bytes > 20000) {
-          req.resume();
-          throw new RequestError(
-            413,
-            "This pair's evidence exceeds the request limit.",
-          );
+      if (Number(req.headers["content-length"]) > 20000)
+        throw new RequestError(
+          413,
+          "This pair's evidence exceeds the request limit.",
+        );
+      let raw: string;
+      if (req.body !== undefined) {
+        // Vercel may already have parsed the body; do not try to reread its stream.
+        raw =
+          typeof req.body === "string" ? req.body : JSON.stringify(req.body);
+      } else {
+        const chunks: Buffer[] = [];
+        let bytes = 0;
+        for await (const chunk of req.iterator({ destroyOnReturn: false })) {
+          bytes += Buffer.byteLength(chunk);
+          if (bytes > 20000) {
+            req.resume();
+            throw new RequestError(
+              413,
+              "This pair's evidence exceeds the request limit.",
+            );
+          }
+          chunks.push(Buffer.from(chunk));
         }
-        chunks.push(Buffer.from(chunk));
+        raw = Buffer.concat(chunks).toString("utf8");
       }
+      if (Buffer.byteLength(raw) > 20000)
+        throw new RequestError(
+          413,
+          "This pair's evidence exceeds the request limit.",
+        );
       let parsed: unknown;
       try {
-        parsed = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+        parsed = JSON.parse(raw);
       } catch {
         throw new RequestError(400, "Invalid pair details.");
       }

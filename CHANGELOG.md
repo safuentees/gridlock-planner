@@ -4,6 +4,10 @@
 
 - Start with an empty map and simplify Upload dataset to a file picker plus the downloadable ten-project sample. Automatically validate and load explicit-template files, retain manual mapping for other schemas and protect existing workspaces from unintended replacement.
 
+- Clarify comparison descriptions with paired distance/timing facts, readable source dates and compact source/research disclosures. Remove repeated timing summaries while retaining original records, corrections and uncertainty.
+
+- Keep distance controls hidden until the expanding card surface fits them, and contain horizontal panel overflow.
+
 - Replace the text Comparisons toggle with a compact panel icon, an accessible name, show/hide tooltip and visible open state.
 
 - Remove the distance slider’s bottom numeric labels and tick lines; keep the expanded card free of a section divider.

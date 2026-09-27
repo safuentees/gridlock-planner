@@ -55,6 +55,7 @@ export function NearbyDistanceCard({
           className="flex w-full items-center justify-center rounded-xl p-4 text-left focus-visible:outline-offset-[-3px]"
         >
           <span
+            className="min-w-0 max-w-full break-words"
             aria-busy={busy}
             role="status"
             aria-live="polite"
@@ -65,12 +66,16 @@ export function NearbyDistanceCard({
         </Collapsible.Trigger>
         <Collapsible.Panel
           keepMounted
-          className="nearby-distance-panel overflow-y-auto overscroll-contain"
+          className="nearby-distance-panel overflow-x-hidden overflow-y-auto overscroll-contain"
         >
           <motion.div
             initial={false}
             animate={{ opacity: open ? 1 : 0 }}
-            transition={transition}
+            // The surface grows independently; reveal controls only once it fits.
+            transition={{
+              duration: 0,
+              delay: open && !reduceMotion ? transition.duration : 0,
+            }}
             className="p-4"
           >
             <DistanceControl

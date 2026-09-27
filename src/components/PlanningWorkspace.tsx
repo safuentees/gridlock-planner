@@ -390,7 +390,7 @@ export function PlanningWorkspace({
   const selectedEvidence = selectedRecords.length > 0 && (
     <section
       aria-label="Selected timing and evidence"
-      className="space-y-2 px-4 pb-3 text-xs leading-relaxed text-stone-600"
+      className="space-y-4 px-4 pb-4 pt-1 text-pretty text-sm leading-relaxed text-stone-600"
     >
       <div className="space-y-2">
         <h2 className="sr-only">
@@ -398,25 +398,43 @@ export function PlanningWorkspace({
         </h2>
         {selected && (
           <>
-            <p className="tabular-nums">
-              Approximate separation:{" "}
-              {selected.distanceMiles === null
-                ? "unknown"
-                : `${distanceLabel(selected.distanceMiles, unit)} ${unit}`}
-              .{" "}
-              {selected.distanceMiles !== null &&
-              selected.distanceMiles < displayedThreshold
-                ? "Qualifies under"
-                : "Does not qualify under"}{" "}
-              the strict {distanceLabel(displayedThreshold, unit)} {unit}{" "}
-              distance limit.
-            </p>
-            <p className="text-xs text-stone-600">
-              {selected.gapDays === null
-                ? "An exact milestone gap requires two exact-day dates."
-                : `${selected.gapDays.toLocaleString()} days between ${mode === "what_if" ? "assumed" : "effective"} milestones.`}{" "}
-              Nearby points and planned dates do not establish simultaneous
-              construction, shared routes or savings.
+            <dl className="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <dt>Approximate separation</dt>
+                <dd className="mt-1 text-sm font-medium tabular-nums text-stone-900">
+                  {selected.distanceMiles === null
+                    ? "Location unknown"
+                    : `${milesToUnit(selected.distanceMiles, unit).toFixed(2)} ${unit}`}
+                </dd>
+                <dd className="mt-1 text-pretty tabular-nums">
+                  {selected.distanceMiles === null
+                    ? "Distance eligibility cannot be established."
+                    : `${selected.distanceMiles < displayedThreshold ? "Within" : "Outside"} the limit of less than ${distanceLabel(displayedThreshold, unit)} ${unit}.`}
+                </dd>
+              </div>
+              <div>
+                <dt>
+                  {mode === "what_if"
+                    ? "Assumed milestone gap"
+                    : selectedRecords.some((p) => changedRecordIds.has(p.id))
+                      ? "Current milestone gap"
+                      : "Source milestone gap"}
+                </dt>
+                <dd className="mt-1 text-sm font-medium tabular-nums text-stone-900">
+                  {selected.gapDays === null
+                    ? "Unknown"
+                    : `${selected.gapDays.toLocaleString()} days`}
+                </dd>
+                <dd className="mt-1 text-pretty">
+                  {selected.gapDays === null
+                    ? "Requires two exact-day dates."
+                    : "Between planning dates, not construction periods."}
+                </dd>
+              </div>
+            </dl>
+            <p className="text-pretty text-xs text-stone-600">
+              Proximity is a reason to investigate coordination. It does not
+              confirm simultaneous construction, shared routes or savings.
             </p>
             {results && !results.complete && (
               <p className="text-xs text-stone-600">

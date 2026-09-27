@@ -52,9 +52,12 @@ function markerIcon(
   spriteId: string,
   selected: boolean,
   matchCount: number,
+  accessibleLabel: string,
 ) {
-  const pin = document.createElement("span");
+  const pin = document.createElement("button");
+  pin.type = "button";
   pin.className = "utility-map-pin";
+  pin.setAttribute("aria-label", accessibleLabel);
   pin.dataset.utility = utilityKind(company);
   pin.dataset.selected = String(selected);
   pin.dataset.matched = String(matchCount > 0);
@@ -256,7 +259,7 @@ export function ProjectMap({
             "data-matched",
             String(overlay.matchedProjectIds.has(p.id)),
           );
-        // The matching marker provides the same action through Leaflet's keyboard control.
+        // The marker's native button provides the same keyboard action.
         circle.getElement()?.setAttribute("aria-hidden", "true");
       }
     }
@@ -317,8 +320,10 @@ export function ProjectMap({
           spriteId,
           active,
           overlay.matchCounts.get(p.id) ?? 0,
+          `${p.shortName}, ${utilityLabel(p.company)}, ${matchSummary(p.id)}, select project`,
         ),
-        keyboard: true,
+        // The native button supplies Enter/Space activation and the only tab stop.
+        keyboard: false,
         title: `${p.shortName}, ${utilityLabel(p.company)}, ${matchSummary(p.id)}, approximate location`,
         zIndexOffset: active ? 1000 : 0,
       });
@@ -336,12 +341,6 @@ export function ProjectMap({
         ?.setAttribute(
           "data-match-count",
           String(overlay.matchCounts.get(p.id) ?? 0),
-        );
-      marker
-        .getElement()
-        ?.setAttribute(
-          "aria-label",
-          `${p.shortName}, ${utilityLabel(p.company)}, ${matchSummary(p.id)}, select project`,
         );
     }
     return () => {

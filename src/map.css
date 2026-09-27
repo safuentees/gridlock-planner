@@ -67,7 +67,9 @@
   justify-content: center;
   width: 28px;
   height: 28px;
+  padding: 0;
   border: 2px solid white;
+  cursor: pointer;
   border-radius: 50%;
   color: white;
   background: #475569;
@@ -130,7 +132,7 @@
   font-variant-numeric: tabular-nums;
   box-shadow: 0 1px 3px #0002;
 }
-.gridlock-map .gridlock-marker:focus-visible {
+.gridlock-map .utility-map-pin:focus-visible {
   outline: 3px solid var(--map-selected);
   outline-offset: 6px;
   border-radius: 50%;

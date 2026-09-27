@@ -1,0 +1,127 @@
+.gridlock-map {
+  --map-background: #f5f5f4;
+  --map-label: #1c1917;
+  --map-panel: #fff;
+  --map-border: #d6d3d1;
+  --map-muted: #57534e;
+  --map-match: #047857;
+  --map-selected: #1c1917;
+  --map-dominion: #1d4ed8;
+  --map-georgia: #c2410c;
+  --map-other: #475569;
+  background: var(--map-background);
+}
+
+.gridlock-map[data-appearance="dark"] {
+  --map-background: #1c1917;
+  --map-label: #fafaf9;
+  --map-panel: #292524;
+  --map-border: #78716c;
+  --map-muted: #e7e5e4;
+  --map-match: #6ee7b7;
+  --map-selected: #fafaf9;
+  --map-dominion: #93c5fd;
+  --map-georgia: #fdba74;
+  --map-other: #cbd5e1;
+}
+
+.gridlock-map .leaflet-container {
+  background: var(--map-background);
+}
+.gridlock-map .leaflet-tile-pane {
+  filter: grayscale(1);
+}
+.gridlock-map[data-appearance="dark"] .leaflet-tile-pane {
+  filter: grayscale(1) invert(1) brightness(0.85);
+}
+
+.gridlock-map .leaflet-tooltip,
+.gridlock-map .leaflet-control-attribution {
+  color: var(--map-label);
+  background: var(--map-panel);
+  border-color: var(--map-border);
+}
+.gridlock-map .leaflet-tooltip-top::before {
+  border-top-color: var(--map-border);
+}
+.gridlock-map .leaflet-control-attribution a {
+  color: var(--map-dominion);
+}
+.gridlock-map .leaflet-control-zoom {
+  border-color: var(--map-border) !important;
+}
+.gridlock-map .leaflet-control-zoom a {
+  color: var(--map-label) !important;
+  background: var(--map-panel);
+  border-color: var(--map-border);
+}
+.gridlock-map .leaflet-control-zoom a.leaflet-disabled {
+  color: var(--map-muted) !important;
+  opacity: 0.6;
+}
+
+.gridlock-map .utility-map-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid white;
+  border-radius: 50%;
+  color: white;
+  background: #475569;
+  box-shadow: 0 1px 3px #0004;
+}
+.gridlock-map .utility-map-pin[data-utility="dominion"] {
+  background: #1d4ed8;
+}
+.gridlock-map .utility-map-pin[data-utility="georgia"] {
+  background: #c2410c;
+  border-radius: 6px;
+}
+.gridlock-map .utility-map-pin svg {
+  width: 18px;
+  height: 18px;
+}
+.gridlock-map .utility-map-pin[data-matched="true"] {
+  box-shadow: 0 0 0 2px var(--map-match);
+}
+.gridlock-map .utility-map-pin[data-selected="true"] {
+  outline: 3px solid var(--map-selected);
+  outline-offset: 2px;
+}
+.gridlock-map .proximity-circle {
+  stroke: var(--map-other);
+}
+.gridlock-map .proximity-circle.utility-dominion {
+  stroke: var(--map-dominion);
+}
+.gridlock-map .proximity-circle.utility-georgia {
+  stroke: var(--map-georgia);
+}
+.gridlock-map .map-connection {
+  stroke: var(--map-match);
+}
+.gridlock-map .map-connection.is-selected {
+  stroke: var(--map-selected);
+}
+.gridlock-map .map-connection-hit {
+  stroke: transparent;
+}
+.gridlock-map .map-notice {
+  color: var(--map-label);
+  background: var(--map-panel);
+  border-color: var(--map-border);
+}
+.gridlock-map .map-notice-secondary {
+  color: var(--map-muted);
+}
+
+/* Leaflet.heat 0.2 shares the overlay pane with SVG paths. Keep it behind the
+   selectable outlines/connectors even when heat mode is toggled later. */
+.gridlock-map .leaflet-heatmap-layer {
+  pointer-events: none;
+}
+.gridlock-map .leaflet-overlay-pane > svg {
+  z-index: 10;
+}

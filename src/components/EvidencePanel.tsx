@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Accordion } from "@base-ui/react/accordion";
 import { Collapsible } from "@base-ui/react/collapsible";
 import { ArrowUpRight, ChevronDown } from "lucide-react";
 import { utilityShortLabel } from "./UtilityIcon";
@@ -61,9 +62,9 @@ function ProjectRecord({ project }: { project: Project }) {
         {utilityShortLabel(project.company)}
         {project.state ? ` · ${project.state}` : ""}
       </p>
-      <h3 className="text-balance break-words text-sm font-medium leading-snug text-stone-900">
+      <h5 className="text-balance break-words text-sm font-medium leading-snug text-stone-900">
         {project.shortName}
-      </h3>
+      </h5>
       <dl className="space-y-0.5 text-xs leading-relaxed">
         <dt className="text-stone-600">
           {
@@ -264,20 +265,32 @@ export function EvidencePanel({
       ? [project]
       : [];
   return (
-    <section aria-label="Source records">
-      <h2 className="text-balance text-xs font-medium text-stone-800">
-        Source records
-      </h2>
-      {!records.length && (
-        <p className="text-xs text-stone-500">
-          Select a project or comparison to see its dates and source reports.
-        </p>
-      )}
-      <div className="divide-y divide-stone-100">
-        {records.map((record) => (
-          <ProjectRecord key={record.id} project={record} />
-        ))}
-      </div>
-    </section>
+    <Accordion.Root render={<section aria-label="Source records" />}>
+      <Accordion.Item value="source-records">
+        <Accordion.Header render={<h4 />}>
+          <Accordion.Trigger className="group flex w-full items-center justify-between gap-2 rounded-md py-2 text-left text-xs font-medium text-stone-800 hover:text-stone-950">
+            Source records
+            <ChevronDown
+              size={14}
+              aria-hidden="true"
+              className="shrink-0 group-data-[panel-open]:rotate-180"
+            />
+          </Accordion.Trigger>
+        </Accordion.Header>
+        <Accordion.Panel keepMounted className="data-[closed]:hidden">
+          {!records.length && (
+            <p className="text-xs text-stone-500">
+              Select a project or comparison to see its dates and source
+              reports.
+            </p>
+          )}
+          <div className="divide-y divide-stone-100">
+            {records.map((record) => (
+              <ProjectRecord key={record.id} project={record} />
+            ))}
+          </div>
+        </Accordion.Panel>
+      </Accordion.Item>
+    </Accordion.Root>
   );
 }

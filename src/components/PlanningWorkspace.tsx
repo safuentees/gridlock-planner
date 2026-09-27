@@ -8,7 +8,7 @@ import {
   ArrowDownToLine,
   ChevronDown,
   HelpCircle,
-  Menu,
+  PanelRight,
   Focus,
   Expand,
   Settings2,
@@ -977,14 +977,16 @@ export function PlanningWorkspace({
           >
             <Dialog.Trigger
               ref={comparisonTrigger}
+              aria-label="Comparisons"
+              title={panelOpen ? "Hide comparisons" : "Show comparisons"}
               className={cn(
-                control,
-                "shadow-sm",
-                panelOpen && "border-emerald-700",
+                "inline-flex size-10 shrink-0 items-center justify-center rounded-lg border shadow-sm",
+                panelOpen
+                  ? "border-emerald-700 bg-emerald-50 text-emerald-900 hover:bg-emerald-100"
+                  : "border-stone-200 bg-white text-stone-700 hover:bg-stone-50",
               )}
             >
-              <Menu size={17} />
-              Comparisons
+              <PanelRight size={18} aria-hidden="true" />
             </Dialog.Trigger>
             <Dialog.Portal container={workspace} keepMounted>
               {narrow && (

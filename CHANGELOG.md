@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Clarify comparison descriptions with paired distance/timing facts, readable source dates and compact source/research disclosures. Remove repeated timing summaries while retaining original records, corrections and uncertainty.
+
 - Keep distance controls hidden until the expanding card surface fits them, and contain horizontal panel overflow.
 
 - Replace the text Comparisons toggle with a compact panel icon, an accessible name, show/hide tooltip and visible open state.

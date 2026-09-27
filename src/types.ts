@@ -67,7 +67,7 @@ export interface Scenario {
 export interface RuntimeDataset {
   id: string;
   name: string;
-  kind: "demo" | "upload";
+  kind: "empty" | "demo" | "upload";
   sourceHash: string;
   featureHash: string;
   geometryVersion: string;

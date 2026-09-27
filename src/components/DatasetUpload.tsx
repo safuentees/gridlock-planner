@@ -2,7 +2,7 @@ import { lazy, Suspense, useState, type RefObject } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { AlertDialog } from "@base-ui/react/alert-dialog";
 import { Button } from "@base-ui/react/button";
-import { Upload, X } from "lucide-react";
+import { Download, Upload, X } from "lucide-react";
 import type { RuntimeDataset } from "../types";
 
 const ImportWizard = lazy(() =>
@@ -16,27 +16,23 @@ export function DatasetUpload({
   source,
   hasCorrections,
   onAccept,
-  onRestore,
   triggerRef,
 }: {
   source: RuntimeDataset;
   hasCorrections: boolean;
   onAccept: (dataset: RuntimeDataset) => void;
-  onRestore: () => void;
   triggerRef: RefObject<HTMLButtonElement | null>;
 }) {
   const [open, setOpen] = useState(false);
   const [visited, setVisited] = useState(false);
-  const [pending, setPending] = useState<RuntimeDataset | "demo" | null>(null);
-  const sampleActive = source.kind === "demo" && !hasCorrections;
-  const replace = (next: RuntimeDataset | "demo") => {
+  const [pending, setPending] = useState<RuntimeDataset | null>(null);
+  const replace = (next: RuntimeDataset) => {
     setPending(null);
     setOpen(false);
-    if (next === "demo") onRestore();
-    else onAccept(next);
+    onAccept(next);
   };
-  const choose = (next: RuntimeDataset | "demo") => {
-    if (source.kind === "upload" || hasCorrections) setPending(next);
+  const choose = (next: RuntimeDataset) => {
+    if (source.projects.length > 0 || hasCorrections) setPending(next);
     else replace(next);
   };
   return (
@@ -65,7 +61,7 @@ export function DatasetUpload({
                 Upload dataset
               </Dialog.Title>
               <Dialog.Description className="mt-1 text-pretty text-sm text-stone-600">
-                Use the sample or choose a file from your computer.
+                Choose a CSV or Excel file to populate the map.
               </Dialog.Description>
             </div>
             <Dialog.Close
@@ -76,30 +72,6 @@ export function DatasetUpload({
             </Dialog.Close>
           </div>
           <div className="min-h-0 space-y-4 overflow-y-auto p-4">
-            <section
-              aria-label="Supplied sample"
-              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-stone-200 bg-stone-50 p-3"
-            >
-              <div>
-                <h2 className="text-sm font-semibold">10-project sample</h2>
-                <p className="mt-1 text-xs text-stone-600">
-                  Default historical dataset. Dominion and Georgia Power.
-                </p>
-              </div>
-              <Button
-                className={button}
-                disabled={sampleActive}
-                onClick={() => choose("demo")}
-              >
-                {sampleActive ? "Sample in use" : "Use sample"}
-              </Button>
-            </section>
-            {source.kind === "upload" && (
-              <p className="break-words text-xs text-stone-600">
-                On the map: {source.name} (
-                {source.projects.length.toLocaleString()} records).
-              </p>
-            )}
             {visited && (
               <Suspense
                 fallback={
@@ -108,12 +80,25 @@ export function DatasetUpload({
                   </p>
                 }
               >
-                <ImportWizard compact onAccept={choose} />
+                <ImportWizard
+                  compact
+                  autoImport
+                  active={open}
+                  onAccept={choose}
+                />
               </Suspense>
             )}
+            <a
+              href="/templates/GridLock-10-project-sample.csv"
+              download
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm font-medium hover:bg-stone-50"
+            >
+              <Download size={16} aria-hidden="true" />
+              Download 10-project sample
+            </a>
             <p className="text-xs text-stone-500">
-              Files stay in this browser session. Only records with coordinates
-              can appear on the map.
+              Historical sample · Dominion and Georgia Power. Files stay in this
+              browser session.
             </p>
           </div>
           <AlertDialog.Root

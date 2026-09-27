@@ -1220,7 +1220,9 @@ export function PlanningWorkspace({
                           : displayedThreshold === 0
                             ? "Zero distance excludes every pair under the strict rule."
                             : availableCompanies.length < 2
-                              ? "This dataset needs at least two utilities."
+                              ? source.kind === "empty"
+                                ? "Upload a dataset to find nearby projects."
+                                : "This dataset needs at least two utilities."
                               : reference && !eligibleIds.has(reference.id)
                                 ? "The reference must pass all filters to participate."
                                 : "No pairs match these filters."}
@@ -1242,7 +1244,7 @@ export function PlanningWorkspace({
                         {invalidAssumptions
                           ? "Reset assumptions"
                           : availableCompanies.length < 2
-                            ? "Open data tools"
+                            ? "Upload dataset"
                             : "Reset filters"}
                       </Button>
                     </div>

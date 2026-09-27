@@ -137,6 +137,37 @@ export function suggestMapping(headers: Cell[]): ImportMapping {
   }
   return result;
 }
+/** Only the explicit template schema is safe to interpret without a mapping step. */
+export function canAutoImport(headers: Cell[], sheetCount: number): boolean {
+  const expected = [
+    "project_id",
+    "utility",
+    "project_name",
+    "state",
+    "endpoint_a_name",
+    "endpoint_a_latitude",
+    "endpoint_a_longitude",
+    "endpoint_b_name",
+    "endpoint_b_latitude",
+    "endpoint_b_longitude",
+    "milestone_date",
+    "date_precision",
+    "date_meaning",
+  ];
+  const names = headers.map((header) =>
+    String(header ?? "")
+      .trim()
+      .toLowerCase(),
+  );
+  return (
+    sheetCount === 1 &&
+    names.length === expected.length &&
+    expected.every(
+      (name) => names.filter((value) => value === name).length === 1,
+    )
+  );
+}
+
 /** Gate all async results, including File.arrayBuffer(), not just worker messages. */
 export class RequestGate {
   private version = 0;

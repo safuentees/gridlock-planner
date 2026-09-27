@@ -10,6 +10,7 @@ import {
   IMPORT_LIMITS,
   RequestGate,
   suggestMapping,
+  canAutoImport,
 } from "../lib/imports";
 import type {
   Cell,
@@ -32,13 +33,21 @@ export interface ImportWizardProps {
   onAccept: (dataset: RuntimeDataset) => void;
   onCancel?: () => void;
   compact?: boolean;
+  autoImport?: boolean;
+  active?: boolean;
 }
 export function ImportWizard({
   onAccept,
   onCancel,
   compact = false,
+  autoImport = false,
+  active = true,
 }: ImportWizardProps) {
   const headingId = useId();
+  const acceptance = useRef({ onAccept, active });
+  useEffect(() => {
+    acceptance.current = { onAccept, active };
+  }, [onAccept, active]);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const worker = useRef<Worker | null>(null);
   const gate = useRef(new RequestGate());
@@ -81,6 +90,13 @@ export function ImportWizard({
     setResult(null);
     setError("");
     setFileName(file.name);
+    const fileOptions: ImportOptions = {
+      coordinateOrder: "lat_lon",
+      dateFormat: "ISO",
+      datePrecision: "unknown",
+      dateMeaning: "unknown",
+    };
+    setOptions(fileOptions);
     if (file.size > IMPORT_LIMITS.fileBytes) {
       setBusy(false);
       setError("File exceeds the 10 MiB limit.");
@@ -108,15 +124,35 @@ export function ImportWizard({
           setHeaderRow(1);
           const suggested = suggestMapping(data.sheets[0].preview[0] ?? []);
           setMapping(suggested);
+          const automatic =
+            autoImport &&
+            canAutoImport(data.sheets[0].preview[0] ?? [], data.sheets.length);
           setSettingsOpen(
-            data.sheets.length > 1 ||
-              ["id", "utility", "name"].some(
-                (field) => suggested[field as ImportField] === undefined,
-              ),
+            !automatic &&
+              (data.sheets.length > 1 ||
+                ["id", "utility", "name"].some(
+                  (field) => suggested[field as ImportField] === undefined,
+                )),
           );
+          if (automatic) {
+            const validationId = gate.current.next();
+            setBusy(true);
+            post({
+              type: "validate",
+              requestId: validationId,
+              sheetName: data.sheets[0].name,
+              headerRow: 1,
+              mapping: suggested,
+              options: fileOptions,
+            });
+          }
         } else {
           setResult(data.result);
           if (data.result.errorCount) setSettingsOpen(true);
+          if (autoImport && data.result.dataset && acceptance.current.active) {
+            gate.current.cancel();
+            acceptance.current.onAccept(data.result.dataset);
+          }
         }
       };
       instance.onerror = () => {
@@ -190,32 +226,27 @@ export function ImportWizard({
           </Button>
         </div>
       )}
-      <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-stone-600">
-        <p>
-          {compact
-            ? "CSV or Excel, up to 10 MiB."
-            : "UTF-8 CSV or values-only XLSX · 10 MiB · up to 25,000 data rows · 100 columns"}
-        </p>
-        <a
-          href="/templates/GridLock-projects.csv"
-          download
-          className="font-medium text-emerald-800 underline"
-        >
-          Download CSV template
-        </a>
-      </div>
-      {compact && (
-        <p className="mt-2 text-pretty text-xs text-stone-600">
-          Put both companies in one sheet, with a utility column for each
-          project. Include latitude and longitude to place records on the map.
-        </p>
+      {!compact && (
+        <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-stone-600">
+          <p>UTF-8 CSV or values-only XLSX · 10 MiB · up to 25,000 data rows</p>
+          <a
+            href="/templates/GridLock-projects.csv"
+            download
+            className="font-medium text-emerald-800 underline"
+          >
+            Download CSV template
+          </a>
+        </div>
       )}
-      <label className="mt-4 block text-sm font-medium">
-        Project file
+      <label className={cn("block text-sm font-medium", !compact && "mt-4")}>
+        Choose file
         <input
           type="file"
           accept=".csv,.xlsx"
-          className={control}
+          className={cn(
+            control,
+            "file:mr-3 file:rounded-md file:border-0 file:bg-emerald-800 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white",
+          )}
           onChange={(event) => {
             void loadFile(event.target.files?.[0]);
             event.target.value = "";
@@ -233,7 +264,7 @@ export function ImportWizard({
             : "Processing in a worker…"
           : fileName
             ? fileName
-            : "Your file stays in this browser session."}
+            : "CSV or Excel · up to 10 MiB"}
       </p>
       {busy && (
         <Button
@@ -518,7 +549,11 @@ export function ImportWizard({
             }}
           >
             <Upload size={15} />
-            {compact ? "Check dataset" : "Validate mapped rows"}
+            {autoImport
+              ? "Import dataset"
+              : compact
+                ? "Check dataset"
+                : "Validate mapped rows"}
           </Button>
           {result && (
             <div className="mt-4 rounded-lg border border-stone-200 p-3">

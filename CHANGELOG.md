@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Start with an empty map and simplify Upload dataset to a file picker plus the downloadable ten-project sample. Automatically validate and load explicit-template files, retain manual mapping for other schemas and protect existing workspaces from unintended replacement.
+
 - Replace the text Comparisons toggle with a compact panel icon, an accessible name, show/hide tooltip and visible open state.
 
 - Remove the distance slider’s bottom numeric labels and tick lines; keep the expanded card free of a section divider.

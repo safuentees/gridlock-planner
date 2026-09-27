@@ -61,6 +61,19 @@ export async function fingerprintProjects(projects: Project[]) {
   ]);
   return { featureHash, geometryVersion };
 }
+/** An empty workspace has no source records or implicit sample. */
+export async function createEmptyDataset(): Promise<RuntimeDataset> {
+  return {
+    id: "gridlock-empty",
+    name: "No dataset uploaded",
+    kind: "empty",
+    sourceHash: await sha256(""),
+    ...(await fingerprintProjects([])),
+    projects: [],
+    importedAt: "",
+    warnings: [],
+  };
+}
 export async function createDemoDataset(
   projects: Project[],
   sourceHash: string,

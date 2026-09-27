@@ -1,17 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@base-ui/react/button";
 import { Network } from "lucide-react";
-import projectData from "./data/projects.json";
-import metadata from "./data/metadata.json";
-import type { Project, ProjectOverride, RuntimeDataset } from "./types";
-import { createDemoDataset, applyOverrides } from "./lib/datasets";
+import type { ProjectOverride, RuntimeDataset } from "./types";
+import { createEmptyDataset, applyOverrides } from "./lib/datasets";
 import { cn } from "./lib/cn";
 import { DataTools } from "./components/DataTools";
 import { DatasetUpload } from "./components/DatasetUpload";
 import { PlanningWorkspace } from "./components/PlanningWorkspace";
 const control =
   "rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-40";
-const PROJECTS = projectData as Project[];
 export default function App() {
   const [dataset, setDataset] = useState<RuntimeDataset | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -23,10 +20,10 @@ export default function App() {
     setDataset(d);
     setAcceptance((n) => n + 1);
   };
-  const restore = () => {
+  const initialize = () => {
     const requestId = ++datasetRequest.current;
     setError(null);
-    void createDemoDataset(PROJECTS, metadata.workbookSha256)
+    void createEmptyDataset()
       .then((next) => {
         if (requestId === datasetRequest.current) accept(next);
       })
@@ -34,7 +31,7 @@ export default function App() {
         if (requestId === datasetRequest.current) setError(String(e));
       });
   };
-  useEffect(restore, []);
+  useEffect(initialize, []);
   useEffect(() => {
     if (!acceptance) return;
     const frame = requestAnimationFrame(() =>
@@ -47,7 +44,7 @@ export default function App() {
       {error && (
         <p role="alert" className="p-5">
           {error}
-          <Button onClick={restore} className={cn(control, "ml-3")}>
+          <Button onClick={initialize} className={cn(control, "ml-3")}>
             Try again
           </Button>
         </p>
@@ -57,11 +54,10 @@ export default function App() {
           key={`${dataset.id}:${acceptance}`}
           source={dataset}
           onAccept={accept}
-          onRestore={restore}
         />
       ) : !error ? (
         <p role="status" className="p-8">
-          Preparing the supplied examples…
+          Preparing the map…
         </p>
       ) : null}
     </div>
@@ -71,11 +67,9 @@ export default function App() {
 function DatasetWorkspace({
   source,
   onAccept,
-  onRestore,
 }: {
   source: RuntimeDataset;
   onAccept: (d: RuntimeDataset) => void;
-  onRestore: () => void;
 }) {
   const toolsTrigger = useRef<HTMLButtonElement>(null);
   const uploadTrigger = useRef<HTMLButtonElement>(null);
@@ -130,10 +124,16 @@ function DatasetWorkspace({
               className="truncate text-xs tabular-nums text-stone-600"
               title={source.name}
             >
-              {source.projects.length.toLocaleString()} projects ·{" "}
-              {source.kind === "demo"
-                ? "Historical sample"
-                : "Uploaded dataset"}
+              {source.kind === "empty" ? (
+                "No dataset uploaded"
+              ) : (
+                <>
+                  {source.projects.length.toLocaleString()} projects ·{" "}
+                  {source.kind === "demo"
+                    ? "Historical sample"
+                    : "Uploaded dataset"}
+                </>
+              )}
               {overrides.length > 0 &&
                 ` · ${overrides.length} corrections applied`}
             </p>
@@ -159,7 +159,6 @@ function DatasetWorkspace({
             source={source}
             hasCorrections={overrides.length > 0}
             onAccept={onAccept}
-            onRestore={onRestore}
           />
         </div>
       </section>

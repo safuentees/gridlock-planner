@@ -1,0 +1,11 @@
+project_id,utility,project_name,state,endpoint_a_name,endpoint_a_latitude,endpoint_a_longitude,endpoint_b_name,endpoint_b_latitude,endpoint_b_longitude,milestone_date,date_precision,date_meaning
+DESC_1,Dominion Energy South Carolina,Stevens Creek - Hooks 115 kV / LR Plumb Branch 46 kV Rebuilds,SC,Stevens Creek Sub,33.562599,-82.051362,Hooks Sub,,,2024-12-31,day,planned_in_service
+DESC_2,Dominion Energy South Carolina,Hooks - Thurmond 115 kV Tie: Rebuild,SC,Hooks Sub,,,Thurmond Sub,33.660127,-82.195931,2024-12-31,day,planned_in_service
+DESC_3,Dominion Energy South Carolina,Jasper - Okatie 230 kV #2: Construct,SC,Jasper Sub,32.35912,-81.1246,Okatie Sub,32.333758,-81.032495,2025-12-31,day,planned_in_service
+DESC_4,Dominion Energy South Carolina,Queensboro - Ft Johnson 115 kV & Queensboro-Bayfront 115 kV (Queensboro-James Island Sect),SC,Queensboro Sub,32.722793,-79.967332,Ft Johnson Sub,,,2023-12-31,day,planned_in_service
+DESC_5,Dominion Energy South Carolina,Okatie-Bluffton 115 kV: Rebuild,SC,Okatie Sub,32.333758,-81.032495,Bluffton Sub,32.235027,-80.853384,2025-06-01,day,planned_in_service
+GPC_1,Georgia Power,EVANS PRIMARY - THURMOND DAM (USA) #5 115KV REBUILD,GA,EVANS PRIMARY,33.543994,-82.168648,THURMOND DAM #5,33.660127,-82.195931,2033-06-01,day,need_date
+GPC_2,Georgia Power,SAV: MCINTOSH - PURRYSBURG 230KV REACTORS,GA,MCINTOSH,32.352116,-81.175112,PURRYSBURG,,,2026-06-01,day,need_date
+GPC_3,Georgia Power,SAV: GOSHEN (SAV) - MCINTOSH 115KV LINE REBUILD,GA,GOSHEN,32.248701,-81.209472,MCINTOSH,32.352116,-81.182105,2027-06-01,day,need_date
+GPC_4,Georgia Power,MITCHELL - NORTH TIFTON 230KV RECONDUCTOR,GA,Mitchell Substation,31.447121,-84.133843,North Tifton Substation,31.478089,-83.54913,2025-05-01,day,need_date
+GPC_5,Georgia Power,JESUP - LUDOWICI PRIMARY 115KV REBUILD,GA,JESUP,31.603106,-81.924947,LUDOWICI PRIMARY,31.721597,-81.743703,2025-06-01,day,need_date

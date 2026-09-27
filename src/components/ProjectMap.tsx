@@ -376,7 +376,7 @@ export function ProjectMap({
         aria-label="Interactive map of approximate project locations"
       />
       <div
-        className="pointer-events-none absolute top-3 left-1/2 z-20 w-64 max-w-[calc(100%-7rem)] -translate-x-1/2 space-y-2"
+        className="pointer-events-none absolute z-20 w-64 max-w-[calc(100%-7rem)] space-y-2"
         data-map-notices
       >
         {(showCircles || (mode === "heat" && heatReady)) && (

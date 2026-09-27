@@ -158,7 +158,7 @@ export function validateOverride(
     )
   )
     errors.push(
-      "Date must match its stated precision (YYYY, YYYY-MM, or YYYY-MM-DD); an empty date uses unknown precision.",
+      "Date must use a year from 1900 to 2200 and match its stated precision (YYYY, YYYY-MM, or YYYY-MM-DD); an empty date uses unknown precision.",
     );
   if (
     effective.originalDateRaw !== null &&

@@ -1,8 +1,6 @@
 import { ArrowUpRight, BookOpen, CalendarDays, MapPin } from "lucide-react";
-import { Button } from "@base-ui/react/button";
 import type { Comparison, Project } from "../types";
 import { centerPoint } from "../lib/comparisons";
-import { cn } from "../lib/cn";
 
 export const formatDate = (date: string | null) =>
   date && /^\d{4}$/.test(date)
@@ -234,11 +232,9 @@ function ProjectRecord({ project }: { project: Project }) {
 export function EvidencePanel({
   comparison,
   project,
-  onFocus,
 }: {
   comparison: Comparison | null;
   project: Project | null;
-  onFocus: () => void;
 }) {
   const records = comparison
     ? [comparison.a, comparison.b]
@@ -248,7 +244,7 @@ export function EvidencePanel({
   return (
     <section
       aria-labelledby="evidence-title"
-      className="border-t border-stone-200 bg-stone-50 p-5 lg:p-6"
+      className="border-t border-stone-200 bg-stone-50 p-3"
     >
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
@@ -264,15 +260,6 @@ export function EvidencePanel({
               : "Select a project or comparison to see its dates and source reports."}
           </p>
         </div>
-        {!!records.length && (
-          <Button
-            onClick={onFocus}
-            className="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs font-medium hover:bg-stone-100"
-          >
-            <MapPin size={14} aria-hidden="true" />
-            Focus on map
-          </Button>
-        )}
       </div>
       {comparison && (
         <p className="mb-4 text-pretty text-sm text-stone-600">
@@ -288,9 +275,7 @@ export function EvidencePanel({
           )}
         </p>
       )}
-      <div
-        className={cn("grid gap-4", records.length === 2 && "xl:grid-cols-2")}
-      >
+      <div className="grid gap-3">
         {records.map((record) => (
           <ProjectRecord key={record.id} project={record} />
         ))}

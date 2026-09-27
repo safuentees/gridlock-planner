@@ -22,14 +22,17 @@ The preview uses the same URL. Core app operation needs no API key, backend, Pyt
 
 ## Explore the workspace
 
-Everything stays on one page. Filter utilities, distance and planned dates, select a nearby comparison, then follow **View selected timing and evidence**. Original date meanings and source pages remain visible. Export the selected pair or the displayed comparison list.
+The map fills the workspace. Enable utilities at the top left, adjust distance at the bottom left, then open **Comparisons** to select locations or a nearby pair and inspect its timing and source evidence. Export the displayed pairs or the selected pair from the same panel.
 
-- The map and ranked comparisons share the main workspace. Map/heat mode and fit-all stay beside the map.
-- **More filters & what-if** contains unknown-date inclusion, small-dataset exhaustive comparisons and schedule assumptions. An active-assumption notice remains visible when controls are collapsed. These are milestone assumptions, not learned delays or construction overlap.
+- Utility toggles preserve each location's saved checkbox. Participation requires both controls and the date filters to allow the record. Unchecked locations remain searchable in **Locations**.
+- Selecting a location makes it the explicit reference for nearby cross-utility comparisons. **Clear reference** returns to all eligible pairs. **Focus selection** and **Show all locations** are distinct map actions in Comparisons.
+- **Filters** contains the planning timeline, unknown-date inclusion, small-data exhaustive view and what-if year/gap assumptions. Active date filters and assumptions remain visible over the map.
+- **Map settings** controls Light/Dark appearance, the density heat overlay and half-threshold radius circles. These visual controls do not change matches. **Map help** explains utility icons, strict distance boundaries and source limitations.
+- The 25-mile default is preserved. Switching km/mi preserves physical distance. The maximum is **250 km**, or approximately **155.342798 miles**. Typed entries must be integers; converted values retain decimals. The slider uses whole-unit stops plus the exact converted maximum. Invalid edits leave the active limit unchanged.
 - **Data tools** opens an in-page dialog for imports, corrections, extracted-field review and source files. Closing preserves filters, selection and unfinished drafts/checks. Accepting a replacement dataset explicitly starts a fresh workspace.
-- Forecast estimates remain unavailable, explained under **Source files and date limitations**. Future planned dates are not predictions.
+- Forecast estimates remain unavailable. Historical planning milestones are not observations of current construction.
 
-[Interface audit and verification](docs/INTERFACE_REFINEMENT.md) records the decisions and browser checks.
+[Current map workspace and verification](docs/MAP_WORKSPACE.md). The [earlier interface audit](docs/INTERFACE_REFINEMENT.md) remains a historical record of the prior layout.
 
 The unchanged supplied dataset contains ten projects, **25 possible cross-company pairs and six strictly below 25 miles**. In Planned mode, datasets of at most 20 records can expose all comparisons, including distant/unlocated ones (at most 190 unordered pairs before excluding same-company pairs). Larger datasets use the bounded nearby workflow.
 
@@ -47,7 +50,7 @@ Corrections are separate, reversible patches with reasons. Original files and re
 
 Interactive search uses company-partitioned KDBush/geokdbush indexes and the exact final haversine metric. Geometry is reused across date/slider changes; changed coordinates or company partition membership require a new index. Query budgets and cancellation keep work bounded. Dense data can still contain quadratically many qualifying pairs.
 
-The list retains at most **200 nearby pairs**. Possible pair counts, established matches and displayed rows are separate. A complete search gives the exact count and nearest retained results; a bounded search reports **at least** the established matches and the best visited pairs, which may not be globally nearest. The map shows at most **1,200 markers** and **5,000 heat points**; labeled aggregation preserves total record weight. These presentation limits do not remove underlying dataset records.
+The list retains at most **200 nearby pairs**. Possible pair counts, established matches and displayed rows are separate. A complete search gives the exact count and nearest retained results; a bounded search reports **at least** the established matches and the best visited pairs, which may not be globally nearest. The map shows at most **1,200 markers/circles**, **200 match connectors** and **5,000 heat points**; labeled aggregation preserves total record weight. These presentation limits do not remove underlying dataset records.
 
 CSV export contains exactly the displayed rows, with scope/completeness, unrounded distance, source/effective dates, date meaning/precision, assumed shifts and source/feature hashes. It does not promise every match from a large dataset. Source values, effective corrections and scenario assumptions remain distinct. [Measured engine limits and reproducible benchmark](docs/PERFORMANCE.md).
 

@@ -1,5 +1,7 @@
 # Planner interface audit and refinement
 
+Historical record of the earlier adjacent map/list interface. The current map-first refinement is documented in [MAP_WORKSPACE.md](MAP_WORKSPACE.md); the checks below apply to the earlier commit, not the new layout.
+
 September 26–27, 2026. Scope: the existing GridLock application, refined with the baseline-ui skill. One page, one map, and one workspace. No new routes, dashboards, deployment or submission.
 
 ## Planner workflow and confirmed requirements

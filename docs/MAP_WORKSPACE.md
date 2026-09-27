@@ -8,7 +8,7 @@ September 26, 2026 refinement. This supersedes the layout described in [the earl
 
 | Element | Current treatment and purpose |
 | --- | --- |
-| Header | Compact GridLock identity, record count, historical/uploaded context and correction count. Upload dataset sits beside Data tools and offers the default sample plus computer files. Source name remains available in Data tools and the header tooltip. |
+| Header | Compact GridLock identity, record count, historical/uploaded context and correction count. Filters, Map settings and Map help are labeled icon buttons beside Data tools. Upload dataset offers the default sample plus computer files. Source name remains available in Data tools and the header tooltip. |
 | Map | Fills the remaining viewport; panel, filter and appearance changes retain the same map instance and camera position. Explicit fit actions account for overlay space. |
 | Utility visibility | Top-left labeled buttons; all additional imported utilities remain accessible through Filters. Icons identify utility membership, not asset types. |
 | Comparisons | Labeled menu control; top-anchored desktop panel, modal narrow-screen sheet. Same component tree stays mounted across open/close and breakpoint changes. |
@@ -106,8 +106,16 @@ Real mouse drags at 1440px and 390px widths sampled 409 animation frames: no mis
 
 The required seeded engine benchmark also completed on Apple M5 (10 logical CPUs, 32 GiB), Darwin 27.0.0, Node 24.14.1. All three 1,000-record distributions agreed with the exhaustive oracle. At 100,000 records, single-run queries took 32.6ms sparse (candidate-limited; at least 1,953 matches), 15.6ms dense (neighbor-limited; at least 4,096 matches), and 16.0ms separated (complete zero). These are bounded engine measurements, not completed dense searches or browser timings. Configuration, cancellation measurements and full results are in ignored `output/benchmarks/slider-refresh.json`.
 
+## Header map tools
+
+Filters, Map settings and Map help now use icon-only header triggers beside Data tools, with hover titles and accessible names. Their existing Base UI dialog trees remain mounted in the workspace; only the triggers are portaled into the header. The narrow header wraps the identity above the action row without introducing new navigation.
+
+Functional Chromium checks passed at 1440×900, 768×900, 390×844 and 320×740: buttons remained aligned beside Data tools without page overflow, each appeared once, keyboard opening/Tab/Escape/focus return worked, and filter and heatmap settings survived close/reopen. One map remained present and the six-pair sample recovered after filter changes. All 81 tests, notices, formatting, build and whitespace checks passed; screenshot review remained skipped. Ignored local verification: `output/playwright/header-tools-check.*`.
+
 ## Comparison accordion
 
 September 27, 2026: the default Comparisons panel contains its export header and the ranked accordion list. Selecting a row expands its existing timing, provenance and export content immediately below that row; selecting it again collapses it. Removed the scroll-to-evidence/focus transfers and the list's nested scroll container. Desktop panels are top-anchored so expansion does not recenter them. Location selections remain under Filters, map navigation under Map settings, and reference evidence is a contextual disclosure. Conditional assumptions, incomplete-results and error/empty states remain available. Earlier sections record historical layouts.
 
 Functional Chromium checks passed at 1440×1000, 390×844 and 320×740: inline expansion, unchanged panel scroll position and trigger focus, Enter/Space toggling, one expanded pair, preserved selection on panel reopen, linked map selection, responsive bounds, retained location exclusions, reference evidence and map actions. All 81 tests, formatting, notices, production build and whitespace checks passed. No screenshot review was performed. Local verification scripts/logs are ignored under `output/playwright/accordion-*`.
+
+These checks were repeated after integrating the concurrent header-icon update. Selected CSV export retained the exact 7.548090711868766-mile / 517-day pair; zero-distance empty state and reset also passed.

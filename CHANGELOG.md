@@ -4,6 +4,8 @@
 
 - Make Comparisons an inline accordion list with no scroll-to-details jump. Keep export in its header, location controls in Filters and map navigation in Map settings.
 
+- Move Filters, Map settings and Map help into labeled icon buttons beside Data tools in the header. Preserve mounted dialogs and state, with a wrapped header on narrow screens.
+
 - Prevent distance-slider flashes by keeping a coherent completed result during distance-only refreshes and reusing the heat canvas. Preserve scope invalidation, stale-response rejection and pending export guards.
 
 - Enlarge the nearby-pair summary typography, fit its container to the content and anchor it at the top center of the map, with narrower toolbars flowing below.

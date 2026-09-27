@@ -455,10 +455,7 @@ export function ProjectMap({
           <div className="map-notice rounded-md border px-3 py-2 text-xs shadow-sm">
             {showCircles && radiusLabel && (
               <p className="text-pretty tabular-nums">
-                <span className="font-medium">{radiusLabel} circles</span>
-                <span className="map-notice-secondary block">
-                  Proximity only, not work footprints.
-                </span>
+                <span className="font-medium">{radiusLabel}</span> (proximity)
               </p>
             )}
             {overlay.connections.length > 0 && (
@@ -468,7 +465,7 @@ export function ProjectMap({
                   showCircles && "mt-1",
                 )}
               >
-                Solid line: selected separation, not a route.
+                Measurement, not a route.
               </p>
             )}
             {mode === "heat" && heatReady && (
@@ -479,7 +476,7 @@ export function ProjectMap({
                 data-heat-legend
               >
                 <div className="mb-1 flex flex-wrap items-center gap-2">
-                  <span className="font-medium">Project density</span>
+                  <span className="font-medium">Density</span>
                   <span className="flex gap-0.5" aria-hidden="true">
                     {[
                       "bg-green-500",
@@ -493,7 +490,7 @@ export function ProjectMap({
                   <span>Low → high</span>
                 </div>
                 <p className="map-notice-secondary text-pretty">
-                  Equal project weights. Colors rescale with zoom.
+                  Equal weights. Rescales with zoom.
                   {presentation.cellDegrees > 0
                     ? ` Combined in ${presentation.cellDegrees}° cells.`
                     : ""}

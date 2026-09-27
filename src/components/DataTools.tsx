@@ -1,14 +1,10 @@
 import { lazy, Suspense, useState, type RefObject } from "react";
 import { Dialog } from "@base-ui/react/dialog";
-import { AlertDialog } from "@base-ui/react/alert-dialog";
 import { Button } from "@base-ui/react/button";
 import { ChevronDown, X } from "lucide-react";
 import type { ProjectOverride, RuntimeDataset } from "../types";
 import { OverridesPanel } from "./OverridesPanel";
 
-const ImportWizard = lazy(() =>
-  import("./ImportWizard").then((m) => ({ default: m.ImportWizard })),
-);
 const ExtractionReview = lazy(() =>
   import("./ExtractionReview").then((m) => ({ default: m.ExtractionReview })),
 );
@@ -22,31 +18,22 @@ export function DataTools({
   overrides,
   onChange,
   selectedProjectId,
-  onAccept,
-  onRestore,
+  onChooseDataset,
   triggerRef,
 }: {
   source: RuntimeDataset;
   overrides: ProjectOverride[];
   onChange: (overrides: ProjectOverride[]) => void;
   selectedProjectId: string | null;
-  onAccept: (dataset: RuntimeDataset) => void;
-  onRestore: () => void;
+  onChooseDataset: () => void;
   triggerRef: RefObject<HTMLButtonElement | null>;
 }) {
   const [open, setOpen] = useState(false);
   const [visited, setVisited] = useState(false);
   const [reviewVisited, setReviewVisited] = useState(false);
-  const [pending, setPending] = useState<RuntimeDataset | "demo" | null>(null);
-  const replace = (next: RuntimeDataset | "demo") => {
-    setPending(null);
+  const chooseDataset = () => {
     setOpen(false);
-    if (next === "demo") onRestore();
-    else onAccept(next);
-  };
-  const accept = (next: RuntimeDataset) => {
-    if (source.kind === "upload" || overrides.length) setPending(next);
-    else replace(next);
+    requestAnimationFrame(onChooseDataset);
   };
   return (
     <Dialog.Root
@@ -80,31 +67,6 @@ export function DataTools({
           </div>
           <div className="min-h-0 overflow-y-auto p-5">
             <div className="divide-y divide-stone-200">
-              <details className="group py-1">
-                <summary className={toolSummary}>
-                  <span>
-                    <span className="block font-medium">Import projects</span>
-                    <span className="mt-1 block text-pretty text-stone-600">
-                      Replace the current dataset with a CSV or Excel file.
-                    </span>
-                  </span>
-                  <ChevronDown
-                    size={16}
-                    aria-hidden="true"
-                    className="shrink-0 text-stone-500 group-open:rotate-180"
-                  />
-                </summary>
-                <div className="mt-4">
-                  {visited && (
-                    <Suspense fallback={<p role="status">Loading importer…</p>}>
-                      <ImportWizard
-                        onAccept={accept}
-                        onCancel={() => setOpen(false)}
-                      />
-                    </Suspense>
-                  )}
-                </div>
-              </details>
               <details className="group py-1">
                 <summary className={toolSummary}>
                   <span>
@@ -246,11 +208,8 @@ export function DataTools({
                     </p>
                   </div>
                   {source.kind === "upload" && (
-                    <Button
-                      className={button}
-                      onClick={() => setPending("demo")}
-                    >
-                      Restore supplied sample
+                    <Button className={button} onClick={chooseDataset}>
+                      Choose another dataset
                     </Button>
                   )}
                 </div>
@@ -261,39 +220,6 @@ export function DataTools({
               edits before leaving.
             </p>
           </div>
-          <AlertDialog.Root
-            open={pending !== null}
-            onOpenChange={(value) => {
-              if (!value) setPending(null);
-            }}
-          >
-            <AlertDialog.Portal>
-              <AlertDialog.Backdrop className="fixed inset-0 z-50 bg-stone-900/40" />
-              <AlertDialog.Popup className="data-confirm fixed inset-0 z-50 m-auto h-fit max-h-dvh w-full max-w-md overflow-y-auto rounded-xl border border-stone-200 bg-white p-6 shadow-lg">
-                <AlertDialog.Title className="text-balance text-lg font-semibold">
-                  Replace this workspace?
-                </AlertDialog.Title>
-                <AlertDialog.Description className="mt-2 text-sm text-stone-600">
-                  This clears the current import, corrections, assumptions and
-                  selection. Cancel to export anything you need first. Original
-                  source files remain unchanged.
-                </AlertDialog.Description>
-                <div className="mt-5 flex flex-wrap justify-end gap-2">
-                  <AlertDialog.Close className={button}>
-                    Keep current workspace
-                  </AlertDialog.Close>
-                  <Button
-                    className="rounded-lg bg-emerald-800 px-3 py-2 text-sm font-medium text-white"
-                    onClick={() => {
-                      if (pending) replace(pending);
-                    }}
-                  >
-                    Replace workspace
-                  </Button>
-                </div>
-              </AlertDialog.Popup>
-            </AlertDialog.Portal>
-          </AlertDialog.Root>
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>

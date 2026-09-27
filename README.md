@@ -29,7 +29,8 @@ The map fills the workspace. Its large count shows nearby cross-utility pairs; g
 - **Filters** contains the planning timeline, unknown-date inclusion, small-data exhaustive view and what-if year/gap assumptions. The desktop map shows a simple filtered project count; active what-if assumptions remain visible in the match overview.
 - **Map settings** controls Light/Dark appearance, the density heat overlay and half-threshold radius circles (on by default). These visual controls do not change matches. **Map help** explains utility icons, strict distance boundaries and source limitations.
 - The 25-mile default is preserved. Switching km/mi preserves physical distance. The maximum is **250 km**, or approximately **155.342798 miles**. Typed entries must be integers; converted values retain decimals. The slider uses whole-unit stops plus the exact converted maximum. Invalid edits leave the active limit unchanged.
-- **Data tools** opens an in-page dialog for imports, corrections, extracted-field review and source files. Closing preserves filters, selection and unfinished drafts/checks. Accepting a replacement dataset explicitly starts a fresh workspace.
+- **Upload dataset**, beside Data tools, opens a simple same-page picker. The supplied ten-project sample is the default; choose a CSV or Excel file from your computer to replace it, or return to the sample. Closing preserves the unfinished import and current map. Accepting a different dataset starts a fresh workspace.
+- **Data tools** contains corrections, extracted-field review and source files. Closing preserves filters, selection and unfinished drafts/checks.
 - Forecast estimates remain unavailable. Historical planning milestones are not observations of current construction.
 
 [Current map workspace and verification](docs/MAP_WORKSPACE.md). The [earlier interface audit](docs/INTERFACE_REFINEMENT.md) remains a historical record of the prior layout.
@@ -40,7 +41,7 @@ The Jasper–Okatie / Goshen case retains the workbook's broader Goshen–McInto
 
 ## Import and correct a dataset
 
-Choose **Data tools → Import projects**, select a sheet/header, verify suggested aliases or manually map columns, declare coordinate order and date format/precision/meaning, then validate and explicitly accept. Start with the [CSV template](public/templates/GridLock-projects.csv). Limits include **10 MiB per file and 25,000 selected data rows**; workbook expansion/cell limits are detailed in [Imports](docs/IMPORTS.md). Parsing, validation and hashing use a cancellable worker. Invalid rows prevent acceptance; rows are never silently discarded.
+Choose **Upload dataset** at the top right, then select a file. Use one CSV or Excel sheet containing both companies. **Columns and date settings** lets you select a sheet/header, check suggested columns and declare coordinate order and date format/precision/meaning. Choose **Check dataset**, review the record/location counts, then **Show on map**. Start with the [CSV template](public/templates/GridLock-projects.csv). Limits include **10 MiB per file and 25,000 selected data rows**; workbook expansion/cell limits are detailed in [Imports](docs/IMPORTS.md). Parsing, validation and hashing use a cancellable worker. Invalid rows prevent acceptance; rows are never silently discarded.
 
 Imports have namespaced IDs, their own source hash and no inherited demo research. No geocoding or arbitrary spreadsheet interpretation is promised. Formula-containing XLSX files require a values-only copy. Unknown coordinates and dates remain unknown; ambiguous day formats require a choice. Dateline-crossing two-endpoint midpoint proxies are rejected.
 

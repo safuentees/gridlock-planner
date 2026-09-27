@@ -7,6 +7,7 @@ import type { Project, ProjectOverride, RuntimeDataset } from "./types";
 import { createDemoDataset, applyOverrides } from "./lib/datasets";
 import { cn } from "./lib/cn";
 import { DataTools } from "./components/DataTools";
+import { DatasetUpload } from "./components/DatasetUpload";
 import { PlanningWorkspace } from "./components/PlanningWorkspace";
 const control =
   "rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-40";
@@ -15,15 +16,23 @@ export default function App() {
   const [dataset, setDataset] = useState<RuntimeDataset | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [acceptance, setAcceptance] = useState(0);
+  const datasetRequest = useRef(0);
   const accept = (d: RuntimeDataset) => {
+    datasetRequest.current++;
+    setError(null);
     setDataset(d);
     setAcceptance((n) => n + 1);
   };
   const restore = () => {
+    const requestId = ++datasetRequest.current;
     setError(null);
     void createDemoDataset(PROJECTS, metadata.workbookSha256)
-      .then(accept)
-      .catch((e) => setError(String(e)));
+      .then((next) => {
+        if (requestId === datasetRequest.current) accept(next);
+      })
+      .catch((e) => {
+        if (requestId === datasetRequest.current) setError(String(e));
+      });
   };
   useEffect(restore, []);
   useEffect(() => {
@@ -69,6 +78,7 @@ function DatasetWorkspace({
   onRestore: () => void;
 }) {
   const toolsTrigger = useRef<HTMLButtonElement>(null);
+  const uploadTrigger = useRef<HTMLButtonElement>(null);
   const [overrides, setOverrides] = useState<ProjectOverride[]>([]);
   const [effective, setEffective] = useState(source);
   const [applying, setApplying] = useState(false);
@@ -128,15 +138,23 @@ function DatasetWorkspace({
             </p>
           </div>
         </div>
-        <DataTools
-          triggerRef={toolsTrigger}
-          source={source}
-          overrides={overrides}
-          onChange={setOverrides}
-          selectedProjectId={selectedProjectId}
-          onAccept={onAccept}
-          onRestore={onRestore}
-        />
+        <div className="flex shrink-0 items-center gap-2">
+          <DataTools
+            triggerRef={toolsTrigger}
+            source={source}
+            overrides={overrides}
+            onChange={setOverrides}
+            selectedProjectId={selectedProjectId}
+            onChooseDataset={() => uploadTrigger.current?.click()}
+          />
+          <DatasetUpload
+            triggerRef={uploadTrigger}
+            source={source}
+            hasCorrections={overrides.length > 0}
+            onAccept={onAccept}
+            onRestore={onRestore}
+          />
+        </div>
       </section>
       {layerError && (
         <p
@@ -156,7 +174,7 @@ function DatasetWorkspace({
         dataset={effective}
         overrides={overrides}
         onProjectFocus={setSelectedProjectId}
-        onNeedData={() => toolsTrigger.current?.click()}
+        onNeedData={() => uploadTrigger.current?.click()}
       />
     </main>
   );

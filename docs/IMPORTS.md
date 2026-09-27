@@ -2,16 +2,22 @@
 
 The browser accepts UTF-8 CSV and values-only XLSX. Nothing is uploaded to a server or written to the supplied workbook/PDFs. Imported data lasts for the current app session. Keep the original file; its full SHA-256 is retained in the dataset. There is no automatic geocoding or arbitrary spreadsheet interpretation.
 
-1. Download `public/templates/GridLock-projects.csv` or choose your file.
-2. Select the worksheet and header row (within the first 25 rows). Inspect the source preview.
+1. Choose **Upload dataset** beside Data tools. The supplied ten-project sample is active by default and remains available through **Use sample** after an upload. Choose your file from the computer, or download `public/templates/GridLock-projects.csv`. For cross-company comparisons, put both companies in one CSV or one selected Excel sheet; this flow does not combine separate files/sheets.
+2. Open **Columns and date settings** to select the worksheet and header row (within the first 25 rows) or inspect source rows. This section opens automatically when required columns are missing, multiple worksheets need attention, or validation finds errors.
 3. Verify the suggested column aliases and map any unmatched columns. ID, utility, and project name are required. Source IDs must be unique in the selected sheet; text IDs such as `001` stay text. Store zero-padded Excel IDs as text because XLSX number display formatting is not retained.
-4. Confirm coordinate order, day-date format, date precision, and date meaning. Per-row precision/meaning columns override defaults. Validate, inspect normalized examples and errors, then accept the complete dataset. An error prevents partial acceptance.
+4. Confirm coordinate order, day-date format, date precision, and date meaning. Per-row precision/meaning columns override defaults. Validate, inspect normalized examples and errors, then choose **Show on map** to accept the complete dataset. An error prevents partial acceptance.
 
 Coordinates are decimal-degree WGS84. Select latitude/longitude or longitude/latitude explicitly; the normalized data always uses `[latitude, longitude]`. Both coordinates of an endpoint must be present or both empty. Empty endpoints remain unlocated. No location is guessed. Two endpoints with a longitude difference greater than 180° are rejected because this app's arithmetic midpoint cannot represent a dateline-crossing line; a defensible single representative point is supported. Two endpoints are only a midpoint proxy, never verified route geometry or closest-point distance.
 
 For text day dates choose ISO `YYYY-MM-DD`, US `MM/DD/YYYY`, or `DD/MM/YYYY`; mixed formats are rejected. `03/04/2028` is not automatically interpreted. Month and year values must be `YYYY-MM` and `YYYY`, with their explicit precision. A blank date becomes null/unknown; a nonempty date with unknown precision is rejected. XLSX date-formatted cells are read as calendar dates using the workbook's date system; an explicitly coarser precision retains only that precision. Unformatted Excel serial numbers are rejected as day dates. Calendar years are bounded to 1900–2200. Allowed meanings are `planned_in_service`, `need_date`, `planned_start`, and `unknown`; none is a claim of observed construction activity.
 
 Formulas are not evaluated or accepted. XLSX files containing any worksheet formula are rejected even when a cached result exists; export a values-only copy. A mapped CSV cell beginning with `=` is also rejected. Negative coordinate numbers remain valid. Spreadsheet row references and parsed raw dates are retained; for Excel date cells, `originalDateRaw` is their normalized calendar representation, not the XML serial or original display formatting. The source file hash refers to the unchanged original bytes.
+
+## Simple upload window
+
+The header picker reuses the existing importer and keeps one mounted draft. Closing/reopening it preserves the chosen file, mapping and validation; choosing another file cancels stale parsing. Dataset acceptance resets filters, selections, corrections and assumptions. Replacing an existing upload or applied corrections retains the explicit replacement confirmation; canceling it leaves the validated import usable. **Use sample** restores the unchanged supplied ten records. Merely opening the picker or seeing “Sample in use” does not reset the map.
+
+The validated summary counts all records, distinct companies and records with usable representative coordinates. Records without coordinates remain in the imported dataset but are not drawn on the map. It does not discover additional plants, substations or lines that are absent from the file, infer locations or bypass the map's labeled display limits. Power plants and other assets can be mapped as records when the file supplies company, identity and coordinates.
 
 ## Bounds and cancellation
 
@@ -21,7 +27,7 @@ These are input limits, not a guaranteed browser heap ceiling: parsing and decom
 
 ## Dataset and correction APIs
 
-- `ImportWizard({ onAccept, onCancel? })` returns a `RuntimeDataset` only after error-free validation and explicit acceptance.
+- `ImportWizard({ onAccept, onCancel?, compact? })` returns a `RuntimeDataset` only after error-free validation and explicit acceptance.
 - `createDemoDataset(projects, sourceHash)` creates the supplied dataset without modifying its original IDs or review notes.
 - Upload dataset IDs derive from the complete file hash and sheet name. Project IDs are `datasetId::encodeURIComponent(sourceProjectId)`. Same-named imported IDs, including `DESC_3`, never inherit demo annotations. The source ID is separately retained.
 - `fingerprintProjects(projects)` computes stable SHA-256 feature and geometry fingerprints. Feature inputs include IDs, company/utility, name/state, endpoint names/coordinates, milestone, precision, and meaning. Geometry fingerprints include IDs and endpoint coordinates. Research notes and timestamps are excluded. Sorting uses code-point ID order.
@@ -63,5 +69,7 @@ A new upload or relevant correction invalidates a manifest whose dataset/feature
 ## Verification
 
 `tests/imports.test.ts` covers real CSV/XLSX parsing, template aliases, limits and malformed files, cached formulas, duplicate/null records, coordinate order/dateline checks, ambiguous dates and precision, namespaces, worker request ownership, source-preserving corrections, and reset fingerprints. `tests/forecast.test.ts` covers unavailable defaults, strict schema/probability/identity validation, duplicates, and correction-driven invalidation.
+
+The September 26, 2026 upload-window refinement passed all 79 tests, third-party notice and formatting checks, and the TypeScript/Vite production build. Functional Chromium checks accepted CSV and XLSX fixtures containing three records across two utilities, mapped the two located records, disclosed the unlocated record, and restored all ten sample records. Checks covered preserved drafts, replacement cancellation, the Data tools shortcut, malformed files, missing mappings, invalid coordinates, worker cancellation/failure and retry. Keyboard opening, focus containment and Escape return were exercised, with DOM layout checks at 390×844, 320×740 and 320×640. Visual screenshot review was skipped at the user's request. Local scripts and logs are retained under the ignored `output/playwright/upload-*` paths.
 
 Dependency contracts: [Papa Parse documentation](https://www.papaparse.com/docs), [read-excel-file documentation](https://github.com/catamphetamine/read-excel-file), and [fflate documentation](https://github.com/101arrowz/fflate). Runtime dependencies are pinned by the application package manifest.

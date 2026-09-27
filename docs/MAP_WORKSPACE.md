@@ -8,7 +8,7 @@ September 26, 2026 refinement. This supersedes the layout described in [the earl
 
 | Element | Current treatment and purpose |
 | --- | --- |
-| Header | Compact GridLock identity, record count, historical/uploaded context and correction count. Source name remains available in Data tools and the header tooltip. |
+| Header | Compact GridLock identity, record count, historical/uploaded context and correction count. Upload dataset sits beside Data tools and offers the default sample plus computer files. Source name remains available in Data tools and the header tooltip. |
 | Map | Fills the remaining viewport; panel, filter and appearance changes retain the same map instance and camera position. Explicit fit actions account for overlay space. |
 | Utility visibility | Top-left labeled buttons; all additional imported utilities remain accessible through Filters. Icons identify utility membership, not asset types. |
 | Comparisons | Labeled menu control; middle-right desktop panel, modal narrow-screen sheet. Same component tree stays mounted across open/close and breakpoint changes. |
@@ -21,7 +21,7 @@ September 26, 2026 refinement. This supersedes the layout described in [the earl
 | Secondary filters | Same-page Filters dialog holds timeline/distribution, unknown dates, small-dataset exhaustive view, utility search and what-if controls. The desktop map retains a filtered project count; active what-if assumptions appear in the match overview. Date details remain in Filters. |
 | Map settings | Heatmap and radius-circle switches plus Light/Dark basemap appearance. Circles start on. Settings do not change eligibility or selection. |
 | Map help | Utility shapes/colors, selection, half-threshold circles, exact match treatment, density colors, units, approximation and historical planning limitations. |
-| Data tools | Existing imports, corrections, source files and extraction review remain available; mounted content preserves drafts/checks on ordinary close. Explicit dataset acceptance resets the workspace. |
+| Data tools | Corrections, source files and extraction review remain available; mounted content preserves drafts/checks on ordinary close. Upload dataset owns the shared compact import form and preserves its draft on close; explicit acceptance resets the workspace. |
 | Exports | Selected pair and displayed rows remain separate actions. Scope now also records the active reference, unrounded miles threshold and presentation unit; existing provenance/precision/completeness fields remain intact. |
 | Engineering explanations | Remain in documentation. Sampling, incomplete-result warnings and source limitations remain beside affected claims. |
 

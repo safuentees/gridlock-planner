@@ -41,7 +41,7 @@ export function NearbyDistanceCard({
             layout={!reduceMotion}
             layoutDependency={open}
             transition={transition}
-            style={{ borderRadius: 12, transformOrigin: "top center" }}
+            style={{ borderRadius: 12, originX: 0.5, originY: 0 }}
           />
         }
         className="map-match-overview pointer-events-auto overflow-hidden border border-stone-200 bg-white shadow-sm"

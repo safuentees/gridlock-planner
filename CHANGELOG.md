@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Keep the nearby-pair card at a responsive fixed width and anchor its animation at the top, so opening the distance editor grows only downward without moving the summary.
+
 - Put distance controls inside the expandable nearby-pair card and remove the bottom-left slider. Use Motion with Base UI for a short, reduced-motion-aware expansion while preserving the mounted editor and stable query presentation.
 - Remove the floating radius label from the map while preserving circles and their contextual explanations.
 

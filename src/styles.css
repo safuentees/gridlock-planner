@@ -163,9 +163,9 @@
   translate: none;
 }
 
-/* Content-sized summary stays at the map's top; narrower toolbars flow below. */
+/* Reserve the editor's width so expansion only grows downward. */
 .map-match-overview {
-  width: max-content;
+  width: 20rem;
   max-width: 100%;
 }
 @media (min-width: 1024px) and (max-width: 1279px) {

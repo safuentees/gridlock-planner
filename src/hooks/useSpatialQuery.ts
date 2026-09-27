@@ -26,25 +26,52 @@ export function isCurrentSpatialResponse(
 export interface SpatialQueryState {
   status: "loading" | "ready" | "error";
   result: SpatialQueryResult | null;
+  resultThresholdMiles: number | null;
   progress: SpatialProgress | null;
   error: string | null;
 }
 
 export interface ScopedSpatialState {
   inputKey: string;
+  scopeKey?: string;
   state: SpatialQueryState;
+}
+/** Threshold-only refreshes can retain a snapshot, never relabel it as new results. */
+export function spatialScopeKey(
+  versions: { datasetVersion: string; geometryVersion: string },
+  query: SpatialQuery,
+  attempt = 0,
+): string {
+  const { thresholdMiles: _threshold, ...scope } = query;
+  return JSON.stringify([
+    versions.datasetVersion,
+    versions.geometryVersion,
+    scope,
+    attempt,
+  ]);
 }
 export function visibleSpatialState(
   stored: ScopedSpatialState,
   inputKey: string,
+  scopeKey?: string,
 ): SpatialQueryState {
-  return stored.inputKey === inputKey
-    ? stored.state
-    : { status: "loading", result: null, progress: null, error: null };
+  if (stored.inputKey === inputKey) return stored.state;
+  const retain =
+    scopeKey !== undefined &&
+    stored.scopeKey === scopeKey &&
+    stored.state.result !== null &&
+    stored.state.resultThresholdMiles !== null;
+  return {
+    status: "loading",
+    result: retain ? stored.state.result : null,
+    resultThresholdMiles: retain ? stored.state.resultThresholdMiles : null,
+    progress: null,
+    error: null,
+  };
 }
 
-/** Stable projects/version inputs let slider queries reuse the worker's index.
- * An old result is cleared immediately; both dataset and request IDs guard replies.
+/** Keep a coherent previous threshold snapshot while refreshing only distance.
+ * Other scope/dataset changes clear it synchronously; request IDs guard replies.
  */
 export function useSpatialQuery(
   projects: Project[],
@@ -54,6 +81,7 @@ export function useSpatialQuery(
   const [attempt, setAttempt] = useState(0);
   const retry = useCallback(() => setAttempt((value) => value + 1), []);
   const queryKey = JSON.stringify(query);
+  const scopeKey = spatialScopeKey(versions, query, attempt);
   const inputKey = JSON.stringify([
     versions.datasetVersion,
     versions.geometryVersion,
@@ -62,7 +90,14 @@ export function useSpatialQuery(
   ]);
   const [stored, setStored] = useState<ScopedSpatialState>({
     inputKey,
-    state: { status: "loading", result: null, progress: null, error: null },
+    scopeKey,
+    state: {
+      status: "loading",
+      result: null,
+      resultThresholdMiles: null,
+      progress: null,
+      error: null,
+    },
   });
   const worker = useRef<Worker | null>(null);
   const workerCreationError = useRef<string | null>(null);
@@ -82,6 +117,7 @@ export function useSpatialQuery(
       state: {
         status: "ready",
         result: null,
+        resultThresholdMiles: null,
         progress: null,
         error: "Query cancelled. Change a filter to run another search.",
       },
@@ -112,8 +148,17 @@ export function useSpatialQuery(
     const { datasetVersion, geometryVersion } = versions;
     latest.current.datasetVersion = datasetVersion;
     const setState = (state: SpatialQueryState) =>
-      setStored({ inputKey, state });
-    setState({ status: "loading", result: null, progress: null, error: null });
+      setStored({ inputKey, scopeKey, state });
+    setStored((old) => ({
+      inputKey,
+      scopeKey,
+      state: {
+        ...visibleSpatialState(old, inputKey, scopeKey),
+        status: "loading",
+        progress: null,
+        error: null,
+      },
+    }));
     const receive = (response: SpatialWorkerResponse) => {
       if (
         !isCurrentSpatialResponse(
@@ -133,6 +178,7 @@ export function useSpatialQuery(
         setState({
           status: "ready",
           result: response.result,
+          resultThresholdMiles: query.thresholdMiles,
           progress: response.result.diagnostics,
           error: null,
         });
@@ -140,6 +186,7 @@ export function useSpatialQuery(
         setState({
           status: "error",
           result: null,
+          resultThresholdMiles: null,
           progress: null,
           error: response.error,
         });
@@ -230,7 +277,6 @@ export function useSpatialQuery(
     queryKey,
     attempt,
   ]);
-  // Passive effects have not necessarily run for the new inputs yet. Never
-  // expose old pairs/counts/progress during that intervening render or paint.
-  return { ...visibleSpatialState(stored, inputKey), cancel, retry };
+  // Scope protection applies before passive effects run, including during rapid changes.
+  return { ...visibleSpatialState(stored, inputKey, scopeKey), cancel, retry };
 }

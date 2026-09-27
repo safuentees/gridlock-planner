@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Prevent distance-slider flashes by keeping a coherent completed result during distance-only refreshes and reusing the heat canvas. Preserve scope invalidation, stale-response rejection and pending export guards.
+
 - Enlarge the nearby-pair summary typography, fit its container to the content and anchor it at the top center of the map, with narrower toolbars flowing below.
 
 - Reduce the map pair summary to its count, label and distance limit; keep its position stable when Comparisons toggles. Move Focus/Show all into Comparisons and remove the partner-number legend sentence.

@@ -262,6 +262,13 @@ export function PlanningWorkspace({
     query,
   );
   const results = search.result;
+  // Every visible result and circle uses the same completed-query threshold.
+  // The input can move ahead while a worker query is pending.
+  const displayedThreshold = search.resultThresholdMiles ?? thresholdMiles;
+  const eligibleKey = useMemo(
+    () => JSON.stringify(results?.eligibleProjectIds ?? []),
+    [results?.eligibleProjectIds],
+  );
   const projectById = useMemo(
     () => new Map(dataset.projects.map((p) => [p.id, p])),
     [dataset.projects],
@@ -282,11 +289,11 @@ export function PlanningWorkspace({
             return p ? [p] : [];
           })
         : [],
-    [results, projectById],
+    [eligibleKey, projectById],
   );
   const eligibleIds = useMemo(
     () => new Set(results?.eligibleProjectIds ?? []),
-    [results],
+    [eligibleKey],
   );
   const allPairs = useMemo(
     () =>
@@ -302,9 +309,9 @@ export function PlanningWorkspace({
   const qualifying = useMemo(
     () =>
       pairs.filter(
-        (p) => p.distanceMiles !== null && p.distanceMiles < thresholdMiles,
+        (p) => p.distanceMiles !== null && p.distanceMiles < displayedThreshold,
       ),
-    [pairs, thresholdMiles],
+    [pairs, displayedThreshold],
   );
   const selected = pairs.find((p) => p.id === selectedId) ?? null;
   const reference = referenceId ? (projectById.get(referenceId) ?? null) : null;
@@ -368,6 +375,7 @@ export function PlanningWorkspace({
     onProjectFocus(null);
   };
   const exportPairs = (rows: Comparison[], scope: string) =>
+    search.status !== "loading" &&
     download(
       "GridLock-comparisons.csv",
       comparisonCsv(
@@ -377,7 +385,7 @@ export function PlanningWorkspace({
         mode,
         activeShifts,
         allPairs ? true : !!results?.complete,
-        `${scope}; reference=${referenceId ?? "none"}; strict_threshold_miles=${thresholdMiles}; display_unit=${unit}`,
+        `${scope}; reference=${referenceId ?? "none"}; strict_threshold_miles=${displayedThreshold}; display_unit=${unit}`,
       ),
     );
   const changedRecordIds = useMemo(
@@ -418,7 +426,7 @@ export function PlanningWorkspace({
             mode={heatmap ? "heat" : "points"}
             appearance={appearance}
             showCircles={showCircles}
-            thresholdMiles={thresholdMiles}
+            thresholdMiles={displayedThreshold}
             unit={unit}
             matches={qualifying}
             matchesIncomplete={partialMatchDisplay}
@@ -464,7 +472,9 @@ export function PlanningWorkspace({
             role="status"
             className="hidden w-fit max-w-80 rounded-md border border-stone-200 bg-white px-2 py-1 text-xs tabular-nums text-stone-600 shadow-sm sm:block"
           >
-            {search.status === "loading" ? "Updating projects…" : filterSummary}
+            {search.status === "loading" && !results
+              ? "Updating projects…"
+              : filterSummary}
           </p>
         </div>
         <div className="pointer-events-auto flex flex-wrap gap-2">
@@ -652,7 +662,7 @@ export function PlanningWorkspace({
               </fieldset>
               <p className="text-xs text-stone-600">
                 Visual overlays do not change comparison eligibility. Circles
-                have a radius of {distanceLabel(thresholdMiles / 2, unit)}{" "}
+                have a radius of {distanceLabel(displayedThreshold / 2, unit)}{" "}
                 {unit}, half the distance limit.
               </p>
             </div>
@@ -685,11 +695,12 @@ export function PlanningWorkspace({
                 separation; it is not a route or an electrical connection.
               </p>
               <p>
-                Each circle is {distanceLabel(thresholdMiles / 2, unit)} {unit}{" "}
-                in radius: half of the {distanceLabel(thresholdMiles, unit)}{" "}
-                {unit} limit. Two equal circles overlap at qualifying
-                separations. Exact tangency is excluded. Circles are a proximity
-                aid, not footprints or service territories.
+                Each circle is {distanceLabel(displayedThreshold / 2, unit)}{" "}
+                {unit} in radius: half of the{" "}
+                {distanceLabel(displayedThreshold, unit)} {unit} limit. Two
+                equal circles overlap at qualifying separations. Exact tangency
+                is excluded. Circles are a proximity aid, not footprints or
+                service territories.
               </p>
               <p>
                 Heat colors run green → yellow → orange → red from low to high
@@ -762,6 +773,7 @@ export function PlanningWorkspace({
                 <div
                   className="min-h-0 overflow-y-auto overscroll-contain"
                   id="comparison-content"
+                  aria-busy={search.status === "loading"}
                 >
                   <div className="space-y-3 p-4">
                     <Dialog.Description className="sr-only">
@@ -830,7 +842,7 @@ export function PlanningWorkspace({
                         </p>
                         <p className="mt-1 text-xs">
                           Other-utility projects within{" "}
-                          {distanceLabel(thresholdMiles, unit)} {unit}.
+                          {distanceLabel(displayedThreshold, unit)} {unit}.
                         </p>
                         {results && !eligibleIds.has(reference.id) && (
                           <p className="mt-2 text-xs font-medium">
@@ -980,7 +992,12 @@ export function PlanningWorkspace({
                               : "displayed bounded nearby results",
                           )
                         }
-                        className={control}
+                        className={cn(
+                          control,
+                          results &&
+                            search.status === "loading" &&
+                            "disabled:opacity-100",
+                        )}
                       >
                         <ArrowDownToLine size={13} />
                         Export {pairs.length} pairs
@@ -1026,7 +1043,7 @@ export function PlanningWorkspace({
                         Retry search
                       </Button>
                     </div>
-                  ) : search.status === "loading" ? (
+                  ) : search.status === "loading" && !results ? (
                     <div className="px-4 pb-4" role="status">
                       <p className="text-sm">Finding nearby comparisons…</p>
                       <div aria-hidden="true" className="mt-3 space-y-3">
@@ -1046,7 +1063,7 @@ export function PlanningWorkspace({
                       <p className="text-sm text-stone-600">
                         {invalidAssumptions
                           ? "Update or reset the invalid year shift in Filters."
-                          : thresholdMiles === 0
+                          : displayedThreshold === 0
                             ? "Zero distance excludes every pair under the strict rule."
                             : availableCompanies.length < 2
                               ? "This dataset needs at least two utilities."
@@ -1124,7 +1141,7 @@ export function PlanningWorkspace({
                               </span>
                               {allPairs &&
                                 (p.distanceMiles === null ||
-                                  p.distanceMiles >= thresholdMiles) && (
+                                  p.distanceMiles >= displayedThreshold) && (
                                   <span className="mt-1 block text-xs font-medium">
                                     {p.distanceMiles === null
                                       ? "Location unknown"
@@ -1168,11 +1185,12 @@ export function PlanningWorkspace({
                                 : `${distanceLabel(selected.distanceMiles, unit)} ${unit}`}
                               .{" "}
                               {selected.distanceMiles !== null &&
-                              selected.distanceMiles < thresholdMiles
+                              selected.distanceMiles < displayedThreshold
                                 ? "Qualifies under"
                                 : "Does not qualify under"}{" "}
-                              the strict {distanceLabel(thresholdMiles, unit)}{" "}
-                              {unit} distance limit.
+                              the strict{" "}
+                              {distanceLabel(displayedThreshold, unit)} {unit}{" "}
+                              distance limit.
                             </p>
                             <p className="text-xs text-stone-600">
                               {selected.gapDays === null
@@ -1183,7 +1201,13 @@ export function PlanningWorkspace({
                               savings.
                             </p>
                             <Button
-                              className={control}
+                              className={cn(
+                                control,
+                                results &&
+                                  search.status === "loading" &&
+                                  "disabled:opacity-100",
+                              )}
+                              disabled={search.status === "loading"}
                               onClick={() =>
                                 exportPairs(
                                   [selected],
@@ -1283,6 +1307,7 @@ export function PlanningWorkspace({
         <div className="order-first flex w-full justify-center xl:absolute xl:inset-x-0 xl:top-0 xl:w-auto">
           <section
             aria-label="Nearby match overview"
+            aria-busy={search.status === "loading"}
             className="map-match-overview pointer-events-auto rounded-xl border border-stone-200 bg-white p-4 shadow-sm"
           >
             <div role="status" aria-live="polite" aria-atomic="true">
@@ -1315,7 +1340,7 @@ export function PlanningWorkspace({
                         {matchCount === 1 ? "pair" : "pairs"}
                       </h2>
                       <p className="text-sm text-stone-600">
-                        Under {distanceLabel(thresholdMiles, unit)} {unit}
+                        Under {distanceLabel(displayedThreshold, unit)} {unit}
                       </p>
                     </div>
                   </div>

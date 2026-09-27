@@ -162,6 +162,12 @@ export function ProjectMap({
     () => mapConnections(matches, selected, projects, centers, thresholdMiles),
     [matches, selected, projects, centers, thresholdMiles],
   );
+  // Selection and distance change overlays, not the density inputs. Reuse the
+  // heat canvas until its coordinates/weights or display mode actually change.
+  const heatKey = useMemo(
+    () => JSON.stringify(presentation.heat),
+    [presentation.heat],
+  );
   const radius = proximityRadiusMeters(thresholdMiles);
   const radiusLabel = proximityRadiusLabel(thresholdMiles, unit);
 
@@ -220,17 +226,12 @@ export function ProjectMap({
 
   useEffect(() => {
     const view = map.current;
-    const group = layers.current;
-    if (!view || !group) return;
-    group.clearLayers();
-    if (heat.current) {
-      heat.current.remove();
-      heat.current = null;
-    }
+    if (!view || mode !== "heat" || !heatReady) return;
+    const points = JSON.parse(heatKey) as [number, number, number][];
     const updateHeatScale = () => {
       if (!heat.current) return;
       const zoom = view.getZoom();
-      const projected = presentation.heat.map(([lat, lon, weight]) => {
+      const projected = points.map(([lat, lon, weight]) => {
         const point = view.project([lat, lon], zoom);
         return [point.x, point.y, weight] as const;
       });
@@ -240,7 +241,7 @@ export function ProjectMap({
       });
     };
     if (mode === "heat" && heatReady) {
-      heat.current = createHeatLayer(presentation.heat, {
+      heat.current = createHeatLayer(points, {
         radius: HEAT_RADIUS,
         blur: HEAT_BLUR,
         maxZoom: view.getZoom(),
@@ -256,6 +257,18 @@ export function ProjectMap({
       updateHeatScale();
       view.on("zoomend", updateHeatScale);
     }
+    return () => {
+      view.off("zoomend", updateHeatScale);
+      heat.current?.remove();
+      heat.current = null;
+    };
+  }, [heatKey, mode, heatReady]);
+
+  useEffect(() => {
+    const view = map.current;
+    const group = layers.current;
+    if (!view || !group) return;
+    group.clearLayers();
     const matchSummary = (id: string) => {
       const count = overlay.matchCounts.get(id) ?? 0;
       if (!count) return "No matches in the displayed comparisons";
@@ -377,9 +390,6 @@ export function ProjectMap({
           String(overlay.matchCounts.get(p.id) ?? 0),
         );
     }
-    return () => {
-      view.off("zoomend", updateHeatScale);
-    };
   }, [
     presentation,
     overlay,
@@ -387,7 +397,6 @@ export function ProjectMap({
     selected,
     selectedProjectId,
     mode,
-    heatReady,
     showCircles,
     radius,
     radiusLabel,

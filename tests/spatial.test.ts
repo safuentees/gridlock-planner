@@ -19,6 +19,7 @@ import {
 import {
   isCurrentSpatialResponse,
   visibleSpatialState,
+  spatialScopeKey,
 } from "../src/hooks/useSpatialQuery";
 
 const dataset = JSON.parse(
@@ -325,6 +326,7 @@ describe("preparation, filtering and bounded output", () => {
     const ready = {
       status: "ready" as const,
       result,
+      resultThresholdMiles: defaults.thresholdMiles,
       progress: result.diagnostics,
       error: null,
     };
@@ -333,7 +335,13 @@ describe("preparation, filtering and bounded output", () => {
         { inputKey: "old-threshold", state: ready },
         "new-threshold",
       ),
-    ).toEqual({ status: "loading", result: null, progress: null, error: null });
+    ).toEqual({
+      status: "loading",
+      result: null,
+      resultThresholdMiles: null,
+      progress: null,
+      error: null,
+    });
     expect(
       visibleSpatialState({ inputKey: "current", state: ready }, "current"),
     ).toBe(ready);
@@ -542,5 +550,87 @@ describe("saved location eligibility and reference comparisons", () => {
     expect(
       (await run(coincident, { ...reference, thresholdMiles: 0 })).matchedCount,
     ).toBe(0);
+  });
+});
+
+describe("distance refresh presentation", () => {
+  const versions = {
+    datasetVersion: "features-a",
+    geometryVersion: "geometry-a",
+  };
+  it("retains a coherent completed result only while distance changes", async () => {
+    const result = await run(seeded(10, true));
+    const state = {
+      status: "ready" as const,
+      result,
+      resultThresholdMiles: 25,
+      progress: result.diagnostics,
+      error: null,
+    };
+    const scopeKey = spatialScopeKey(versions, defaults);
+    const pending = visibleSpatialState(
+      { inputKey: "old", scopeKey, state },
+      "new",
+      spatialScopeKey(versions, { ...defaults, thresholdMiles: 0 }),
+    );
+    expect(pending.status).toBe("loading");
+    expect(pending.result).toBe(result);
+    expect(pending.resultThresholdMiles).toBe(25);
+    expect(pending.progress).toBeNull();
+    // Repeated rapid changes retain the same coherent snapshot, not a false zero.
+    const next = visibleSpatialState(
+      { inputKey: "new", scopeKey, state: pending },
+      "newest",
+      scopeKey,
+    );
+    expect(next.result).toBe(result);
+    expect(next.resultThresholdMiles).toBe(25);
+  });
+  it("clears retained results synchronously for scope, dataset, retry and error changes", async () => {
+    const result = await run(seeded(10, true));
+    const state = {
+      status: "ready" as const,
+      result,
+      resultThresholdMiles: 25,
+      progress: result.diagnostics,
+      error: null,
+    };
+    const scopeKey = spatialScopeKey(versions, defaults);
+    const scopes = [
+      spatialScopeKey({ ...versions, datasetVersion: "features-b" }, defaults),
+      spatialScopeKey({ ...versions, geometryVersion: "geometry-b" }, defaults),
+      spatialScopeKey(versions, { ...defaults, companies: [] }),
+      spatialScopeKey(versions, { ...defaults, from: "2020-01-01" }),
+      spatialScopeKey(versions, { ...defaults, referenceProjectId: "another" }),
+      spatialScopeKey(versions, {
+        ...defaults,
+        excludedProjectIds: ["excluded"],
+      }),
+      spatialScopeKey(versions, { ...defaults, shifts: { A: 1 } }),
+      spatialScopeKey(versions, defaults, 1),
+    ];
+    for (const changedScope of scopes) {
+      const pending = visibleSpatialState(
+        { inputKey: "old", scopeKey, state },
+        "new",
+        changedScope,
+      );
+      expect(pending.result).toBeNull();
+      expect(pending.resultThresholdMiles).toBeNull();
+    }
+    const error = {
+      status: "error" as const,
+      result: null,
+      resultThresholdMiles: null,
+      progress: null,
+      error: "Worker failed",
+    };
+    expect(
+      visibleSpatialState(
+        { inputKey: "new", scopeKey, state: error },
+        "new",
+        scopeKey,
+      ),
+    ).toBe(error);
   });
 });

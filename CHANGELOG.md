@@ -6,6 +6,8 @@
 
 - Add top padding to the comparison empty-state message and upload action.
 
+- Collapse Source records into a nested, keyboard-accessible accordion in every comparison while preserving source links and detailed disclosures.
+
 - Turn Comparisons into a right-edge desktop sheet and mobile bottom sheet, with interruptible sliding, reduced-motion support and preserved selection/scroll. Keep desktop map controls clear.
 
 - Start with an empty map and simplify Upload dataset to a file picker plus the downloadable ten-project sample. Automatically validate and load explicit-template files, retain manual mapping for other schemas and protect existing workspaces from unintended replacement.
@@ -68,6 +70,8 @@
 - Explain how to merge the initial demo in plain language, with team access and protection for later changes afterward.
 
 - Add the four-person collaboration guide, pull-request template and app/data CI checks.
+
+- Add an optional inline AI next-step suggestion for the selected pair, with a server-only OpenAI endpoint and `.env.example`; preserve evidence layers and reject stale responses.
 
 ## 0.1.0 — 2026-09-26
 

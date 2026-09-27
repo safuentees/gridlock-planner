@@ -167,15 +167,15 @@
   translate: none;
 }
 
-/* The overview follows the toolbar's natural wrapping on small screens. */
+/* Content-sized summary stays at the map's top; narrower toolbars flow below. */
 .map-match-overview {
-  width: 14rem;
+  width: max-content;
   max-width: 100%;
 }
-@media (max-width: 1023px) {
-  .map-match-overview {
-    max-height: max(6rem, min(13rem, calc(100dvh - 33rem)));
-    overflow-y: auto;
-    overscroll-behavior: contain;
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .comparison-panel {
+    top: 12rem;
+    max-height: calc(100% - 13rem);
+    transform: none;
   }
 }

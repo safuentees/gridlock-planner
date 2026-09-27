@@ -1280,10 +1280,10 @@ export function PlanningWorkspace({
             </Dialog.Portal>
           </Dialog.Root>
         </div>
-        <div className="flex w-full justify-center">
+        <div className="order-first flex w-full justify-center xl:absolute xl:inset-x-0 xl:top-0 xl:w-auto">
           <section
             aria-label="Nearby match overview"
-            className="map-match-overview pointer-events-auto rounded-xl border border-stone-200 bg-white p-3 shadow-sm"
+            className="map-match-overview pointer-events-auto rounded-xl border border-stone-200 bg-white p-4 shadow-sm"
           >
             <div role="status" aria-live="polite" aria-atomic="true">
               {invalidAssumptions ? (
@@ -1294,10 +1294,10 @@ export function PlanningWorkspace({
                 <p className="text-sm text-stone-600">Finding nearby pairs…</p>
               ) : (
                 <>
-                  <div className="flex flex-wrap items-center justify-center gap-3">
+                  <div className="flex flex-wrap items-center justify-center gap-4">
                     <strong
                       className={cn(
-                        "text-4xl font-semibold tabular-nums",
+                        "text-5xl font-semibold tabular-nums",
                         matchCount > 0 ? "text-emerald-700" : "text-stone-500",
                       )}
                     >
@@ -1309,12 +1309,12 @@ export function PlanningWorkspace({
                       {matchCount.toLocaleString()}
                     </strong>
                     <div>
-                      <h2 className="text-sm font-semibold">
+                      <h2 className="text-lg font-semibold">
                         {mode === "what_if" ? "What-if" : "Nearby"}{" "}
                         {reference ? "reference " : ""}
                         {matchCount === 1 ? "pair" : "pairs"}
                       </h2>
-                      <p className="text-xs text-stone-600">
+                      <p className="text-sm text-stone-600">
                         Under {distanceLabel(thresholdMiles, unit)} {unit}
                       </p>
                     </div>

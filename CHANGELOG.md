@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Remove the floating radius label from the map while preserving circles and their contextual explanations.
+
 - Consolidate comparison CSV exports into one Base UI icon menu, with displayed and selected comparison options and disabled states for unavailable exports.
 
 - Make Comparisons an inline accordion list with no scroll-to-details jump. Keep export in its header, location controls in Filters and map navigation in Map settings.

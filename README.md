@@ -40,7 +40,7 @@ The Jasper–Okatie / Goshen case retains the workbook's broader Goshen–McInto
 
 ## Import and correct a dataset
 
-Choose **Data tools → Import CSV/XLSX**, select a sheet/header, verify suggested aliases or manually map columns, declare coordinate order and date format/precision/meaning, then validate and explicitly accept. Start with the [CSV template](public/templates/GridLock-projects.csv). Limits include **10 MiB per file and 25,000 selected data rows**; workbook expansion/cell limits are detailed in [Imports](docs/IMPORTS.md). Parsing, validation and hashing use a cancellable worker. Invalid rows prevent acceptance; rows are never silently discarded.
+Choose **Data tools → Import projects**, select a sheet/header, verify suggested aliases or manually map columns, declare coordinate order and date format/precision/meaning, then validate and explicitly accept. Start with the [CSV template](public/templates/GridLock-projects.csv). Limits include **10 MiB per file and 25,000 selected data rows**; workbook expansion/cell limits are detailed in [Imports](docs/IMPORTS.md). Parsing, validation and hashing use a cancellable worker. Invalid rows prevent acceptance; rows are never silently discarded.
 
 Imports have namespaced IDs, their own source hash and no inherited demo research. No geocoding or arbitrary spreadsheet interpretation is promised. Formula-containing XLSX files require a values-only copy. Unknown coordinates and dates remain unknown; ambiguous day formats require a choice. Dateline-crossing two-endpoint midpoint proxies are rejected.
 

@@ -2,7 +2,7 @@ import { lazy, Suspense, useState, type RefObject } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { AlertDialog } from "@base-ui/react/alert-dialog";
 import { Button } from "@base-ui/react/button";
-import { X } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import type { ProjectOverride, RuntimeDataset } from "../types";
 import { OverridesPanel } from "./OverridesPanel";
 
@@ -12,6 +12,8 @@ const ImportWizard = lazy(() =>
 const ExtractionReview = lazy(() =>
   import("./ExtractionReview").then((m) => ({ default: m.ExtractionReview })),
 );
+const toolSummary =
+  "flex cursor-pointer list-none items-center justify-between gap-4 rounded-md py-3 text-sm focus-visible:outline-2 focus-visible:outline-emerald-700 [&::-webkit-details-marker]:hidden";
 const button =
   "rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm font-medium hover:bg-stone-50";
 
@@ -62,12 +64,11 @@ export function DataTools({
         <Dialog.Popup className="data-dialog fixed inset-0 z-50 m-auto flex h-fit max-h-dvh w-full max-w-3xl flex-col overflow-hidden border border-stone-200 bg-white shadow-lg data-[closed]:hidden sm:rounded-xl">
           <div className="flex items-start justify-between gap-4 border-b border-stone-200 p-5">
             <div>
-              <Dialog.Title className="text-lg font-semibold">
+              <Dialog.Title className="text-balance text-lg font-semibold">
                 Data tools
               </Dialog.Title>
-              <Dialog.Description className="mt-1 text-sm text-stone-600">
-                Import, correct or review source records. Closing keeps your
-                workspace.
+              <Dialog.Description className="mt-1 text-pretty text-sm text-stone-600">
+                Manage the data in this workspace.
               </Dialog.Description>
             </div>
             <Dialog.Close
@@ -78,14 +79,20 @@ export function DataTools({
             </Dialog.Close>
           </div>
           <div className="min-h-0 overflow-y-auto p-5">
-            <p className="mb-4 text-sm text-stone-600">
-              Imports, corrections and review checks stay in this browser
-              session. Export changes before reloading.
-            </p>
             <div className="divide-y divide-stone-200">
-              <details className="py-4">
-                <summary className="cursor-pointer text-sm font-semibold">
-                  Import CSV / XLSX
+              <details className="group py-1">
+                <summary className={toolSummary}>
+                  <span>
+                    <span className="block font-medium">Import projects</span>
+                    <span className="mt-1 block text-pretty text-stone-600">
+                      Replace the current dataset with a CSV or Excel file.
+                    </span>
+                  </span>
+                  <ChevronDown
+                    size={16}
+                    aria-hidden="true"
+                    className="shrink-0 text-stone-500 group-open:rotate-180"
+                  />
                 </summary>
                 <div className="mt-4">
                   {visited && (
@@ -98,12 +105,26 @@ export function DataTools({
                   )}
                 </div>
               </details>
-              <details className="py-4">
-                <summary className="cursor-pointer text-sm font-semibold">
-                  Correct project records{" "}
-                  <span className="font-normal tabular-nums text-stone-600">
-                    ({overrides.length} applied)
+              <details className="group py-1">
+                <summary className={toolSummary}>
+                  <span>
+                    <span className="block font-medium">
+                      Edit projects
+                      {overrides.length > 0 && (
+                        <span className="ml-2 font-normal tabular-nums text-stone-600">
+                          ({overrides.length} edited)
+                        </span>
+                      )}
+                    </span>
+                    <span className="mt-1 block text-pretty text-stone-600">
+                      Correct project details while keeping the original values.
+                    </span>
                   </span>
+                  <ChevronDown
+                    size={16}
+                    aria-hidden="true"
+                    className="shrink-0 text-stone-500 group-open:rotate-180"
+                  />
                 </summary>
                 <div className="mt-4">
                   {visited && (
@@ -117,13 +138,25 @@ export function DataTools({
                 </div>
               </details>
               <details
-                className="py-4"
+                className="group py-1"
                 onToggle={(event) => {
                   if (event.currentTarget.open) setReviewVisited(true);
                 }}
               >
-                <summary className="cursor-pointer text-sm font-semibold">
-                  Review extracted report fields
+                <summary className={toolSummary}>
+                  <span>
+                    <span className="block font-medium">
+                      Review report data
+                    </span>
+                    <span className="mt-1 block text-pretty text-stone-600">
+                      Check extracted values against the original reports.
+                    </span>
+                  </span>
+                  <ChevronDown
+                    size={16}
+                    aria-hidden="true"
+                    className="shrink-0 text-stone-500 group-open:rotate-180"
+                  />
                 </summary>
                 <div className="mt-4">
                   {reviewVisited && (
@@ -135,9 +168,19 @@ export function DataTools({
                   )}
                 </div>
               </details>
-              <details className="py-4">
-                <summary className="cursor-pointer text-sm font-semibold">
-                  Source files and date limitations
+              <details className="group py-1">
+                <summary className={toolSummary}>
+                  <span>
+                    <span className="block font-medium">View sources</span>
+                    <span className="mt-1 block text-pretty text-stone-600">
+                      Find source files and understand date and location limits.
+                    </span>
+                  </span>
+                  <ChevronDown
+                    size={16}
+                    aria-hidden="true"
+                    className="shrink-0 text-stone-500 group-open:rotate-180"
+                  />
                 </summary>
                 <div className="mt-4 space-y-4 text-sm text-stone-600">
                   <p>
@@ -213,6 +256,10 @@ export function DataTools({
                 </div>
               </details>
             </div>
+            <p className="mt-4 text-pretty text-xs text-stone-500">
+              Imports, edits and review checks last until you reload. Download
+              edits before leaving.
+            </p>
           </div>
           <AlertDialog.Root
             open={pending !== null}
@@ -223,7 +270,7 @@ export function DataTools({
             <AlertDialog.Portal>
               <AlertDialog.Backdrop className="fixed inset-0 z-50 bg-stone-900/40" />
               <AlertDialog.Popup className="data-confirm fixed inset-0 z-50 m-auto h-fit max-h-dvh w-full max-w-md overflow-y-auto rounded-xl border border-stone-200 bg-white p-6 shadow-lg">
-                <AlertDialog.Title className="text-lg font-semibold">
+                <AlertDialog.Title className="text-balance text-lg font-semibold">
                   Replace this workspace?
                 </AlertDialog.Title>
                 <AlertDialog.Description className="mt-2 text-sm text-stone-600">

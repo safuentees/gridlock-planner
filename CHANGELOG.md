@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Simplify Data tools into four expandable options with plain names, one-line descriptions and a quieter session reminder. Preserve all import, correction, review and source actions.
+
 - Replace the map's dot-separated filter summary with a simple project count; keep date details in Filters and active what-if warnings beside results.
 
 - Make the map the viewport workspace with a persistent Comparisons panel, contextual evidence, saved per-location eligibility, explicit reference search, distance slider/direct editing, utility icons, density/circle overlays and light/dark basemap appearance. Preserve source data, strict matching, bounded results and session drafts.

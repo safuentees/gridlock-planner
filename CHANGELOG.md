@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Replace the map's dot-separated filter summary with a simple project count; keep date details in Filters and active what-if warnings beside results.
+
 - Make the map the viewport workspace with a persistent Comparisons panel, contextual evidence, saved per-location eligibility, explicit reference search, distance slider/direct editing, utility icons, density/circle overlays and light/dark basemap appearance. Preserve source data, strict matching, bounded results and session drafts.
 
 - Simplify the single-page planner flow: compact filters, adjacent map/list, contextual timing/evidence and selected-pair export. Keep same-page data tools and assumptions secondary, preserve drafts on close, and provide accessible loading/error/empty recovery.

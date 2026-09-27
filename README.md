@@ -26,7 +26,7 @@ The map fills the workspace. Enable utilities at the top left, adjust distance a
 
 - Utility toggles preserve each location's saved checkbox. Participation requires both controls and the date filters to allow the record. Unchecked locations remain searchable in **Locations**.
 - Selecting a location makes it the explicit reference for nearby cross-utility comparisons. **Clear reference** returns to all eligible pairs. **Focus selection** and **Show all locations** are distinct map actions in Comparisons.
-- **Filters** contains the planning timeline, unknown-date inclusion, small-data exhaustive view and what-if year/gap assumptions. Active date filters and assumptions remain visible over the map.
+- **Filters** contains the planning timeline, unknown-date inclusion, small-data exhaustive view and what-if year/gap assumptions. The map shows a simple filtered project count and keeps active what-if assumptions visible.
 - **Map settings** controls Light/Dark appearance, the density heat overlay and half-threshold radius circles. These visual controls do not change matches. **Map help** explains utility icons, strict distance boundaries and source limitations.
 - The 25-mile default is preserved. Switching km/mi preserves physical distance. The maximum is **250 km**, or approximately **155.342798 miles**. Typed entries must be integers; converted values retain decimals. The slider uses whole-unit stops plus the exact converted maximum. Invalid edits leave the active limit unchanged.
 - **Data tools** opens an in-page dialog for imports, corrections, extracted-field review and source files. Closing preserves filters, selection and unfinished drafts/checks. Accepting a replacement dataset explicitly starts a fresh workspace.

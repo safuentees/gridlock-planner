@@ -18,7 +18,7 @@ September 26, 2026 refinement. This supersedes the layout described in [the earl
 | Pair list | Exact-distance ordering, meaningful names, utility identities, units and supportable milestone gaps. Remove visual rank numbers. At most 200 nearby rows. |
 | Evidence | Inside Comparisons, including why a pair meets or fails the limit, source dates/meanings, source links, approximate geometry, research notes and original/current/assumed layers. No separate evidence area elsewhere. |
 | Distance | Bottom-left whole-unit slider, reference ticks, displayed limit, km/mi choice, double-click and labeled edit action. Invalid drafts have inline feedback and leave the active limit unchanged. |
-| Secondary filters | Same-page Filters dialog holds timeline/distribution, unknown dates, small-dataset exhaustive view, utility search and what-if controls. Active date/assumption summaries stay on the map. |
+| Secondary filters | Same-page Filters dialog holds timeline/distribution, unknown dates, small-dataset exhaustive view, utility search and what-if controls. The map shows only the filtered project count and any active what-if assumptions; date details remain in Filters. |
 | Map settings | Heatmap and radius-circle switches plus Light/Dark basemap appearance. Settings do not change eligibility or selection. |
 | Map help | Utility shapes/colors, selection, half-threshold circles, exact match treatment, density colors, units, approximation and historical planning limitations. |
 | Data tools | Existing imports, corrections, source files and extraction review remain available; mounted content preserves drafts/checks on ordinary close. Explicit dataset acceptance resets the workspace. |

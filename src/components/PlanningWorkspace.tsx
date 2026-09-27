@@ -22,12 +22,7 @@ import type {
 } from "../types";
 import { centerPoint, compareProjects, milesToUnit } from "../lib/comparisons";
 import { projectDateBounds, shiftDateBounds } from "../lib/temporal";
-import {
-  monthISO,
-  monthEndISO,
-  monthLabel,
-  timelineDistribution,
-} from "../lib/timeline";
+import { monthISO, monthEndISO, timelineDistribution } from "../lib/timeline";
 import { useSpatialQuery } from "../hooks/useSpatialQuery";
 import { cn } from "../lib/cn";
 import { originalComparison, comparisonCsv } from "../lib/exports";
@@ -392,7 +387,7 @@ export function PlanningWorkspace({
     () => new Set(overrides.map((o) => o.projectId)),
     [overrides],
   );
-  const filterSummary = `${filtered.length} / ${dataset.projects.length} locations · ${monthLabel(range[0])}–${monthLabel(range[1])}${includeUndated ? " · unknown dates included" : " · dated only"}${windowMonths !== null && mode === "what_if" ? ` · gap ≤ ${windowMonths} months` : ""}`;
+  const filterSummary = `${filtered.length.toLocaleString()} ${filtered.length === 1 ? "project" : "projects"}`;
 
   return (
     <div

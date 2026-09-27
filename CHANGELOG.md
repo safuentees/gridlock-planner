@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Extend the AI suggestion prompt to consider equipment access, matting, shared staging and sequential mat reuse, while requiring evidence and avoiding invented geographic checks or engineering conclusions.
+
 - Add the Vercel suggestion endpoint with hosted-origin checks, bounded parsed/raw inputs, server-only API configuration and clearer service/rate-limit errors. Preserve local-only dev behavior.
 - Add a compact map legend for visible utility markers, partner badges, proximity circles, selected distance and project density. Keep it readable in both map themes and clear of zoom controls.
 

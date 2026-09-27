@@ -1008,12 +1008,13 @@ export function PlanningWorkspace({
             </Dialog.Trigger>
             <Dialog.Portal container={workspace} keepMounted>
               {narrow && (
-                <Dialog.Backdrop className="fixed inset-0 z-20 bg-stone-900/30 data-[closed]:hidden" />
+                <Dialog.Backdrop className="comparison-backdrop fixed inset-0 z-20 bg-stone-900/30" />
               )}
               <Dialog.Popup
                 initialFocus={narrow ? true : false}
                 finalFocus={comparisonTrigger}
-                className="comparison-panel absolute right-3 z-30 flex w-96 max-w-full flex-col overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg data-[closed]:hidden"
+                inert={!panelOpen}
+                className="comparison-panel absolute right-0 z-30 flex w-96 max-w-full flex-col overflow-hidden rounded-l-xl border border-stone-200 bg-white shadow-lg"
               >
                 <div className="flex shrink-0 items-center justify-between gap-3 border-b border-stone-200 px-4 py-3">
                   <Dialog.Title className="text-base font-semibold">

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Simplify the single-page planner flow: compact filters, adjacent map/list, contextual timing/evidence and selected-pair export. Keep same-page data tools and assumptions secondary, preserve drafts on close, and provide accessible loading/error/empty recovery.
+
 - Integrate Planned, What-if and explicitly unavailable Forecast modes into one map with a rolling timeline and milestone distribution.
 - Add bounded worker spatial queries, stable pair ranking, honest partial counts/cancellation and reproducible spatial benchmarks; retain the original exhaustive oracle and Planned-mode small-dataset comparison.
 - Add worker-based CSV/XLSX mapping, validation and acceptance, session-only datasets, source-preserving corrections and feature/geometry hash contracts.

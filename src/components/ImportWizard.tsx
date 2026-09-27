@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@base-ui/react/button";
+import { cn } from "../lib/cn";
 import { Upload, X } from "lucide-react";
 import type { RuntimeDataset } from "../types";
 import { DATE_MEANINGS, DATE_PRECISIONS } from "../lib/datasets";
@@ -130,14 +131,6 @@ export function ImportWizard({ onAccept, onCancel }: ImportWizardProps) {
       ),
     );
   };
-  const cancel = () => {
-    worker.current?.terminate();
-    worker.current = null;
-    invalidate();
-    setSheets([]);
-    setFileName("");
-    onCancel?.();
-  };
   return (
     <section
       aria-labelledby="import-heading"
@@ -154,8 +147,8 @@ export function ImportWizard({ onAccept, onCancel }: ImportWizardProps) {
           </p>
         </div>
         <Button
-          onClick={cancel}
-          aria-label="Close import"
+          onClick={onCancel}
+          aria-label="Back to workspace"
           className="rounded p-1.5 hover:bg-stone-100"
         >
           <X size={18} />
@@ -199,7 +192,7 @@ export function ImportWizard({ onAccept, onCancel }: ImportWizardProps) {
       </p>
       {busy && (
         <Button
-          className={`${button} mt-2`}
+          className={cn(button, "mt-2")}
           onClick={() => {
             worker.current?.terminate();
             worker.current = null;
@@ -422,7 +415,7 @@ export function ImportWizard({ onAccept, onCancel }: ImportWizardProps) {
           </fieldset>
           <Button
             disabled={busy}
-            className={`${button} mt-4 inline-flex items-center gap-2`}
+            className={cn(button, "mt-4 inline-flex items-center gap-2")}
             onClick={() => {
               const requestId = gate.current.next();
               setError("");
@@ -519,8 +512,9 @@ export function ImportWizard({ onAccept, onCancel }: ImportWizardProps) {
                 disabled={!result.dataset || busy}
                 onClick={() => {
                   if (result.dataset) {
-                    worker.current?.terminate();
-                    gate.current.cancel();
+                    // The parent may ask before replacing an existing workspace.
+                    // Keep this worker usable if that confirmation is cancelled;
+                    // unmount cleanup terminates it after actual acceptance.
                     onAccept(result.dataset);
                   }
                 }}

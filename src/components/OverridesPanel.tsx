@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { AlertDialog } from "@base-ui/react/alert-dialog";
 import { Button } from "@base-ui/react/button";
 import { Download, RotateCcw } from "lucide-react";
 import type {
@@ -74,13 +75,14 @@ export function OverridesPanel({
     if (
       selectedProjectId &&
       dataset.projects.some((p) => p.id === selectedProjectId)
-    )
+    ) {
       setProjectId(selectedProjectId);
+      setMessage("");
+    }
   }, [selectedProjectId, dataset]);
   useEffect(() => {
     setDraft(project ? draftFor(project, activeOverride) : null);
     setErrors([]);
-    setMessage("");
   }, [project, activeOverride]);
   const matches = useMemo(
     () =>
@@ -218,7 +220,10 @@ export function OverridesPanel({
               <select
                 className={control}
                 value={project.id}
-                onChange={(event) => setProjectId(event.target.value)}
+                onChange={(event) => {
+                  setProjectId(event.target.value);
+                  setMessage("");
+                }}
               >
                 {choices.map((item) => (
                   <option key={item.id} value={item.id}>
@@ -377,23 +382,49 @@ export function OverridesPanel({
             >
               Apply correction
             </Button>
-            <Button
-              disabled={!activeOverride}
-              onClick={() => {
-                onChange(
-                  overrides.filter((item) => item.projectId !== project.id),
-                );
-                setDraft(draftFor(project));
-                setErrors([]);
-                setMessage(
-                  "Correction removed; original source values restored.",
-                );
-              }}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-stone-300 px-3 py-2 text-sm disabled:opacity-40"
-            >
-              <RotateCcw size={14} />
-              Reset this project
-            </Button>
+            <AlertDialog.Root>
+              <AlertDialog.Trigger
+                disabled={!activeOverride}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-stone-300 px-3 py-2 text-sm disabled:opacity-40"
+              >
+                <RotateCcw size={14} />
+                Reset this project
+              </AlertDialog.Trigger>
+              <AlertDialog.Portal>
+                <AlertDialog.Backdrop className="fixed inset-0 z-50 bg-stone-900/40" />
+                <AlertDialog.Popup className="data-confirm fixed inset-0 z-50 m-auto h-fit max-h-dvh w-full max-w-md overflow-y-auto rounded-xl border border-stone-200 bg-white p-6 shadow-lg">
+                  <AlertDialog.Title className="text-lg font-semibold">
+                    Remove this correction?
+                  </AlertDialog.Title>
+                  <AlertDialog.Description className="mt-2 text-sm text-stone-600">
+                    This restores the original source values for this project.
+                    Export corrections first if you want to keep this change.
+                  </AlertDialog.Description>
+                  <div className="mt-5 flex flex-wrap justify-end gap-2">
+                    <AlertDialog.Close className="rounded-lg border border-stone-300 px-3 py-2 text-sm">
+                      Keep correction
+                    </AlertDialog.Close>
+                    <AlertDialog.Close
+                      onClick={() => {
+                        onChange(
+                          overrides.filter(
+                            (item) => item.projectId !== project.id,
+                          ),
+                        );
+                        setDraft(draftFor(project));
+                        setErrors([]);
+                        setMessage(
+                          "Correction removed; original source values restored.",
+                        );
+                      }}
+                      className="rounded-lg bg-emerald-800 px-3 py-2 text-sm font-medium text-white"
+                    >
+                      Remove correction
+                    </AlertDialog.Close>
+                  </div>
+                </AlertDialog.Popup>
+              </AlertDialog.Portal>
+            </AlertDialog.Root>
           </div>
         </>
       )}

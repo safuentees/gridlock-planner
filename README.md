@@ -22,10 +22,14 @@ The preview uses the same URL. Core app operation needs no API key, backend, Pyt
 
 ## Explore the workspace
 
-- **Planned:** filter effective planning milestones by a rolling month range, company and adjustable distance. Original source dates remain available beside any explicit corrections. The compact distribution shows milestone coverage, including month/year uncertainty.
-- **What-if:** apply whole-year shifts per utility within the same map. Optional calendar-month gaps require exact day dates. These are assumptions about milestones, not learned delays or construction overlap. Reset assumptions to return to unchanged effective dates.
-- **Forecast:** shows why estimates are unavailable and continues displaying source plans. Future planned dates are not predictions. No activity or schedule-revision forecast was trained.
-- Switch map/heat modes, focus an individual record or comparison, inspect original source pages and dated annotations, and export the displayed comparison rows.
+Everything stays on one page. Filter utilities, distance and planned dates, select a nearby comparison, then follow **View selected timing and evidence**. Original date meanings and source pages remain visible. Export the selected pair or the displayed comparison list.
+
+- The map and ranked comparisons share the main workspace. Map/heat mode and fit-all stay beside the map.
+- **More filters & what-if** contains unknown-date inclusion, small-dataset exhaustive comparisons and schedule assumptions. An active-assumption notice remains visible when controls are collapsed. These are milestone assumptions, not learned delays or construction overlap.
+- **Data tools** opens an in-page dialog for imports, corrections, extracted-field review and source files. Closing preserves filters, selection and unfinished drafts/checks. Accepting a replacement dataset explicitly starts a fresh workspace.
+- Forecast estimates remain unavailable, explained under **Source files and date limitations**. Future planned dates are not predictions.
+
+[Interface audit and verification](docs/INTERFACE_REFINEMENT.md) records the decisions and browser checks.
 
 The unchanged supplied dataset contains ten projects, **25 possible cross-company pairs and six strictly below 25 miles**. In Planned mode, datasets of at most 20 records can expose all comparisons, including distant/unlocated ones (at most 190 unordered pairs before excluding same-company pairs). Larger datasets use the bounded nearby workflow.
 
@@ -33,7 +37,7 @@ The Jasper–Okatie / Goshen case retains the workbook's broader Goshen–McInto
 
 ## Import and correct a dataset
 
-Choose **Import CSV/XLSX**, select a sheet/header, verify suggested aliases or manually map columns, declare coordinate order and date format/precision/meaning, then validate and explicitly accept. Start with the [CSV template](public/templates/GridLock-projects.csv). Limits include **10 MiB per file and 25,000 selected data rows**; workbook expansion/cell limits are detailed in [Imports](docs/IMPORTS.md). Parsing, validation and hashing use a cancellable worker. Invalid rows prevent acceptance; rows are never silently discarded.
+Choose **Data tools → Import CSV/XLSX**, select a sheet/header, verify suggested aliases or manually map columns, declare coordinate order and date format/precision/meaning, then validate and explicitly accept. Start with the [CSV template](public/templates/GridLock-projects.csv). Limits include **10 MiB per file and 25,000 selected data rows**; workbook expansion/cell limits are detailed in [Imports](docs/IMPORTS.md). Parsing, validation and hashing use a cancellable worker. Invalid rows prevent acceptance; rows are never silently discarded.
 
 Imports have namespaced IDs, their own source hash and no inherited demo research. No geocoding or arbitrary spreadsheet interpretation is promised. Formula-containing XLSX files require a values-only copy. Unknown coordinates and dates remain unknown; ambiguous day formats require a choice. Dateline-crossing two-endpoint midpoint proxies are rejected.
 

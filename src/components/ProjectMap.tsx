@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Comparison, Coordinate, Project } from "../types";
+import { cn } from "../lib/cn";
 import { mapPresentation } from "../lib/mapPresentation";
 
 interface Props {
@@ -187,36 +188,36 @@ export function ProjectMap({
   }, [fitRequest]); // Fit is an explicit user action, not a side effect of every filter.
 
   return (
-    <div className="relative h-full min-h-96 w-full overflow-hidden bg-stone-100">
+    <div className="relative h-full min-h-64 w-full overflow-hidden bg-stone-100">
       <div
         ref={element}
-        className="h-full min-h-96 w-full"
+        className="h-full min-h-64 w-full"
         aria-label="Interactive map of approximate project locations"
       />
-      {presentation.locatedCount > presentation.markers.length && (
-        <p className="absolute left-3 top-3 z-20 max-w-xs rounded-md border border-stone-200 bg-white p-2 text-xs text-stone-600">
-          Showing {presentation.markers.length.toLocaleString()} sampled markers
-          of {presentation.locatedCount.toLocaleString()} located records. Heat
-          includes every located record. Selected records stay visible.
-        </p>
-      )}
-      {tileError && (
-        <p
-          role="status"
-          className="absolute top-3 left-3 z-20 max-w-xs rounded-md border border-stone-200 bg-white p-3 text-xs text-stone-600 shadow-sm"
-        >
-          Basemap unavailable. Project points, comparisons and controls still
-          work.
-        </p>
-      )}
-      {mode === "heat" && heatError && (
-        <p
-          role="status"
-          className="absolute top-3 left-3 z-20 rounded-md bg-white p-3 text-xs"
-        >
-          Heat layer unavailable. Project points are still shown.
-        </p>
-      )}
+      <div className="absolute top-3 left-3 z-20 max-w-xs space-y-2">
+        {presentation.locatedCount > presentation.markers.length && (
+          <p className="rounded-md border border-stone-200 bg-white p-2 text-xs tabular-nums text-stone-600">
+            Showing {presentation.markers.length.toLocaleString()} sampled
+            markers of {presentation.locatedCount.toLocaleString()} located
+            records. Heat includes every located record. Selected records stay
+            visible.
+          </p>
+        )}
+        {tileError && (
+          <p
+            role="status"
+            className="rounded-md border border-stone-200 bg-white p-3 text-xs text-stone-600 shadow-sm"
+          >
+            Basemap unavailable. Project points, comparisons and controls still
+            work.
+          </p>
+        )}
+        {mode === "heat" && heatError && (
+          <p role="status" className="rounded-md bg-white p-3 text-xs">
+            Heat layer unavailable. Project points are still shown.
+          </p>
+        )}
+      </div>
       {mode === "heat" && heatReady && (
         <div className="absolute bottom-12 left-3 z-20 max-w-[calc(100%-4rem)] rounded-lg border border-stone-200 bg-white/95 px-3 py-2 text-xs shadow-sm">
           <div className="mb-1 flex items-center gap-2">
@@ -228,7 +229,7 @@ export function ProjectMap({
                 "bg-emerald-500",
                 "bg-emerald-800",
               ].map((x) => (
-                <span key={x} className={`h-2 w-5 ${x}`} />
+                <span key={x} className={cn("h-2 w-5", x)} />
               ))}
             </span>
             <span>Low → high</span>

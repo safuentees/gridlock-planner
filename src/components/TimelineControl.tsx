@@ -1,5 +1,6 @@
 import { Slider } from "@base-ui/react/slider";
 import { Button } from "@base-ui/react/button";
+import { cn } from "../lib/cn";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { monthLabel, timelineDistribution } from "../lib/timeline";
 
@@ -30,11 +31,11 @@ export function TimelineControl({
       className="border-b border-stone-200 bg-white px-5 py-4"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <h2 className="text-sm font-semibold">
-            {assumed ? "Assumed milestone window" : "Planned milestone window"}
+            {assumed ? "Assumed dates" : "Planned dates"}
           </h2>
-          <p className="mt-1 text-sm tabular-nums text-stone-600">
+          <p className="text-sm tabular-nums text-stone-600">
             {monthLabel(range[0])} – {monthLabel(range[1])}
           </p>
         </div>
@@ -66,14 +67,19 @@ export function TimelineControl({
       <div
         role="img"
         aria-label={`Milestone distribution, ${binSize === 1 ? "monthly" : "peak monthly count per " + binSize + "-month bin"}. ${bins.map((b) => `${monthLabel(b.from)}: ${b.count}`).join("; ")}.`}
-        className="mt-4 flex h-12 items-end gap-0.5"
+        className="mt-3 flex h-6 items-end gap-0.5"
       >
         {bins.map((b) => (
           <div
             key={b.from}
             title={`${monthLabel(b.from)}${b.to > b.from ? " – " + monthLabel(b.to) : ""}: peak ${b.count}`}
-            className={`min-w-0 flex-1 rounded-t-sm ${b.to >= range[0] && b.from <= range[1] ? "bg-emerald-600" : "bg-stone-200"}`}
-            style={{ height: `${Math.max(3, (b.count / peak) * 100)}%` }}
+            className={cn(
+              "min-w-0 flex-1 rounded-t-sm",
+              b.to >= range[0] && b.from <= range[1]
+                ? "bg-emerald-600"
+                : "bg-stone-200",
+            )}
+            style={{ height: `${(b.count / peak) * 100}%` }}
           />
         ))}
       </div>
@@ -105,10 +111,6 @@ export function TimelineControl({
           </Slider.Track>
         </Slider.Control>
       </Slider.Root>
-      <div className="flex justify-between text-xs tabular-nums text-stone-500">
-        <span>{monthLabel(min)}</span>
-        <span>{monthLabel(max)}</span>
-      </div>
       <p className="mt-2 text-xs text-stone-500">
         {binSize === 1
           ? "Monthly record coverage."
@@ -116,8 +118,8 @@ export function TimelineControl({
         {imprecise > 0
           ? `${imprecise.toLocaleString()} imprecise dates span their possible months. `
           : ""}
-        {unknown.toLocaleString()} unknown dates. This is milestone timing, not
-        construction activity.
+        {unknown > 0 ? `${unknown.toLocaleString()} unknown dates. ` : ""}
+        Milestones, not construction activity.
       </p>
     </section>
   );

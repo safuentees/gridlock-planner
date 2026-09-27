@@ -50,12 +50,15 @@ export function useSpatialQuery(
   projects: Project[],
   versions: { datasetVersion: string; geometryVersion: string },
   query: SpatialQuery,
-): SpatialQueryState & { cancel: () => void } {
+): SpatialQueryState & { cancel: () => void; retry: () => void } {
+  const [attempt, setAttempt] = useState(0);
+  const retry = useCallback(() => setAttempt((value) => value + 1), []);
   const queryKey = JSON.stringify(query);
   const inputKey = JSON.stringify([
     versions.datasetVersion,
     versions.geometryVersion,
     queryKey,
+    attempt,
   ]);
   const [stored, setStored] = useState<ScopedSpatialState>({
     inputKey,
@@ -103,7 +106,7 @@ export function useSpatialQuery(
       fallbackController.current?.abort();
       preparedVersion.current = "";
     };
-  }, []);
+  }, [attempt]);
   useEffect(() => {
     const requestId = ++latest.current.requestId;
     const { datasetVersion, geometryVersion } = versions;
@@ -220,8 +223,14 @@ export function useSpatialQuery(
     }
     return () => controller.abort();
     // The serialized query intentionally tracks value changes rather than object identity.
-  }, [projects, versions.datasetVersion, versions.geometryVersion, queryKey]);
+  }, [
+    projects,
+    versions.datasetVersion,
+    versions.geometryVersion,
+    queryKey,
+    attempt,
+  ]);
   // Passive effects have not necessarily run for the new inputs yet. Never
   // expose old pairs/counts/progress during that intervening render or paint.
-  return { ...visibleSpatialState(stored, inputKey), cancel };
+  return { ...visibleSpatialState(stored, inputKey), cancel, retry };
 }

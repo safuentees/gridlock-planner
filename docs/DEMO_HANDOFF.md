@@ -34,9 +34,9 @@ Run the [README checks](../README.md#verify-and-reproduce) and see [PERFORMANCE.
 
 1. **0:00–0:20 — Problem.** Nearby utility plans are hard to investigate across reports. Open the supplied historical sample and identify source dates and approximate geometry.
 2. **0:20–1:00 — Map and evidence.** Show six nearby pairs at 25 miles; inspect Jasper–Okatie/Goshen–McIntosh at 7.5481 miles. Explain the reviewed Goshen–Georgia Pacific scope and why proximity does not prove concurrent work.
-3. **1:00–1:30 — Time exploration.** Switch What-if in the same workspace, set explicit year shifts and adjust the range. Show original evidence below the separate assumptions. Return to Planned.
-4. **1:30–2:00 — New data.** Import the small CSV template, verify mapped columns and year/month precision, accept it, then restore the demo. Keep the template downloaded before judging.
-5. **2:00–2:40 — Useful ML.** Open one reviewed extraction page, source quote and missing fields. Explain Gemini's narrow 80/80-field result on ten selected pages, Codex-checked gold and the need for independent review. It extracts planning fields; it does not predict construction.
+3. **1:00–1:30 — Time exploration.** Open More filters & what-if, enable schedule assumptions, set explicit year shifts and adjust the range. Show original evidence below the separate assumptions. Disable assumptions to return to planned dates.
+4. **1:30–2:00 — New data.** Open Data tools → Import CSV / XLSX, verify the small template’s mapped columns and year/month precision, accept it, then restore the sample through Source files and date limitations. Keep the template downloaded before judging.
+5. **2:00–2:40 — Useful ML.** Open Data tools → Review extracted report fields and inspect a page, source quote and missing fields. Explain Gemini's narrow 80/80-field result on ten selected pages, Codex-checked gold and the need for independent review. It extracts planning fields; it does not predict construction.
 6. **2:40–3:00 — Engineering and next step.** Explain bounded indexed search, source hashes and the visible partial-result labels. The next product improvement is resumable dense queries; credible forecasting separately needs linked, cutoff-safe activity outcomes. Attribute external libraries and AI assistance.
 
 The supplied guide specifies a three-minute live demo, with a possible three-to-five-minute second round. Do not make a live API call part of the critical path. Keep the performance table and deeper source review ready for questions.

@@ -20,6 +20,24 @@ npm run preview
 
 The preview uses the same URL. Core app operation needs no API key, backend, Python runtime or account. Source files and the recorded extraction evaluation are local. Internet is needed for OpenStreetMap tiles and external evidence links; tile failure leaves local points, comparisons and evidence usable. A new live Gemini extraction run is an optional offline Python job with an environment-provided key, never a browser request. [Demo and submission handoff](docs/DEMO_HANDOFF.md).
 
+## Optional one-sentence AI suggestion
+
+Copy `.env.example` to `.env.local`, set `OPENAI_API_KEY`, and restart the app server:
+
+```sh
+cp .env.example .env.local
+# Edit .env.local with your OpenAI API key (never a VITE_ variable).
+npm run dev
+```
+
+Expand a comparison and click **Suggest next step**. A short, inline AI suggestion recommends what to investigate for coordination. It sends only that pair's names, utility names, approximate separation, typed source/effective milestones, research notes, correction reasons and explicit what-if dates to OpenAI when clicked—not your entire uploaded dataset or endpoint coordinates. This is generated advice, not verified evidence, a forecasting model or proof of simultaneous construction/savings. Review it against the nearby source records.
+
+`OPENAI_MODEL` defaults to `gpt-4.1-mini` and may be changed in the server environment. An OpenAI API key with model access and API billing is required; a ChatGPT login alone is not the setup. The key is read only by the local Vite server, and `.env.local` is ignored by Git. Never paste it into the UI, source files or a `VITE_` variable. Both `npm run dev` and `npm run preview` provide the same-origin endpoint; a static `dist/` host alone does not. This prototype endpoint intentionally accepts only loopback clients with a local Host and same-origin browser requests. Public deployment would require an authenticated server adapter and its own abuse controls.
+
+Requests have a 20 KB body limit, 20-second upstream timeout, two-request concurrency limit and 12 requests/minute per server process. Missing configuration, quota errors and invalid output appear beside the button. Changing the pair or its evidence cancels the old client request and clears its suggestion. Core exploration works without a key. No key, prompt or provider response is logged by this feature; `store: false` is sent to OpenAI (this is not a claim of zero provider retention).
+
+Implementation references: [OpenAI text generation / Responses API](https://developers.openai.com/api/docs/guides/text), [GPT-4.1 mini](https://developers.openai.com/api/docs/models/gpt-4.1-mini). Automated provider tests use mocked responses; a live model call remains unverified until a key is supplied.
+
 ## Explore the workspace
 
 The map fills the workspace. Its large count shows nearby cross-utility pairs; green circles and numbered utility markers identify participating projects. Enable utilities at the top left, adjust distance at the bottom left, then open **Comparisons** and expand a row to inspect its timing and source evidence in place. Click it again to collapse; opening a row does not scroll to a separate details section. Location checkboxes remain under **Filters → Locations**. Use the export icon in the panel header to choose displayed comparisons or the selected comparison as CSV.

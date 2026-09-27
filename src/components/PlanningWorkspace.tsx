@@ -29,6 +29,8 @@ import { useSpatialQuery } from "../hooks/useSpatialQuery";
 import { cn } from "../lib/cn";
 import { originalComparison, comparisonCsv } from "../lib/exports";
 import { distanceLabel, type DistanceUnit } from "../lib/distanceControl";
+import { PairRecommendation } from "./PairRecommendation";
+import { pairRecommendationContext } from "../lib/pairRecommendation";
 import { EvidencePanel, formatDate } from "./EvidencePanel";
 import { TimelineControl } from "./TimelineControl";
 import { NearbyDistanceCard } from "./NearbyDistanceCard";
@@ -490,6 +492,22 @@ export function PlanningWorkspace({
           </p>
         )}
       </div>
+      {selected &&
+        originalSelection &&
+        mode !== "forecast" &&
+        source.kind !== "empty" && (
+          <PairRecommendation
+            disabled={search.status === "loading" || invalidAssumptions}
+            context={pairRecommendationContext(selected, originalSelection, {
+              datasetKind: source.kind,
+              mode,
+              thresholdMiles: displayedThreshold,
+              partialResults: partialSearch,
+              shifts: activeShifts,
+              overrides,
+            })}
+          />
+        )}
       <EvidencePanel
         comparison={originalSelection}
         project={

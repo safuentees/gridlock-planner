@@ -67,6 +67,8 @@
 
 - Add the four-person collaboration guide, pull-request template and app/data CI checks.
 
+- Add an optional inline AI next-step suggestion for the selected pair, with a server-only OpenAI endpoint and `.env.example`; preserve evidence layers and reject stale responses.
+
 ## 0.1.0 — 2026-09-26
 
 - Add the complete local planning explorer for ten supplied records and all cross-company comparisons.

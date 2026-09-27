@@ -6,6 +6,7 @@
 
 - Put distance controls inside the expandable nearby-pair card and remove the bottom-left slider. Use Motion with Base UI for a short, reduced-motion-aware expansion while preserving the mounted editor and stable query presentation.
 - Remove the floating radius label from the map while preserving circles and their contextual explanations.
+- Present expanded comparison evidence as compact inline descriptions, with unboxed source records and tighter date/source spacing. Preserve provenance, corrections and research disclosures.
 
 - Consolidate comparison CSV exports into one Base UI icon menu, with displayed and selected comparison options and disabled states for unavailable exports.
 

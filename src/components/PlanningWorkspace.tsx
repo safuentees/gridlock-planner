@@ -1346,18 +1346,11 @@ export function PlanningWorkspace({
             ) : search.error ? (
               <span className="text-sm font-medium">Search unavailable</span>
             ) : matchCount === null ? (
-              <span className="block text-sm text-stone-600">
-                Finding nearby pairs…
-              </span>
+              <span className="block text-sm">Finding nearby pairs…</span>
             ) : (
               <>
                 <span className="flex flex-wrap items-center justify-center gap-4">
-                  <strong
-                    className={cn(
-                      "text-5xl font-semibold tabular-nums",
-                      matchCount > 0 ? "text-emerald-700" : "text-stone-500",
-                    )}
-                  >
+                  <strong className="text-5xl font-semibold tabular-nums">
                     {partialSearch && (
                       <span className="mb-0.5 block text-xs font-medium">
                         At least
@@ -1371,7 +1364,7 @@ export function PlanningWorkspace({
                       {reference ? "reference " : ""}
                       {matchCount === 1 ? "pair" : "pairs"}
                     </span>
-                    <span className="block text-sm text-stone-600">
+                    <span className="block text-sm">
                       Under {distanceLabel(displayedThreshold, unit)} {unit}
                     </span>
                   </span>

@@ -36,45 +36,42 @@ export function NearbyDistanceCard({
         onOpenChange={setOpen}
         aria-label="Nearby match overview"
         data-expanded={open}
-        render={
-          <motion.section
-            layout={!reduceMotion}
-            layoutDependency={open}
-            transition={transition}
-            style={{ borderRadius: 12, originX: 0.5, originY: 0 }}
-          />
-        }
-        className="map-match-overview pointer-events-auto overflow-hidden border border-stone-200 bg-white shadow-sm"
+        render={<section />}
+        className="map-match-overview pointer-events-auto relative isolate rounded-xl border border-transparent text-stone-900"
       >
+        {/* Scale only the surface: text stays outside the transformed tree. */}
+        <motion.div
+          aria-hidden="true"
+          data-card-surface=""
+          layout={!reduceMotion}
+          layoutDependency={open}
+          transition={transition}
+          style={{ borderRadius: 12, originX: 0.5, originY: 0 }}
+          className="pointer-events-none absolute inset-0 -z-10 border border-stone-200 bg-white shadow-sm"
+        />
         <Collapsible.Trigger
           aria-label="Adjust comparison distance"
           title="Adjust comparison distance"
-          render={
-            <motion.button layout={!reduceMotion} transition={transition} />
-          }
-          className="flex w-full items-center justify-center rounded-xl p-4 text-left hover:bg-stone-50 focus-visible:outline-offset-[-3px]"
+          className="flex w-full items-center justify-center rounded-xl p-4 text-left focus-visible:outline-offset-[-3px]"
         >
-          <motion.span
-            layout={reduceMotion ? false : "position"}
-            transition={transition}
+          <span
             aria-busy={busy}
             role="status"
             aria-live="polite"
             aria-atomic="true"
           >
             {children}
-          </motion.span>
+          </span>
         </Collapsible.Trigger>
         <Collapsible.Panel
           keepMounted
           className="nearby-distance-panel overflow-y-auto overscroll-contain"
         >
           <motion.div
-            layout="position"
             initial={false}
             animate={{ opacity: open ? 1 : 0 }}
             transition={transition}
-            className="border-t border-stone-200 p-4"
+            className="p-4"
           >
             <DistanceControl
               embedded
